@@ -6,6 +6,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
 }
 $user = $_SESSION['user'];
 $nama = $user['nama'];
+$page_title = "Deteksi Burnout";
 $active_menu = 'deteksi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
@@ -155,14 +156,14 @@ $questions = [
 
     <main class="wizard-container">
         <!-- Step Indicators -->
-        <div class="step-indicators" id="step-indicators">
-            <?php for($i=1; $i<=10; $i++): ?>
+        <div class="step-indicators" id="step-indicators" style="display:none">
+            <?php for($i=1; $i<=11; $i++): ?>
                 <div class="indicator-dot <?= $i===1 ? 'active' : '' ?>"></div>
             <?php endfor; ?>
         </div>
 
         <!-- Progress Bar -->
-        <div class="progress-wrapper">
+        <div class="progress-wrapper" style="display:none">
             <span class="progress-text" id="progress-text">Langkah 1 dari 10</span>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progress-bar"></div>
@@ -177,8 +178,22 @@ $questions = [
             </div>
         </div>
 
+        <!-- Welcome Step -->
+        <div id="startScreen" class="question-card" style="display: flex; text-align: center; justify-content: center; align-items: center; padding: 3rem;">
+            <div style="max-width: 500px;">
+                <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🏥</div>
+                <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem;">Mulai Analisis Burnout</h2>
+                <p style="color: var(--color-gray-500); line-height: 1.6; margin-bottom: 2rem;">
+                    Sistem pakar kami akan membuktikan hipotesis kondisi kesehatan mental Anda melalui 10 pertanyaan klinis. Mohon jawab dengan jujur untuk hasil yang akurat.
+                </p>
+                <button type="button" class="btn-nav btn-result" style="margin: 0 auto; padding: 1rem 2.5rem;" onclick="startDetection()">
+                    Mulai Sekarang
+                </button>
+            </div>
+        </div>
+
         <!-- Form Konsultasi -->
-        <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)">
+        <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)" style="display:none">
             <div class="question-card">
                 <?php foreach ($questions as $index => $q): ?>
                 <div class="step <?= $index === 0 ? 'active' : '' ?>" data-step="<?= $index + 1 ?>">
@@ -201,9 +216,23 @@ $questions = [
                     </div>
                 </div>
                 <?php endforeach; ?>
+
+                <!-- Summary Step -->
+                <div class="step" data-step="11">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1.5rem;">📊</div>
+                        <h2 class="question-text">Analisis Selesai</h2>
+                        <p style="color: var(--color-gray-500); margin-bottom: 2rem;">
+                            Terima kasih telah menjawab semua pertanyaan. Sistem siap menganalisis tingkat burnout Anda berdasarkan gejala yang dilaporkan.
+                        </p>
+                        <div style="background: var(--color-gray-50); padding: 1.5rem; border-radius: 16px; border: 1px dashed var(--color-gray-300); display: inline-block; width: 100%;">
+                            <p style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary);">Semua data Anda bersifat rahasia dan hanya digunakan untuk keperluan deteksi ini.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="nav-buttons">
+            <div class="nav-buttons" style="display:none">
                 <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="15 18 9 12 15 6"></polyline>
@@ -231,6 +260,17 @@ $questions = [
     let currentStep = 1;
     const totalSteps = 10;
     const answers = {};
+    let isAnimating = false;
+
+    function startDetection() {
+        if (isAnimating) return;
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('burnoutForm').style.display = 'block';
+        document.getElementById('step-indicators').style.display = 'flex';
+        document.querySelector('.progress-wrapper').style.display = 'block';
+        document.querySelector('.nav-buttons').style.display = 'flex';
+        updateUI();
+    }
 
     function selectOption(step, val) {
         // Highlight selection
@@ -285,7 +325,12 @@ $questions = [
         // Update Progress
         const percent = (currentStep / totalSteps) * 100;
         document.getElementById('progress-bar').style.width = percent + '%';
-        document.getElementById('progress-text').innerText = `Langkah ${currentStep} dari ${totalSteps}`;
+        
+        if (currentStep <= 10) {
+            document.getElementById('progress-text').innerText = `Gejala ${currentStep} dari 10`;
+        } else {
+            document.getElementById('progress-text').innerText = `Konfirmasi Akhir`;
+        }
         
         // Update Buttons
         document.getElementById('prevBtn').disabled = (currentStep === 1);
@@ -315,6 +360,11 @@ $questions = [
     }
 
     function checkNav() {
+        if (currentStep > 10) {
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('submitBtn').disabled = false;
+            return;
+        }
         const hasAnswer = !!answers[currentStep];
         document.getElementById('nextBtn').disabled = !hasAnswer;
         document.getElementById('submitBtn').disabled = !hasAnswer;

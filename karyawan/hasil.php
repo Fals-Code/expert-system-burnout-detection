@@ -6,7 +6,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
 }
 $user = $_SESSION['user'];
 $nama = $user['nama'];
-$active_menu = 'riwayat';
+$page_title = "Hasil Analisis";
+$active_menu = 'deteksi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
 // Ambil hasil deteksi dari session
