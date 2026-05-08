@@ -30,15 +30,31 @@ $history = [
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         
-        /* ── Sidebar ── */
-        .sidebar { width: 260px; background: var(--color-primary); min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; color: #fff; }
-        .sidebar-brand { padding: 2rem 1.5rem; font-size: 1.25rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-nav { padding: 1.5rem 0.75rem; }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: 10px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; }
-        .nav-item svg { width: 18px; height: 18px; }
+        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* ── Top Header ── */
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 40;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+        }
 
-        .main-wrapper { margin-left: 260px; flex: 1; padding: 2rem; }
+        .hamburger {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            padding: 0.4rem;
+            color: var(--color-primary);
+        }
+
+        @media (max-width: 768px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .main-wrapper { margin-left: 0; padding: 0; }
+            .hamburger { display: flex; }
+        }
         .page-header { margin-bottom: 2rem; }
         .page-title { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); }
         
@@ -69,7 +85,7 @@ $history = [
 
         .btn-report { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary); text-decoration: underline; }
 
-        @media (max-width: 992px) {
+        @media (max-width: 768px) {
             .content-grid { grid-template-columns: 1fr; }
             .sidebar { display: none; }
             .main-wrapper { margin-left: 0; }
@@ -78,33 +94,28 @@ $history = [
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-brand">Burnout<span>Xpert</span></div>
-        <nav class="sidebar-nav">
-            <a href="dashboard.php" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
-            </a>
-            <a href="deteksi.php" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                Mulai Deteksi
-            </a>
-            <a href="riwayat.php" class="nav-item active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-                Riwayat Hasil
-            </a>
-            <a href="profil.php" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Profil Saya
-            </a>
-        </nav>
-    </aside>
+<?php include '../includes/sidebar_karyawan.php'; ?>
 
     <div class="main-wrapper">
-        <div class="page-header">
-            <h1 class="page-title">Riwayat Deteksi Burnout</h1>
-            <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
-        </div>
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Riwayat Deteksi</div>
+            </div>
+            <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
+        </header>
+
+        <main style="padding: 0 2rem 2rem;">
+            <div class="page-header">
+                <h1 class="page-title">Riwayat Deteksi Burnout</h1>
+                <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
+            </div>
 
         <div class="content-grid">
             
@@ -168,6 +179,7 @@ $history = [
             </div>
 
         </div>
+        </main>
     </div>
 
 </body>

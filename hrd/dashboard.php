@@ -5,7 +5,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'hrd') {
     exit();
 }
 $user = $_SESSION['user'];
-$nama_hrd = $user['nama'] . " - HRD Manager";
+$nama = $user['nama'];
+$initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
+$active_menu = 'dashboard';
+$nama_hrd = $nama; // Keeping this for backward compatibility in case it's used elsewhere
 
 // Mock Data Karyawan (8 orang)
 $karyawan_list = [
@@ -38,25 +41,49 @@ $chart_data = [
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        body { background: var(--color-gray-50); }
+        body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* ── Navbar ── */
-        .navbar {
-            background: var(--color-primary); color: white; padding: 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-md);
+        /* ── Main Wrapper ── */
+        .main-wrapper {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .navbar-brand { font-size: 1.5rem; font-weight: 800; }
-        .navbar-brand span { color: var(--color-accent); }
-        .navbar-user { display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { display: block; font-size: 0.9rem; font-weight: 700; }
-        .user-role { display: block; font-size: 0.75rem; color: var(--color-accent-light); }
-        .logout-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.8rem; transition: 0.2s; }
-        .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* ── Top Header ── */
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 40;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar__left { display: flex; flex-direction: column; gap: 2px; }
+        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
+        .topbar__breadcrumb { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 500; }
+
+        .topbar__right { display: flex; align-items: center; gap: 1rem; }
+
+        .hamburger {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            padding: 0.4rem;
+            color: var(--color-primary);
+        }
+
+        /* ── Page Content ── */
+        .page-content {
+            padding: 2rem;
+            flex: 1;
+        }
 
         /* ── Container ── */
-        .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        /* ── Container ── */
+        .dashboard-container { width: 100%; margin: 0; padding: 0; }
 
         /* ── Summary Cards ── */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
@@ -107,23 +134,40 @@ $chart_data = [
         @media (max-width: 992px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .main-grid { grid-template-columns: 1fr; }
+            .main-wrapper { margin-left: 0; }
+            .hamburger { display: flex; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="navbar-brand">Burnout<span>Xpert</span></div>
-        <div class="navbar-user">
-            <div class="user-info">
-                <span class="user-name"><?= htmlspecialchars($nama_hrd) ?></span>
-                <span class="user-role">Manajer HRD</span>
-            </div>
-            <a href="../logout.php" class="logout-btn">Keluar</a>
-        </div>
-    </nav>
+<?php include '../includes/sidebar_hrd.php'; ?>
 
-    <div class="dashboard-container">
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="topbar__left">
+                    <div class="topbar__title">Dashboard Monitoring HRD</div>
+                    <div class="topbar__breadcrumb">BurnoutXpert › HRD › Dashboard</div>
+                </div>
+            </div>
+            <div class="topbar__right">
+                <div style="display:flex;align-items:center;gap:0.6rem;">
+                    <div class="topbar__name" style="font-size: 0.875rem; font-weight: 700; color: var(--color-gray-700);"><?= htmlspecialchars($nama) ?></div>
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800; border: 2px solid var(--color-accent-50);"><?= $initials ?></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="dashboard-container">
         
         <!-- Summary Cards -->
         <div class="stats-grid">
@@ -219,6 +263,8 @@ $chart_data = [
             </div>
 
         </div>
+            </div>
+        </main>
     </div>
 
     <script>

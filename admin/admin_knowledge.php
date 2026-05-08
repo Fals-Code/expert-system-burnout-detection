@@ -21,11 +21,13 @@ $gejala_list = [
     ['kode' => 'G10', 'nama' => 'Merasa Tidak Berharga', 'kategori' => 'Emosional', 'status' => 'Aktif'],
 ];
 
-// Mock Rules Data
+// Mock Rules Data (Backward Chaining Hypotheses)
 $rules = [
-    ['if' => 'G01, G02, G07, G10', 'then' => 'Burnout Tinggi'],
-    ['if' => 'G03, G04, G08', 'then' => 'Burnout Sedang'],
-    ['if' => 'G05, G06, G09', 'then' => 'Burnout Rendah'],
+    ['no' => 1, 'then' => 'Burnout Sangat Tinggi', 'if' => 'G01 AND G02 AND G03 AND G07 AND G08 AND G09'],
+    ['no' => 2, 'then' => 'Burnout Tinggi',        'if' => 'G01 AND G02 AND G05 AND G07 AND G10'],
+    ['no' => 3, 'then' => 'Burnout Sedang',        'if' => 'G01 AND G04 AND G06 AND G10'],
+    ['no' => 4, 'then' => 'Burnout Rendah',        'if' => 'G04 AND G09'],
+    ['no' => 5, 'then' => 'Normal',                'if' => 'Tidak ada rule yang terbukti'],
 ];
 ?>
 <!DOCTYPE html>
@@ -40,20 +42,20 @@ $rules = [
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
 
-        /* ── Sidebar ── */
-        .sidebar {
-            width: 260px; min-height: 100vh; background: #1E3A5F;
-            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100;
-        }
-        .sidebar-brand { padding: 2rem 1.5rem; font-size: 1.25rem; font-weight: 800; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-brand span { color: var(--color-accent); }
+        /* ── Main Wrapper ── */
+        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .sidebar-nav { flex: 1; padding: 1.5rem 0.75rem; }
-        .nav-label { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 1rem 0.75rem; }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: 10px; color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: 0.2s; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .nav-item.active { background: var(--color-accent); color: #fff; }
-        .nav-item svg { width: 18px; height: 18px; }
+        .hamburger {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            padding: 0.4rem;
+            color: var(--color-primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper { margin-left: 0; }
+            .hamburger { display: flex; }
+        }
 
         /* ── Main Content ── */
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
@@ -108,39 +110,26 @@ $rules = [
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">Burnout<span>Xpert</span></div>
-        <nav class="sidebar-nav">
-            <div class="nav-label">Main Menu</div>
-            <a href="dashboard.php" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard Admin
-            </a>
-            <a href="admin_knowledge.php" class="nav-item active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                Kelola Gejala
-            </a>
-            <a href="#" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                Kelola Aturan
-            </a>
-            <a href="#" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Kelola Pengguna
-            </a>
-            <a href="#" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-                Laporan
-            </a>
-        </nav>
-    </aside>
+<?php 
+$nama = $user['nama'];
+$initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
+include '../includes/sidebar_admin.php'; 
+?>
 
     <!-- MAIN WRAPPER -->
     <div class="main-wrapper">
         <header class="topbar">
-            <div class="topbar__title">Kelola Basis Pengetahuan</div>
-            <div style="font-size: 0.875rem; font-weight: 600; color: var(--color-gray-500);"><?= $user['nama'] ?> (Admin)</div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="topbar__title">Kelola Basis Pengetahuan</div>
+            </div>
+            <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-gray-600);"><?= $user['nama'] ?> 🛡️</div>
         </header>
 
         <main class="page-content">
@@ -187,20 +176,27 @@ $rules = [
 
             <!-- TABEL ATURAN (RULES) -->
             <div class="content-card">
-                <h3 class="card-title">Aturan Keputusan (Rules)</h3>
+                <div class="section-header" style="margin-bottom: 0.5rem;">
+                    <h3 class="card-title" style="margin-bottom:0;">Aturan Keputusan (Rules)</h3>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--color-gray-500); margin-bottom: 1.5rem;">
+                    💡 Sistem membuktikan hipotesis secara berurutan dari no. 1 (tertinggi) ke bawah menggunakan metode Backward Chaining.
+                </p>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Kondisi (IF Symptoms)</th>
-                                <th>Hasil (THEN Diagnosis)</th>
+                                <th style="width: 150px;">Urutan Pembuktian</th>
+                                <th>Hasil (Hipotesis / THEN)</th>
+                                <th>Kondisi (Premis / IF)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($rules as $r): ?>
                             <tr>
-                                <td style="font-family: monospace; color: var(--color-primary);">IF <?= $r['if'] ?></td>
-                                <td><strong>THEN <?= $r['then'] ?></strong></td>
+                                <td style="text-align: center; font-weight: 800; color: var(--color-primary);"><?= $r['no'] ?></td>
+                                <td><strong><?= $r['then'] ?></strong></td>
+                                <td style="font-family: monospace; color: var(--color-primary); font-size: 0.85rem;"><?= $r['if'] ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

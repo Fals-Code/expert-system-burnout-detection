@@ -35,26 +35,6 @@ $questions = [
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* ── Sidebar ── */
-        .sidebar {
-            width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0D1F36 0%, var(--color-primary) 60%, #2A5080 100%);
-            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 50;
-            box-shadow: 4px 0 24px rgba(14,31,54,0.18); transition: transform 0.3s ease;
-        }
-        .sidebar-brand { display: flex; align-items: center; gap: 0.75rem; padding: 1.75rem 1.5rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .sidebar-brand__icon { width: 40px; height: 40px; background: rgba(244,132,95,0.18); border: 1px solid rgba(244,132,95,0.35); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .sidebar-brand__text { font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
-        .sidebar-brand__text span { color: var(--color-accent); }
-        .sidebar-user { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,0.2); }
-        .sidebar-user__name { font-size: 0.875rem; font-weight: 700; color: #fff; }
-        .sidebar-user__role { font-size: 0.7rem; font-weight: 600; color: var(--color-accent-light); text-transform: uppercase; }
-        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: 10px; color: rgba(255,255,255,0.65); font-size: 0.875rem; font-weight: 600; text-decoration: none; }
-        .nav-item.active { background: linear-gradient(135deg, rgba(244,132,95,0.22) 0%, rgba(244,132,95,0.10) 100%); color: #fff; border: 1px solid rgba(244,132,95,0.3); }
-        .nav-item.active svg { color: var(--color-accent); }
-        .nav-item svg { width: 18px; height: 18px; }
-
         /* ── Main Wrapper ── */
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
@@ -133,56 +113,18 @@ $questions = [
 </head>
 <body>
 
-<!-- ── SIDEBAR ── -->
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-        <div class="sidebar-brand__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-            </svg>
-        </div>
-        <span class="sidebar-brand__text">Burnout<span>Xpert</span></span>
-    </div>
-
-    <div class="sidebar-user">
-        <div class="avatar"><?= $initials ?></div>
-        <div class="sidebar-user__info">
-            <div class="sidebar-user__name"><?= htmlspecialchars($nama) ?></div>
-            <div class="sidebar-user__role">Karyawan</div>
-        </div>
-    </div>
-
-    <nav class="sidebar-nav">
-        <a href="dashboard.php" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            Dashboard
-        </a>
-        <a href="deteksi.php" class="nav-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-            </svg>
-            Mulai Deteksi
-        </a>
-        <a href="riwayat.php" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/>
-            </svg>
-            Riwayat Hasil
-        </a>
-        <a href="profil.php" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-            Profil Saya
-        </a>
-    </nav>
-</aside>
+<?php include '../includes/sidebar_karyawan.php'; ?>
 
 <div class="main-wrapper">
     <header class="topbar">
-        <div class="topbar__title">Deteksi Burnout</div>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+            <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu" style="display:none; background:none; border:none; cursor:pointer; color:var(--color-primary); padding:0.4rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <div class="topbar__title">Deteksi Burnout</div>
+        </div>
         <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
     </header>
 
