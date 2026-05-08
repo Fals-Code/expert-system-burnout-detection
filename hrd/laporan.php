@@ -91,7 +91,7 @@ $laporan_divisi = [
                         <tr>
                             <td style="font-weight: 700; color: var(--color-primary);"><?= $l['divisi'] ?></td>
                             <td><?= $l['total'] ?> orang</td>
-                            <td><span class="badge-count badge-tinggi"><?= $l['tingkat'] === 'Tinggi' ? '🔥 ' : '' ?><?= $l['tinggi'] ?></span></td>
+                            <td><span class="badge-count badge-tinggi"><?= $l['tinggi'] > 0 ? : '' ?><?= $l['tinggi'] ?></span></td>
                             <td><span class="badge-count badge-sedang"><?= $l['sedang'] ?></span></td>
                             <td><span class="badge-count badge-rendah"><?= $l['rendah'] ?></span></td>
                         </tr>
