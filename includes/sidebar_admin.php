@@ -197,21 +197,14 @@
             Dashboard Admin
         </a>
 
-        <a href="admin_knowledge.php" class="nav-item <?= $active_menu === 'gejala' ? 'active' : '' ?>">
+        <a href="admin_knowledge.php" class="nav-item <?= $active_menu === 'basis_pengetahuan' ? 'active' : '' ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
-            Kelola Gejala
+            Basis Pengetahuan
         </a>
 
-        <a href="admin_knowledge.php" class="nav-item <?= $active_menu === 'aturan' ? 'active' : '' ?>">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-            Kelola Aturan
-        </a>
-
-        <a href="pengguna.php" class="nav-item <?= $active_menu === 'pengguna' ? 'active' : '' ?>">
+        <a href="kelola_pengguna.php" class="nav-item <?= $active_menu === 'pengguna' ? 'active' : '' ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
@@ -222,8 +215,16 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
             </svg>
-            Laporan
+            Laporan Global
         </a>
+
+        <a href="profil.php" class="nav-item <?= $active_menu === 'profil' ? 'active' : '' ?>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profil Saya
+        </a>
+
     </nav>
 
     <div class="sidebar-footer">

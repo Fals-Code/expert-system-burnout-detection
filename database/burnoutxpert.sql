@@ -10,6 +10,14 @@ CREATE DATABASE IF NOT EXISTS burnoutxpert_db
 
 USE burnoutxpert_db;
 
+-- ── Tabel: divisi ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS divisi (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nama        VARCHAR(100) NOT NULL UNIQUE,
+    deskripsi   TEXT         NULL,
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ── Tabel: users ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
     id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -17,15 +25,17 @@ CREATE TABLE IF NOT EXISTS users (
     email      VARCHAR(150)                  NOT NULL UNIQUE,
     password   VARCHAR(255)                  NOT NULL,       -- bcrypt hash
     role       ENUM('karyawan','hrd','admin') NOT NULL DEFAULT 'karyawan',
-    divisi     VARCHAR(100)                  NULL,
+    divisi_id  INT UNSIGNED                  NULL,
     avatar     VARCHAR(255)                  NULL,
     is_active  TINYINT(1)                    NOT NULL DEFAULT 1,
     last_login DATETIME                      NULL,
     created_at TIMESTAMP                     DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP                     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_role (role),
-    INDEX idx_email (email)
+    INDEX idx_email (email),
+    FOREIGN KEY (divisi_id) REFERENCES divisi(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- ── Tabel: gejala (basis pengetahuan – fakta) ────────────────
 CREATE TABLE IF NOT EXISTS gejala (
@@ -101,15 +111,38 @@ CREATE TABLE IF NOT EXISTS hasil_diagnosa (
     FOREIGN KEY (diagnosa_id)   REFERENCES diagnosa(id)    ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ── Tabel: notifikasi ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS notifikasi (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT UNSIGNED NOT NULL,
+    type        ENUM('info','warning','critical') NOT NULL DEFAULT 'info',
+    title       VARCHAR(200) NOT NULL,
+    message     TEXT         NOT NULL,
+    is_read     TINYINT(1)   NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_read (user_id, is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 -- ============================================================
 -- DATA AWAL (Seed)
 -- ============================================================
 
+-- Divisi
+INSERT INTO divisi (nama, deskripsi) VALUES
+    ('Engineering',    'Tim pengembangan teknis dan sistem'),
+    ('Marketing',      'Tim pemasaran dan hubungan publik'),
+    ('Finance',        'Tim keuangan dan akuntansi'),
+    ('Human Resources','Tim manajemen sumber daya manusia'),
+    ('Operations',     'Tim operasional harian');
+
 -- Users (password di-hash dengan bcrypt di aplikasi nyata)
-INSERT INTO users (nama, email, password, role, divisi) VALUES
-    ('Ahmad Fauzi',  'karyawan@burnoutxpert.com', '$2y$10$placeholder_karyawan_hash', 'karyawan', 'Engineering'),
-    ('Siti Rahayu',  'hrd@burnoutxpert.com',      '$2y$10$placeholder_hrd_hash',      'hrd',      'Human Resources'),
-    ('Budi Santoso', 'admin@burnoutxpert.com',     '$2y$10$placeholder_admin_hash',    'admin',    'IT Administration');
+INSERT INTO users (nama, email, password, role, divisi_id) VALUES
+    ('Ahmad Fauzi',  'karyawan@burnoutxpert.com', '$2y$10$placeholder_karyawan_hash', 'karyawan', 1),
+    ('Siti Rahayu',  'hrd@burnoutxpert.com',      '$2y$10$placeholder_hrd_hash',      'hrd',      4),
+    ('Budi Santoso', 'admin@burnoutxpert.com',     '$2y$10$placeholder_admin_hash',    'admin',    1);
+
 
 -- Gejala Burnout (berdasarkan MBI – Maslach Burnout Inventory)
 INSERT INTO gejala (kode, nama, kategori, bobot) VALUES

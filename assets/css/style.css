@@ -153,3 +153,22 @@ a:hover {
     outline-offset: 3px;
     border-radius: var(--radius-sm);
 }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+main, .page-content {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* ── Sticky Tables ────────────────────────────────────────── */
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+}
+
