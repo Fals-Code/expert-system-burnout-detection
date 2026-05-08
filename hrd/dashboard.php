@@ -40,6 +40,8 @@ $chart_data = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/favicon.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
@@ -86,14 +88,37 @@ $chart_data = [
         .dashboard-container { width: 100%; margin: 0; padding: 0; }
 
         /* ── Summary Cards ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-100); }
-        .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: var(--color-primary); line-height: 1; }
-        .stat-card.tinggi { border-top: 4px solid var(--color-error); }
-        .stat-card.sedang { border-top: 4px solid var(--color-warning); }
-        .stat-card.rendah { border-top: 4px solid var(--color-success); }
-        .stat-card.total { border-top: 4px solid var(--color-primary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-100);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        
+        .stat-icon {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .stat-info { display: flex; flex-direction: column; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .bg-blue { background: var(--color-primary-50); color: var(--color-primary); }
+        .bg-red { background: var(--color-error-bg); color: var(--color-error); }
+        .bg-orange { background: var(--color-warning-bg); color: #856404; }
+        .bg-green { background: var(--color-success-bg); color: var(--color-success); }
+
 
         /* ── Layout Grid ── */
         .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
@@ -124,8 +149,13 @@ $chart_data = [
         .chart-container { height: 300px; display: flex; align-items: flex-end; gap: 1.5rem; padding-top: 2rem; border-bottom: 1px solid var(--color-gray-200); position: relative; }
         .chart-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
         .bar-stack { width: 40px; display: flex; flex-direction: column-reverse; border-radius: 4px 4px 0 0; overflow: hidden; }
-        .bar-segment { width: 100%; transition: height 0.5s ease; }
+        .bar-segment { width: 100%; animation: growUp 1s ease-out forwards; transform-origin: bottom; }
         .bar-label { font-size: 0.7rem; font-weight: 700; color: var(--color-gray-500); }
+        
+        @keyframes growUp {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
         
         .legend { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
         .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); }
@@ -171,21 +201,33 @@ $chart_data = [
         
         <!-- Summary Cards -->
         <div class="stats-grid">
-            <div class="stat-card total">
-                <span class="stat-label">Total Karyawan</span>
-                <span class="stat-value">125</span>
+            <div class="stat-card">
+                <div class="stat-icon bg-blue">👥</div>
+                <div class="stat-info">
+                    <span class="stat-value">125</span>
+                    <span class="stat-label">Total Karyawan</span>
+                </div>
             </div>
-            <div class="stat-card tinggi">
-                <span class="stat-label">Burnout Tinggi</span>
-                <span class="stat-value">12</span>
+            <div class="stat-card">
+                <div class="stat-icon bg-red">🔥</div>
+                <div class="stat-info">
+                    <span class="stat-value">12</span>
+                    <span class="stat-label">Burnout Tinggi</span>
+                </div>
             </div>
-            <div class="stat-card sedang">
-                <span class="stat-label">Burnout Sedang</span>
-                <span class="stat-value">34</span>
+            <div class="stat-card">
+                <div class="stat-icon bg-orange">⚠️</div>
+                <div class="stat-info">
+                    <span class="stat-value">34</span>
+                    <span class="stat-label">Burnout Sedang</span>
+                </div>
             </div>
-            <div class="stat-card rendah">
-                <span class="stat-label">Burnout Rendah</span>
-                <span class="stat-value">79</span>
+            <div class="stat-card">
+                <div class="stat-icon bg-green">✅</div>
+                <div class="stat-info">
+                    <span class="stat-value">79</span>
+                    <span class="stat-label">Burnout Rendah</span>
+                </div>
             </div>
         </div>
 
@@ -227,7 +269,7 @@ $chart_data = [
                                         <?= $k['tingkat'] ?>
                                     </span>
                                 </td>
-                                <td><a href="#" class="btn-detail">Lihat Detail</a></td>
+                                <td><a href="detail_karyawan.php?id=<?= $k['id'] ?>" class="btn-detail">Lihat Detail</a></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

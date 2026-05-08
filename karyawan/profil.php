@@ -18,6 +18,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/favicon.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
 

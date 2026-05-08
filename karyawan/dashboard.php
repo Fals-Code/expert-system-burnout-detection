@@ -6,8 +6,14 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
 }
 $user          = $_SESSION['user'];
 $nama          = $user['nama'];
-$status_burnout = 'Burnout Sedang';
-$tanggal_deteksi = '12 April 2025';
+
+// Ambil data deteksi terakhir dari session jika ada
+$hasil_ada = isset($_SESSION['hasil_deteksi']);
+$status_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['label'] : 'Belum Ada Data';
+$tanggal_deteksi = $hasil_ada ? $_SESSION['hasil_deteksi']['tanggal'] : '-';
+$color_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['color'] : '#98AAC0';
+$bg_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['bg_light'] : '#F1F4F7';
+
 $active_menu   = 'dashboard';
 // Inisial avatar dari nama
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
@@ -22,6 +28,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/favicon.php'; ?>
     <style>
         /* ── Layout ── */
         body {
@@ -213,10 +220,10 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             font-size: 0.8rem; font-weight: 700;
         }
 
-        .status-badge--warning {
-            background: #FFF3CD;
-            color: #856404;
-            border: 1px solid #FFECAA;
+        .status-badge--dynamic {
+            background: <?= $bg_burnout ?>;
+            color: <?= $color_burnout ?>;
+            border: 1px solid <?= $color_burnout ?>40;
         }
 
         .status-badge__dot {
@@ -380,16 +387,16 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         <div class="stats-grid">
 
             <div class="stat-card">
-                <div class="stat-card__icon stat-card__icon--warning">⚠️</div>
+                <div class="stat-card__icon" style="background: <?= $bg_burnout ?>;">⚠️</div>
                 <div class="stat-card__body">
                     <div class="stat-card__label">Status Deteksi Terakhir</div>
                     <div style="margin-top:0.1rem;">
-                        <span class="status-badge status-badge--warning">
+                        <span class="status-badge status-badge--dynamic">
                             <span class="status-badge__dot"></span>
                             <?= htmlspecialchars($status_burnout) ?>
                         </span>
                     </div>
-                    <div class="stat-card__sub">Perlu perhatian dan tindak lanjut</div>
+                    <div class="stat-card__sub"><?= $hasil_ada ? 'Berdasarkan analisis terbaru' : 'Belum ada riwayat deteksi' ?></div>
                 </div>
             </div>
 
@@ -399,6 +406,15 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
                     <div class="stat-card__label">Tanggal Deteksi Terakhir</div>
                     <div class="stat-card__value"><?= htmlspecialchars($tanggal_deteksi) ?></div>
                     <div class="stat-card__sub">Deteksi rutin disarankan setiap bulan</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__icon" style="background: var(--color-primary-50); color: var(--color-primary);">📊</div>
+                <div class="stat-card__body">
+                    <div class="stat-card__label">Total Deteksi</div>
+                    <div class="stat-card__value"><?= $hasil_ada ? '1' : '0' ?></div>
+                    <div class="stat-card__sub">Asesmen yang telah diselesaikan</div>
                 </div>
             </div>
 

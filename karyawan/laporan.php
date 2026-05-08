@@ -6,10 +6,21 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
 }
 $user = $_SESSION['user'];
 $nama = $user['nama'];
-$tanggal = isset($_GET['tgl']) ? htmlspecialchars($_GET['tgl']) : "12 April 2025";
-$level = "TINGGI";
-$confidence = 78;
-$desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kelelahan emosional berat, penurunan motivasi, dan depersonalisasi.";
+
+// Ambil data deteksi dari session
+if (!isset($_SESSION['hasil_deteksi'])) {
+    header('Location: deteksi.php');
+    exit();
+}
+
+$hasil = $_SESSION['hasil_deteksi'];
+$tanggal = $hasil['tanggal'];
+$level   = $hasil['level'];
+$confidence = $hasil['confidence'];
+$desc    = $hasil['desc'];
+$rekomendasi = $hasil['rekomendasi'];
+$color   = $hasil['color'];
+$bg_light = $hasil['bg_light'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -55,10 +66,10 @@ $desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kel
 
         /* ── Result Section ── */
         .result-box {
-            background: #FFF5F5; border: 2px solid #DC3545; border-radius: 12px;
+            background: <?= $bg_light ?>; border: 2px solid <?= $color ?>; border-radius: 12px;
             padding: 2rem; margin-bottom: 3rem; text-align: center;
         }
-        .result-level { font-size: 2.5rem; font-weight: 900; color: #DC3545; margin-bottom: 0.5rem; line-height: 1; }
+        .result-level { font-size: 2.5rem; font-weight: 900; color: <?= $color ?>; margin-bottom: 0.5rem; line-height: 1; }
         .result-conf { font-size: 0.9rem; font-weight: 700; color: var(--gray); }
 
         .section-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); border-bottom: 1px solid var(--light); padding-bottom: 0.5rem; margin-bottom: 1.25rem; text-transform: uppercase; }
@@ -120,7 +131,7 @@ $desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kel
             </div>
             <div class="info-item">
                 <div class="info-label">Divisi / Posisi</div>
-                <div class="info-value">Staff Engineering</div>
+                <div class="info-value"><?= htmlspecialchars($user['divisi']) ?></div>
             </div>
             <div class="info-item">
                 <div class="info-label">ID Laporan</div>
@@ -130,7 +141,7 @@ $desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kel
 
         <!-- Hasil Deteksi -->
         <div class="result-box">
-            <div class="info-label" style="color: #DC3545;">Hasil Diagnosis Utama</div>
+            <div class="info-label" style="color: <?= $color ?>;">Hasil Diagnosis Utama</div>
             <div class="result-level">BURNOUT <?= $level ?></div>
             <div class="result-conf">Tingkat Keyakinan Sistem: <?= $confidence ?>%</div>
         </div>
@@ -142,27 +153,15 @@ $desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kel
         <!-- Rekomendasi -->
         <h2 class="section-title">Rekomendasi Tindak Lanjut</h2>
         <div class="rec-list">
+            <?php foreach ($rekomendasi as $index => $rec): ?>
             <div class="rec-item">
-                <div class="rec-bullet">1</div>
+                <div class="rec-bullet"><?= $index + 1 ?></div>
                 <div class="rec-text">
-                    <h3>Konseling Profesional</h3>
-                    <p>Sangat disarankan untuk melakukan sesi konsultasi dengan psikolog klinis untuk menangani gejala kelelahan emosional yang dialami.</p>
+                    <h3><?= htmlspecialchars($rec['judul']) ?></h3>
+                    <p><?= htmlspecialchars($rec['isi']) ?></p>
                 </div>
             </div>
-            <div class="rec-item">
-                <div class="rec-bullet">2</div>
-                <div class="rec-text">
-                    <h3>Istirahat dan Pemulihan</h3>
-                    <p>Ambil cuti terencana minimal 3-5 hari kerja untuk melakukan pemulihan energi fisik dan mental jauh dari beban pekerjaan.</p>
-                </div>
-            </div>
-            <div class="rec-item">
-                <div class="rec-bullet">3</div>
-                <div class="rec-text">
-                    <h3>Penyesuaian Beban Kerja</h3>
-                    <p>Segera diskusikan hasil laporan ini dengan Manajer atau HRD untuk merestrukturisasi tugas dan tanggung jawab sementara waktu.</p>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Penutup / Tanda Tangan -->

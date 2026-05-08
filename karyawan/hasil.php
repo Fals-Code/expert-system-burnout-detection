@@ -9,23 +9,23 @@ $nama = $user['nama'];
 $active_menu = 'riwayat';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
-// Mock Result Data (Dapat diganti dengan data dari proses_deteksi.php)
-$level = "TINGGI"; // TINGGI, SEDANG, RENDAH
-$confidence = 78;
-$label = "BURNOUT TINGGI";
-$color = "#DC3545"; // Red for High
-$bg_light = "#FFF5F5";
-$desc = "Anda menunjukkan gejala burnout tingkat tinggi yang ditandai dengan kelelahan emosional berat, penurunan motivasi, dan depersonalisasi.";
-
-if ($level == "SEDANG") {
-    $color = "#FFC107";
-    $bg_light = "#FFFBEB";
-    $label = "BURNOUT SEDANG";
-} elseif ($level == "RENDAH") {
-    $color = "#28A745";
-    $bg_light = "#F0FFF4";
-    $label = "BURNOUT RENDAH";
+// Ambil hasil deteksi dari session
+if (!isset($_SESSION['hasil_deteksi'])) {
+    header('Location: deteksi.php');
+    exit();
 }
+
+$hasil = $_SESSION['hasil_deteksi'];
+$level      = $hasil['level'];
+$confidence = $hasil['confidence'];
+$label      = $hasil['label'];
+$color      = $hasil['color'];
+$bg_light   = $hasil['bg_light'];
+$desc       = $hasil['desc'];
+$gejala_terdeteksi = $hasil['gejala_terdeteksi'];
+$rekomendasi       = $hasil['rekomendasi'];
+$tanggal_deteksi   = $hasil['tanggal'];
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -201,69 +201,41 @@ if ($level == "SEDANG") {
         <div class="symptoms-section">
             <h2 class="section-title">🔍 Gejala yang Teridentifikasi</h2>
             <div class="pill-group">
-                <div class="pill pill--red"><span class="pill-dot"></span> Kelelahan Emosional</div>
-                <div class="pill pill--red"><span class="pill-dot"></span> Sulit Berkonsentrasi</div>
-                <div class="pill pill--yellow"><span class="pill-dot"></span> Gangguan Tidur</div>
-                <div class="pill pill--yellow"><span class="pill-dot"></span> Penurunan Motivasi</div>
+                <?php if (empty($gejala_terdeteksi)): ?>
+                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala spesifik yang terdeteksi.</p>
+                <?php else: ?>
+                    <?php foreach ($gejala_terdeteksi as $g): ?>
+                        <div class="pill" style="background: <?= $bg_light ?>; color: <?= $color ?>;">
+                            <span class="pill-dot"></span> <?= htmlspecialchars($g) ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
         <h2 class="section-title">✨ Rekomendasi Penanganan</h2>
         <div class="recommendation-list">
-            <!-- Priority 1 -->
-            <div class="accordion-item active">
+            <?php foreach ($rekomendasi as $index => $rec): ?>
+            <div class="accordion-item <?= $index === 0 ? 'active' : '' ?>">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <div class="accordion-left">
-                        <span class="priority-badge">Prioritas 1</span>
-                        <div class="rec-icon" style="margin-bottom:0;">🧘</div>
-                        <h3>Konseling Psikolog</h3>
+                        <span class="priority-badge">Prioritas <?= $index + 1 ?></span>
+                        <div class="rec-icon" style="margin-bottom:0;"><?= $rec['icon'] ?></div>
+                        <h3><?= htmlspecialchars($rec['judul']) ?></h3>
                     </div>
                     <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
                 <div class="accordion-content">
                     <div class="accordion-content-inner">
-                        Sangat disarankan untuk berkonsultasi dengan profesional guna mendapatkan penanganan emosional yang tepat. Psikolog dapat membantu Anda mengurai beban pikiran dan memberikan strategi koping yang sehat.
+                        <?= htmlspecialchars($rec['isi']) ?>
                     </div>
                 </div>
             </div>
-
-            <!-- Priority 2 -->
-            <div class="accordion-item">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <div class="accordion-left">
-                        <span class="priority-badge">Prioritas 2</span>
-                        <div class="rec-icon" style="margin-bottom:0;">✈️</div>
-                        <h3>Ambil Cuti Terencana</h3>
-                    </div>
-                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-                <div class="accordion-content">
-                    <div class="accordion-content-inner">
-                        Istirahat total selama beberapa hari dapat membantu memulihkan energi fisik dan mental Anda. Gunakan waktu ini untuk aktivitas yang Anda sukai tanpa gangguan pekerjaan.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Priority 3 -->
-            <div class="accordion-item">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <div class="accordion-left">
-                        <span class="priority-badge">Prioritas 3</span>
-                        <div class="rec-icon" style="margin-bottom:0;">🤝</div>
-                        <h3>Diskusi dengan HRD</h3>
-                    </div>
-                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-                <div class="accordion-content">
-                    <div class="accordion-content-inner">
-                        Komunikasikan beban kerja Anda dengan HRD atau atasan untuk mencari solusi penyesuaian tugas atau fleksibilitas waktu kerja guna mengurangi tekanan mental.
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <div class="action-group">
-            <a href="#" class="btn-action btn-download">
+            <a href="laporan.php?tgl=<?= urlencode($tanggal_deteksi) ?>" class="btn-action btn-download" target="_blank">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
@@ -285,19 +257,19 @@ if ($level == "SEDANG") {
                     <div class="timeline-step">1</div>
                     <h4>Simpan Laporan</h4>
                     <p>Unduh hasil deteksi ini untuk referensi pribadi atau diskusi medis.</p>
-                    <a href="#" class="timeline-action-btn">Download Laporan</a>
+                    <a href="laporan.php?tgl=<?= urlencode($tanggal_deteksi) ?>" class="timeline-action-btn" target="_blank">Download Laporan</a>
                 </div>
                 <div class="timeline-item-wrap">
                     <div class="timeline-step">2</div>
                     <h4>Konseling</h4>
                     <p>Jadwalkan sesi pertama dengan psikolog untuk evaluasi lebih mendalam.</p>
-                    <button class="timeline-action-btn">Cari Psikolog</button>
+                    <button class="timeline-action-btn" onclick="alert('Fitur pencarian psikolog akan segera hadir!')">Cari Psikolog</button>
                 </div>
                 <div class="timeline-item-wrap">
                     <div class="timeline-step">3</div>
                     <h4>Follow-up</h4>
                     <p>Lakukan pemeriksaan rutin setiap 30 hari untuk memantau progres Anda.</p>
-                    <button class="timeline-action-btn">Set Pengingat</button>
+                    <button class="timeline-action-btn" onclick="alert('Pengingat telah diset untuk 30 hari ke depan.')">Set Pengingat</button>
                 </div>
             </div>
         </div>
@@ -350,8 +322,6 @@ if ($level == "SEDANG") {
 
     window.addEventListener('DOMContentLoaded', animateProgress);
 </script>
-    </main>
-</div>
 
 </body>
 </html>

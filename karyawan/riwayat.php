@@ -9,14 +9,24 @@ $nama = $user['nama'];
 $active_menu = 'riwayat';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
-// Mock History Data
+// Ambil hasil deteksi terbaru dari session jika ada
+$hasil_ada = isset($_SESSION['hasil_deteksi']);
 $history = [
-    ['tanggal' => '12 Apr 2025', 'tingkat' => 'Tinggi', 'skor' => 3, 'color' => '#DC3545'],
     ['tanggal' => '15 Mar 2025', 'tingkat' => 'Sedang', 'skor' => 2, 'color' => '#FFC107'],
     ['tanggal' => '10 Feb 2025', 'tingkat' => 'Sedang', 'skor' => 2, 'color' => '#FFC107'],
     ['tanggal' => '05 Jan 2025', 'tingkat' => 'Rendah', 'skor' => 1, 'color' => '#28A745'],
     ['tanggal' => '20 Des 2024', 'tingkat' => 'Rendah', 'skor' => 1, 'color' => '#28A745'],
 ];
+
+if ($hasil_ada) {
+    array_unshift($history, [
+        'tanggal' => $_SESSION['hasil_deteksi']['tanggal'],
+        'tingkat' => $_SESSION['hasil_deteksi']['level'],
+        'skor' => ($_SESSION['hasil_deteksi']['level'] === 'TINGGI' ? 3 : ($_SESSION['hasil_deteksi']['level'] === 'SEDANG' ? 2 : 1)),
+        'color' => $_SESSION['hasil_deteksi']['color']
+    ]);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -27,6 +37,7 @@ $history = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/favicon.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         
@@ -77,11 +88,24 @@ $history = [
         .badge-rendah { background: #F0FFF4; color: #28A745; }
 
         /* ── Trend Chart (SVG) ── */
-        .chart-container { height: 200px; width: 100%; margin-top: 1rem; position: relative; }
+        .chart-container { height: 220px; width: 100%; margin-top: 1rem; position: relative; }
         .chart-svg { width: 100%; height: 100%; overflow: visible; }
-        .chart-line { fill: none; stroke: var(--color-primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-        .chart-point { fill: #fff; stroke: var(--color-primary); stroke-width: 2; }
-        .chart-label { font-size: 10px; fill: var(--color-gray-400); font-weight: 600; }
+        .chart-line { 
+            fill: none; stroke: var(--color-primary); stroke-width: 4; 
+            stroke-linecap: round; stroke-linejoin: round; 
+            stroke-dasharray: 1000; stroke-dashoffset: 1000;
+            animation: drawLine 2s ease-out forwards;
+        }
+        .chart-area { fill: url(#chartGradient); opacity: 0; animation: fadeIn 1s ease-out 1.5s forwards; }
+        .chart-point { fill: #fff; stroke: var(--color-primary); stroke-width: 3; opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+        .chart-label { font-size: 10px; fill: var(--color-gray-400); font-weight: 700; }
+
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .btn-cta { background: var(--color-accent); color: #fff; padding: 0.7rem 1.25rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; box-shadow: var(--shadow-accent); }
+        .btn-cta:hover { transform: translateY(-2px); background: var(--color-accent-dark); }
+
 
         .btn-report { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary); text-decoration: underline; }
 
@@ -112,9 +136,15 @@ $history = [
         </header>
 
         <main style="padding: 0 2rem 2rem;">
-            <div class="page-header">
-                <h1 class="page-title">Riwayat Deteksi Burnout</h1>
-                <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 class="page-title">Riwayat Deteksi Burnout</h1>
+                    <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
+                </div>
+                <a href="deteksi.php" class="btn-cta">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    Mulai Deteksi Baru
+                </a>
             </div>
 
         <div class="content-grid">
@@ -151,6 +181,13 @@ $history = [
                 <h2 class="card-title">Tren Kondisi</h2>
                 <div class="chart-container">
                     <svg class="chart-svg" viewBox="0 0 300 150">
+                        <defs>
+                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.2" />
+                                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        
                         <!-- Grid Lines -->
                         <line x1="0" y1="130" x2="300" y2="130" stroke="#F1F4F7" stroke-width="1" />
                         <line x1="0" y1="80" x2="300" y2="80" stroke="#F1F4F7" stroke-width="1" />
@@ -160,17 +197,20 @@ $history = [
                         <text x="75" y="145" class="chart-label">Jan</text>
                         <text x="150" y="145" class="chart-label">Feb</text>
                         <text x="225" y="145" class="chart-label">Mar</text>
-                        <text x="280" y="145" class="chart-label">Apr</text>
+                        <text x="280" y="145" class="chart-label">Mei</text>
+
+                        <!-- Area Fill -->
+                        <path class="chart-area" d="M 0 130 L 0 130 L 75 130 L 150 80 L 225 80 L 300 30 V 130 H 0 Z" />
 
                         <!-- Trend Line (Skor: Rendah=130, Sedang=80, Tinggi=30) -->
                         <path class="chart-line" d="M 0 130 L 75 130 L 150 80 L 225 80 L 300 30" />
                         
                         <!-- Points -->
-                        <circle class="chart-point" cx="0" cy="130" r="4" />
-                        <circle class="chart-point" cx="75" cy="130" r="4" />
-                        <circle class="chart-point" cx="150" cy="80" r="4" />
-                        <circle class="chart-point" cx="225" cy="80" r="4" />
-                        <circle class="chart-point" cx="300" cy="30" r="4" />
+                        <circle class="chart-point" cx="0" cy="130" r="5" style="animation-delay: 0.2s;" />
+                        <circle class="chart-point" cx="75" cy="130" r="5" style="animation-delay: 0.5s;" />
+                        <circle class="chart-point" cx="150" cy="80" r="5" style="animation-delay: 1.0s;" />
+                        <circle class="chart-point" cx="225" cy="80" r="5" style="animation-delay: 1.5s;" />
+                        <circle class="chart-point" cx="300" cy="30" r="5" style="animation-delay: 2.0s;" />
                     </svg>
                 </div>
                 <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--color-gray-500); line-height: 1.5;">
