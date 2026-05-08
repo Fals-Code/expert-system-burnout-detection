@@ -144,17 +144,19 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             font-style: italic; max-width: 380px; line-height: 1.5;
         }
 
-        .welcome-card__emoji {
-            font-size: 4rem;
-            position: relative; z-index: 1;
-            animation: floatEmoji 3s ease-in-out infinite;
-            flex-shrink: 0;
-        }
+        /* ── Mood Check-in ── */
+        .mood-container { background: #fff; border-radius: 18px; padding: 1.5rem 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+        .mood-title { font-size: 1rem; font-weight: 800; color: var(--color-primary); }
+        .mood-options { display: flex; gap: 1rem; }
+        .mood-btn { width: 48px; height: 48px; border-radius: 12px; background: var(--color-gray-50); border: 1px solid var(--color-gray-200); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .mood-btn:hover { transform: translateY(-3px); border-color: var(--color-accent); background: var(--color-accent-50); }
+        .mood-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; box-shadow: var(--shadow-accent); }
 
         @keyframes floatEmoji {
             0%,100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
         }
+
 
         /* ── Stats Grid ── */
         .stats-grid {
@@ -361,6 +363,9 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             </div>
         </div>
         <div class="topbar__right">
+            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
             <div class="topbar__date" id="current-date"><?= date('l, d F Y') ?></div>
             <div style="display:flex;align-items:center;gap:0.6rem;">
                 <div class="topbar__name"><?= htmlspecialchars($nama) ?></div>
@@ -370,6 +375,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     </header>
 
     <main class="page-content">
+        <?php include '../includes/toast.php'; ?>
 
         <!-- Welcome Card -->
         <div class="welcome-card">
@@ -380,7 +386,21 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
                     "Kesehatan mental adalah fondasi produktivitas. Setiap langkah kecil menuju keseimbangan adalah pencapaian besar."
                 </div>
             </div>
-            <div class="welcome-card__emoji">🧠</div>
+            <div style="font-size: 4rem; position: relative; z-index: 1; animation: floatEmoji 3s ease-in-out infinite;">🧠</div>
+        </div>
+
+        <!-- Mood Check-in -->
+        <div class="mood-container">
+            <div class="mood-text">
+                <h3 class="mood-title">Bagaimana perasaan Anda hari ini?</h3>
+                <p style="font-size: 0.8rem; color: var(--color-gray-400); margin-top: 0.2rem;">Mood Anda membantu kami memantau kesejahteraan Anda.</p>
+            </div>
+            <div class="mood-options">
+                <button class="mood-btn" onclick="setMood('happy', this)" title="Senang">😊</button>
+                <button class="mood-btn" onclick="setMood('neutral', this)" title="Biasa saja">😐</button>
+                <button class="mood-btn" onclick="setMood('tired', this)" title="Lelah">😫</button>
+                <button class="mood-btn" onclick="setMood('stressed', this)" title="Stres">🤯</button>
+            </div>
         </div>
 
         <!-- Stats Grid -->
@@ -447,6 +467,42 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 </div>
 
 <script>
+    // Theme Toggle Logic
+    function toggleTheme() {
+        const body = document.body;
+        const theme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+        const icon = document.querySelector('#theme-toggle svg');
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+            icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+        } else {
+            icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+        }
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        updateThemeIcon();
+    }
+
+    function setMood(mood, btn) {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const messages = {
+            'happy': 'Senang mendengarnya! Pertahankan energi positif Anda. ✨',
+            'neutral': 'Terima kasih telah berbagi perasaan Anda hari ini. 🧘‍♂️',
+            'tired': 'Jangan lupa istirahat sejenak. Kesehatan Anda prioritas. ☕',
+            'stressed': 'Tetap tenang. Kami di sini untuk membantu jika Anda butuh. ❤️'
+        };
+        showToast(messages[mood], 'info');
+    }
+
     function updateDate() {
         const el = document.getElementById('current-date');
         if (!el) return;
@@ -457,6 +513,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     }
     updateDate();
 </script>
+
 
 </body>
 </html>

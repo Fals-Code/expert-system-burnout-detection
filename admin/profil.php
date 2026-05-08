@@ -52,6 +52,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     </header>
 
     <main class="page-content">
+        <?php include '../includes/toast.php'; ?>
         <div class="profile-grid">
             <aside class="profile-card">
                 <div class="avatar-large"><?= $initials ?></div>
@@ -65,7 +66,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             </aside>
 
             <section class="form-card">
-                <form onsubmit="event.preventDefault(); alert('Profil berhasil disimpan!');">
+                <form onsubmit="event.preventDefault(); showToast('Profil berhasil disimpan!', 'success');">
                     <h3 class="section-title">Informasi Akun</h3>
                     <div class="form-grid">
                         <div class="form-group">

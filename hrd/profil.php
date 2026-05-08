@@ -40,8 +40,6 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         .btn-save { background: var(--color-accent); color: #fff; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; }
         .btn-save:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
 
-        #toast { position: fixed; top: 20px; right: 20px; background: #28A745; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 700; transform: translateX(200%); transition: 0.4s; z-index: 1000; }
-        #toast.show { transform: translateX(0); }
     </style>
 </head>
 <body>
@@ -68,7 +66,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             </aside>
 
             <section class="form-card">
-                <form onsubmit="event.preventDefault(); showToast();">
+                <form onsubmit="event.preventDefault(); showToastLocal();">
                     <h3 class="section-title">Informasi Pribadi</h3>
                     <div class="form-grid">
                         <div class="form-group">
@@ -108,15 +106,13 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     </main>
 </div>
 
-<div id="toast">Profil berhasil diperbarui! ✅</div>
+    <?php include '../includes/toast.php'; ?>
+    <script>
+        function showToastLocal() {
+            showToast('Profil berhasil diperbarui!', 'success');
+        }
+    </script>
 
-<script>
-    function showToast() {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-</script>
 
 </body>
 </html>

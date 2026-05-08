@@ -87,10 +87,6 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         .btn-cancel { background: #fff; color: var(--color-gray-500); border: 1px solid var(--color-gray-200); }
         .btn-cancel:hover { background: var(--color-gray-50); color: var(--color-primary); }
 
-        /* ── Toast Notification ── */
-        #toast { position: fixed; top: 20px; right: 20px; background: #28A745; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: translateX(200%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; display: flex; align-items: center; gap: 0.75rem; }
-        #toast.show { transform: translateX(0); }
-
         @media (max-width: 768px) {
             .profile-grid { grid-template-columns: 1fr; }
             .sidebar { display: none; }
@@ -201,30 +197,15 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         </main>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        Profil berhasil diperbarui!
-    </div>
-
+    <?php include '../includes/toast.php'; ?>
     <script>
         function handleSave(e) {
             e.preventDefault();
-            
-            // Show toast
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-            
+            showToast('Profil berhasil diperbarui!', 'success');
             return false;
         }
     </script>
+
 
 </body>
 </html>

@@ -168,6 +168,11 @@ $chart_data = [
             .hamburger { display: flex; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        .chart-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
+    </style>
 </head>
 <body>
 
@@ -189,6 +194,9 @@ $chart_data = [
                 </div>
             </div>
             <div class="topbar__right">
+                <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" id="sun-icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
                 <div style="display:flex;align-items:center;gap:0.6rem;">
                     <div class="topbar__name" style="font-size: 0.875rem; font-weight: 700; color: var(--color-gray-700);"><?= htmlspecialchars($nama) ?></div>
                     <div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800; border: 2px solid var(--color-accent-50);"><?= $initials ?></div>
@@ -231,7 +239,18 @@ $chart_data = [
             </div>
         </div>
 
-        <div class="main-grid">
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3 class="card-title" style="margin-bottom: 1.5rem;">Tren Burnout Bulanan</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3 class="card-title" style="margin-bottom: 1.5rem;">Distribusi per Divisi</h3>
+                <canvas id="divisiChart"></canvas>
+            </div>
+        </div>
+
+        <div class="main-grid" style="margin-top: 1.5rem;">
             
             <!-- Daftar Karyawan -->
             <div class="content-card">
@@ -277,54 +296,95 @@ $chart_data = [
                 </div>
             </div>
 
-            <!-- Distribusi Chart -->
             <div class="content-card">
-                <h2 class="card-title" style="margin-bottom: 1rem;">Distribusi per Divisi</h2>
-                <div class="chart-container">
-                    <?php foreach ($chart_data as $div => $vals): 
-                        $max = 3; // Skala maksimal untuk visual
-                        $h1 = ($vals[0] / $max) * 100; // Tinggi
-                        $h2 = ($vals[1] / $max) * 100; // Sedang
-                        $h3 = ($vals[2] / $max) * 100; // Rendah
-                    ?>
-                    <div class="chart-bar-group">
-                        <div class="bar-stack" style="height: 150px;">
-                            <div class="bar-segment" style="height: <?= $h1 ?>%; background: var(--color-error);"></div>
-                            <div class="bar-segment" style="height: <?= $h2 ?>%; background: var(--color-warning);"></div>
-                            <div class="bar-segment" style="height: <?= $h3 ?>%; background: var(--color-success);"></div>
-                        </div>
-                        <span class="bar-label"><?= $div ?></span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="legend">
-                    <div class="legend-item"><div class="legend-color" style="background: var(--color-error);"></div> Tinggi</div>
-                    <div class="legend-item"><div class="legend-color" style="background: var(--color-warning);"></div> Sedang</div>
-                    <div class="legend-item"><div class="legend-color" style="background: var(--color-success);"></div> Rendah</div>
+                <h2 class="card-title">Quick Action</h2>
+                <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem;">
+                    <a href="laporan.php" class="filter-btn" style="text-align:center; display:block; text-decoration:none;">Download Laporan Bulanan</a>
+                    <a href="notifikasi.php" class="filter-btn" style="text-align:center; display:block; text-decoration:none;">Kirim Blast Pengingat</a>
                 </div>
             </div>
-
         </div>
             </div>
         </main>
     </div>
 
     <script>
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const body = document.body;
+            const theme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.querySelector('#theme-toggle svg');
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            } else {
+                icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+            }
+        }
+
+        // Apply theme on load
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            updateThemeIcon();
+        }
+
         function filterTable(status, btn) {
-            // Update Active Button
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            // Filter Rows
             const rows = document.querySelectorAll('#employeeTable tbody tr');
             rows.forEach(row => {
-                if (status === 'Semua' || row.getAttribute('data-status') === status) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = (status === 'Semua' || row.getAttribute('data-status') === status) ? '' : 'none';
             });
         }
+
+        // Chart.js Implementation
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
+                datasets: [{
+                    label: 'Kasus Burnout',
+                    data: [5, 8, 12, 10, 15],
+                    borderColor: '#F4845F',
+                    backgroundColor: 'rgba(244,132,95,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        const ctxDivisi = document.getElementById('divisiChart').getContext('2d');
+        new Chart(ctxDivisi, {
+            type: 'bar',
+            data: {
+                labels: ['IT', 'Mkt', 'Fin', 'HR', 'Ops'],
+                datasets: [
+                    { label: 'Tinggi', data: [2, 1, 0, 0, 0], backgroundColor: '#DC3545' },
+                    { label: 'Sedang', data: [0, 1, 1, 1, 0], backgroundColor: '#FFC107' },
+                    { label: 'Rendah', data: [0, 0, 1, 0, 1], backgroundColor: '#28A745' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true } }
+            }
+        });
     </script>
+
 </body>
 </html>

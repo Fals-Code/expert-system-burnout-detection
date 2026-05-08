@@ -14,7 +14,7 @@
 }
 
 :root {
-    /* Color tokens */
+    /* Color tokens - Light Mode (Default) */
     --color-primary:        #1E3A5F;
     --color-primary-light:  #2A5080;
     --color-primary-dark:   #142843;
@@ -27,6 +27,9 @@
     --color-accent-50:      #FEF0EB;
 
     --color-white:          #FFFFFF;
+    --color-bg-page:        #F8FAFB;
+    --color-bg-card:        #FFFFFF;
+    
     --color-gray-50:        #F8FAFB;
     --color-gray-100:       #F1F4F7;
     --color-gray-200:       #E2E8EF;
@@ -97,21 +100,33 @@
     --z-tooltip:  400;
 }
 
-html {
-    font-size: 16px;
-    scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
+
+[data-theme='dark'] {
+    --color-white:          #1A2B40;
+    --color-bg-page:        #0D1520;
+    --color-bg-card:        #142843;
+    
+    --color-gray-50:        #142843;
+    --color-gray-100:       #1E3A5F;
+    --color-gray-200:       #2E4160;
+    --color-gray-300:       #4A5E75;
+    --color-gray-400:       #6B7E96;
+    --color-gray-500:       #98AAC0;
+    --color-gray-600:       #C8D2DE;
+    --color-gray-700:       #E2E8EF;
+    --color-gray-800:       #F1F4F7;
+    --color-gray-900:       #FFFFFF;
+
+    --color-primary-50:     #1E3A5F;
+    --color-primary-100:    #2E4160;
 }
 
 body {
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--color-gray-800);
-    background-color: var(--color-white);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-bg-page);
+    color: var(--color-gray-900);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 
 img, video {
     max-width: 100%;
@@ -171,4 +186,23 @@ main, .page-content {
     background: #fff;
     z-index: 10;
 }
+
+/* ── Skeleton Loaders ─────────────────────────────────────── */
+.skeleton {
+    background: #e1e9ee;
+    background-image: linear-gradient(90deg, #e1e9ee 0px, #f2f8fc 40px, #e1e9ee 80px);
+    background-size: 600px;
+    animation: shimmer 2s infinite linear;
+    border-radius: 4px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+}
+
+.sk-text { height: 1rem; margin-bottom: 0.5rem; }
+.sk-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.sk-card { height: 100px; width: 100%; border-radius: 12px; }
+
 

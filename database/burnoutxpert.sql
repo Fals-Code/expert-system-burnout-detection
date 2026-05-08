@@ -124,6 +124,35 @@ CREATE TABLE IF NOT EXISTS notifikasi (
     INDEX idx_user_read (user_id, is_read)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ── Tabel: audit_logs ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT UNSIGNED NOT NULL,
+    action      VARCHAR(100) NOT NULL,  -- e.g., 'update_knowledge', 'delete_user'
+    entity      VARCHAR(50)  NOT NULL,  -- e.g., 'gejala', 'aturan'
+    deskripsi   TEXT         NOT NULL,
+    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Tabel: settings ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS settings (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    setting_key    VARCHAR(50) NOT NULL UNIQUE,
+    setting_value  TEXT        NULL,
+    deskripsi      VARCHAR(255) NULL,
+    updated_at     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Tabel: password_resets ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS password_resets (
+    email      VARCHAR(150) NOT NULL,
+    token      VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (email, token)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 
 -- ============================================================
 -- DATA AWAL (Seed)
@@ -177,3 +206,15 @@ INSERT INTO aturan (kode, diagnosa_id, cf_pakar) VALUES
     ('R004', 2, 0.80),
     ('R005', 3, 0.90),
     ('R006', 3, 0.95);
+
+-- Pengaturan Global
+INSERT INTO settings (setting_key, setting_value, deskripsi) VALUES
+    ('app_name',         'BurnoutXpert',            'Nama aplikasi utama'),
+    ('maintenance_mode', '0',                       'Status perbaikan sistem (0=Aktif, 1=Maintenance)'),
+    ('alert_threshold',   '0.85',                    'Ambang batas Certainty Factor untuk notifikasi kritis'),
+    ('max_daily_test',    '3',                       'Batas maksimal deteksi harian per karyawan');
+
+-- Audit Log Awal
+INSERT INTO audit_logs (user_id, action, entity, deskripsi) VALUES
+    (3, 'SYSTEM_INIT', 'database', 'Inisialisasi skema database sistem pakar v2.0');
+

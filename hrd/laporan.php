@@ -64,13 +64,24 @@ $laporan_divisi = [
 <div class="main-wrapper">
     <header class="topbar">
         <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Laporan Burnout Per Divisi</div>
-        <button class="btn-print" onclick="window.print()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            Cetak Laporan
-        </button>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <button class="btn-print" style="background:#28A745;" onclick="showToast('Ekspor Excel sedang disiapkan...', 'info')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Excel
+            </button>
+            <button class="btn-print" onclick="window.print()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Cetak PDF
+            </button>
+        </div>
     </header>
 
     <main class="page-content">
+        <?php include '../includes/toast.php'; ?>
+
         <div class="content-card">
             <h2 class="card-title">Rekapitulasi Deteksi - Mei 2026</h2>
             <p style="color: var(--color-gray-500); font-size: 0.9rem; margin-bottom: 2rem;">Laporan ini merangkum tingkat burnout karyawan di setiap divisi untuk periode berjalan.</p>
