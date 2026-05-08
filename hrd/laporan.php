@@ -45,14 +45,15 @@ $laporan_divisi = [
         .btn-print:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
 
         @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-
+            .main-wrapper { margin-left: 0 !important; }
         }
 
         @media (max-width: 768px) {
-
-            .topbar__actions { width: 100%; display: flex; gap: 0.5rem; }
-            .topbar__actions .btn-print { flex: 1; padding: 0.6rem; font-size: 0.8rem; }
+            .page-content { padding: 1rem; }
+            .content-card { padding: 1.25rem; }
+            .topbar__actions { width: 100%; display: flex; gap: 0.5rem; justify-content: space-between; }
+            .btn-print { flex: 1; padding: 0.6rem; font-size: 0.8rem; justify-content: center; }
+            th, td { padding: 0.75rem 0.5rem; font-size: 0.85rem; }
         }
 
         @media print {

@@ -82,13 +82,15 @@ if ($hasil_ada) {
         .btn-report { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary); text-decoration: underline; }
 
         @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
+            .main-wrapper { margin-left: 0 !important; }
             .content-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .page-header { flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
             .btn-cta { width: 100%; justify-content: center; }
-            .sidebar { display: none; }
+            .timeline { padding-left: 1.5rem; }
+            .timeline-content { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .timeline-content > div:last-child { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-gray-50); padding-top: 0.5rem; }
         }
     </style>
 </head>

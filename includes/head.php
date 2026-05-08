@@ -12,6 +12,16 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERV
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/style.css">
 <?php include $base_path . 'includes/favicon.php'; ?>
+<script>
+    // Immediate Theme Application (Prevent FOUC)
+    (function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.body && document.body.setAttribute('data-theme', 'dark');
+        }
+    })();
+</script>
 
 <script>
     // Global Sidebar Toggle for Mobile

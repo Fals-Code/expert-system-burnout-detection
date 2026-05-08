@@ -35,11 +35,14 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         .btn-save:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
 
         @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
+            .main-wrapper { margin-left: 0 !important; }
             .profile-grid { grid-template-columns: 1fr; }
         }
-        @media (max-width: 576px) {
-            .form-grid { grid-template-columns: 1fr; }
+        @media (max-width: 768px) {
+            .page-content { padding: 1rem; }
+            .profile-card { padding: 2rem 1rem; }
+            .form-card { padding: 1.5rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
         }
     </style>
 </head>

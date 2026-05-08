@@ -78,7 +78,14 @@ elseif ($k['tingkat'] === 'Rendah') { $status_color = '#10B981'; $status_bg = '#
 
         @media (max-width: 992px) {
             .detail-grid { grid-template-columns: 1fr; }
-            .main-wrapper { margin-left: 0; }
+            .main-wrapper { margin-left: 0 !important; }
+        }
+        @media (max-width: 768px) {
+            .page-content { padding: 1rem; }
+            .card-profile { padding: 1.5rem; }
+            .content-card { padding: 1.5rem; }
+            .btn-group { gap: 0.75rem; }
+            .btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>

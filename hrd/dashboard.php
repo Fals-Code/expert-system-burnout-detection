@@ -125,7 +125,15 @@ $chart_data = [
         }
         @media (max-width: 992px) {
             .main-grid { grid-template-columns: 1fr; }
-            .main-wrapper { margin-left: 0; }
+            .main-wrapper { margin-left: 0 !important; }
+        }
+        @media (max-width: 768px) {
+            .page-content { padding: 1rem; }
+            .stats-grid { gap: 1rem; }
+            .stat-card { padding: 1rem; }
+            .stat-value { font-size: 1.25rem; }
+            .charts-grid { margin-top: 1rem; gap: 1rem; }
+            .chart-card { height: 300px; }
         }
         @media (max-width: 576px) {
             .stats-grid { grid-template-columns: 1fr; }

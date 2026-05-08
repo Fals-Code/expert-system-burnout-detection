@@ -137,13 +137,13 @@ $questions = [
             .main-wrapper { margin-left: 0; }
         }
         @media (max-width: 768px) {
-            .wizard-container { margin: 1.5rem auto; }
-            .question-card { padding: 0; min-height: 400px; }
-            .step { padding: 2rem 1.5rem; }
-            .question-text { font-size: 1.25rem; }
-            .options-group { flex-direction: column; width: 100%; }
-            .option-btn { width: 100%; min-height: 56px; padding: 1rem; }
-            .indicator-dot { width: 8px; height: 8px; gap: 0.4rem; }
+            .wizard-container { margin: 1rem auto; padding: 0 1rem; }
+            .question-card { min-height: 380px; }
+            .step { padding: 1.5rem 1rem; }
+            .question-text { font-size: 1.2rem; margin-bottom: 2rem; }
+            .options-group { flex-direction: column; width: 100%; gap: 0.75rem; }
+            .option-btn { width: 100%; min-height: 60px; padding: 1rem; font-size: 1rem; }
+            .indicator-dot { width: 7px; height: 7px; }
         }
     </style>
 </head>
@@ -258,7 +258,7 @@ $questions = [
 
 <script>
     let currentStep = 1;
-    const totalSteps = 10;
+    const totalSteps = 11;
     const answers = {};
     let isAnimating = false;
 

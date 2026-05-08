@@ -238,12 +238,16 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             .main-wrapper { margin-left: 0; }
         }
         @media (max-width: 768px) {
-            .page-content { padding: 1.25rem; }
+            .page-content { padding: 1rem; }
             .welcome-card { padding: 1.5rem; flex-direction: column; text-align: center; }
             .welcome-card__name { font-size: 1.3rem; }
-            .cta-card { flex-direction: column; align-items: flex-start; }
+            .welcome-card__quote { margin: 0 auto; }
+            .mood-container { padding: 1rem; flex-direction: column; align-items: center; text-align: center; }
+            .mood-options { width: 100%; justify-content: center; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .cta-card { flex-direction: column; align-items: center; text-align: center; padding: 1.5rem; }
+            .cta-card__desc { margin-bottom: 1rem; }
             .btn-detect { width: 100%; justify-content: center; }
-
         }
     </style>
 </head>

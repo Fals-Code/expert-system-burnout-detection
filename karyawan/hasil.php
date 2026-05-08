@@ -125,16 +125,24 @@ $tanggal_deteksi   = $hasil['tanggal'];
         .btn-back:hover { background: var(--color-gray-50); border-color: var(--color-gray-300); }
 
         @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-            .timeline-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .main-wrapper { margin-left: 0 !important; }
+            .timeline-grid { grid-template-columns: 1fr; gap: 2rem; }
             .timeline-grid::before { display: none; }
         }
 
         @media (max-width: 768px) {
-            .main-result-card { grid-template-columns: 1fr; padding: 2rem; text-align: center; }
+            .result-container { margin: 1rem auto; padding: 0 1rem; }
+            .main-result-card { grid-template-columns: 1fr; padding: 2rem 1.5rem; text-align: center; gap: 1.5rem; }
             .main-result-card::before { width: 100%; height: 6px; top: 0; left: 0; }
-            .circular-progress { margin: 0 auto; }
-            .action-group { flex-direction: column; }
+            .level-label { font-size: 2rem; }
+            .circular-progress { margin: 0 auto; width: 150px; height: 150px; }
+            .percent { font-size: 1.75rem !important; }
+            .accordion-header { padding: 1.25rem; }
+            .accordion-left { gap: 0.75rem; }
+            .accordion-header h3 { font-size: 0.95rem; }
+            .accordion-content-inner { padding: 1.25rem 1.25rem 1.25rem 1.5rem; }
+            .next-steps-timeline { padding: 2.5rem 1.5rem; margin-top: 3rem; }
+            .action-group { flex-direction: column; gap: 0.75rem; }
             .btn-action { width: 100%; justify-content: center; }
         }
     </style>

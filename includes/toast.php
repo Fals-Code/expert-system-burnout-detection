@@ -27,7 +27,7 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         border-left: 5px solid var(--color-primary);
         animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        transform: translateX(120%);
+        opacity: 0;
     }
 
     .toast.success { border-left-color: var(--color-success); }
@@ -39,8 +39,37 @@
     .toast-content { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--color-gray-800); }
     .toast-close { cursor: pointer; color: var(--color-gray-400); font-size: 1.2rem; }
 
-    @keyframes toastIn { to { transform: translateX(0); } }
-    @keyframes toastOut { to { transform: translateX(150%); opacity: 0; } }
+    @keyframes toastIn { 
+        from { transform: translateX(100px) translateY(0); opacity: 0; } 
+        to { transform: translateX(0) translateY(0); opacity: 1; } 
+    }
+    @keyframes toastOut { 
+        from { transform: translateX(0); opacity: 1; } 
+        to { transform: translateX(100px); opacity: 0; } 
+    }
+
+    @media (max-width: 576px) {
+        .toast-container {
+            bottom: 1.5rem;
+            right: 1.25rem;
+            left: 1.25rem;
+            width: auto;
+        }
+        .toast {
+            min-width: 0;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        @keyframes toastIn { 
+            from { transform: translateY(50px); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+        @keyframes toastOut { 
+            from { transform: translateY(0); opacity: 1; } 
+            to { transform: translateY(50px); opacity: 0; } 
+        }
+    }
 </style>
 
 <div class="toast-container" id="toastContainer"></div>

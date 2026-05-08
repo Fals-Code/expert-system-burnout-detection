@@ -102,6 +102,76 @@
     --z-tooltip:  400;
 }
 
+/* ── Dark Mode Variables ─────────────────────────────────── */
+[data-theme='dark'] {
+    --color-primary:        #94A3B8;
+    --color-primary-light:  #CBD5E1;
+    --color-primary-dark:   #F8FAFC;
+    --color-primary-50:     #1E293B;
+    --color-primary-100:    #334155;
+
+    --color-white:          #0F172A;
+    --color-bg-page:        #020617;
+    --color-bg-card:        #1E293B;
+    
+    --color-gray-50:        #1E293B;
+    --color-gray-100:       #334155;
+    --color-gray-200:       #475569;
+    --color-gray-300:       #64748B;
+    --color-gray-400:       #94A3B8;
+    --color-gray-500:       #CBD5E1;
+    --color-gray-600:       #E2E8F0;
+    --color-gray-700:       #F1F5F9;
+    --color-gray-800:       #F8FAFC;
+    --color-gray-900:       #FFFFFF;
+
+    --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md:   0 4px 12px rgba(0,0,0,0.4);
+    --shadow-lg:   0 10px 30px rgba(0,0,0,0.5);
+    --shadow-xl:   0 20px 50px rgba(0,0,0,0.6);
+}
+
+/* ── Global Transitions ──────────────────────────────────── */
+body {
+    background-color: var(--color-bg-page);
+    color: var(--color-gray-800);
+    transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.page-fade-in {
+    animation: fadeInPage 0.4s ease-out;
+}
+
+@keyframes fadeInPage {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Skeleton Loaders ─────────────────────────────────────── */
+.skeleton {
+    background: var(--color-gray-100);
+    background-image: linear-gradient(
+        90deg, 
+        var(--color-gray-100) 0px, 
+        var(--color-gray-200) 40px, 
+        var(--color-gray-100) 80px
+    );
+    background-size: 600px;
+    animation: shimmer 2s infinite linear;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+@keyframes shimmer {
+    0% { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+}
+
+.sk-text { height: 1rem; width: 100%; margin-bottom: 0.5rem; }
+.sk-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.sk-card { height: 200px; width: 100%; border-radius: var(--radius-lg); }
+
+
 /* ── Custom Modals ────────────────────────────────────────── */
 .modal-overlay {
     position: fixed;
@@ -302,7 +372,6 @@
     transform: scale(1.05);
 }
 
-
 /* ── Topbar Notifications ── */
 .topbar__notif {
     position: relative;
@@ -329,6 +398,44 @@
     color: var(--color-primary);
     border-color: var(--color-primary-light);
     box-shadow: var(--shadow-sm);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-800);
+    transition: all var(--transition-base);
+    background: var(--color-bg-card);
+}
+
+.form-input:hover {
+    border-color: var(--color-gray-300);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-50);
+}
+
+.form-input::placeholder {
+    color: var(--color-gray-400);
+}
+
+/* ── Checkbox / Radio Micro-interactions ── */
+input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--color-primary);
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+input[type="checkbox"]:hover, input[type="radio"]:hover {
+    transform: scale(1.1);
 }
 
 .notif-badge {
@@ -469,25 +576,51 @@
 
 @media (max-width: 576px) {
     .notif-dropdown {
-        width: 280px;
-        right: -80px;
+        width: calc(100vw - 2rem);
+        right: -60px;
+        position: fixed;
+        top: 70px;
+        left: 1rem;
+        right: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
     }
 }
 
 @media (max-width: 768px) {
     .topbar {
-        padding: 0.75rem 1.25rem;
+        padding: 0.75rem 1rem;
     }
     .topbar__breadcrumb, 
     .topbar__date, 
     .topbar__user-info {
-        display: none;
+        display: none !important;
     }
     .topbar__user {
         border-left: none;
         padding-left: 0;
     }
+    .page-content {
+        padding: 1.25rem 1rem !important;
+    }
 }
+
+/* ── Responsive Utilities ── */
+.overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.w-full { width: 100%; }
+.max-w-full { max-width: 100%; }
+.flex-wrap { flex-wrap: wrap; }
+
 
 
 

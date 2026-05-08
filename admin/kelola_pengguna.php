@@ -82,8 +82,29 @@ $users = [
                 </button>
             </div>
 
-            <div style="overflow-x: auto;">
-                <table>
+            <div style="overflow-x: auto; min-height: 200px; position: relative;">
+                <!-- Skeleton Loader -->
+                <div id="tableSkeleton" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                    <div class="skeleton sk-text" style="height: 40px;"></div>
+                    <div class="skeleton sk-text" style="height: 60px;"></div>
+                    <div class="skeleton sk-text" style="height: 60px;"></div>
+                    <div class="skeleton sk-text" style="height: 60px;"></div>
+                </div>
+
+                <!-- Empty State (Hidden by default) -->
+                <?php if (empty($users)): ?>
+                <div id="emptyState" style="display: none; text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">👥</div>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem;">Belum Ada Pengguna</h3>
+                    <p style="color: var(--color-gray-500); font-size: 0.9rem; margin-bottom: 1.5rem;">Sistem saat ini belum memiliki data pengguna yang terdaftar.</p>
+                    <button class="btn-add" onclick="openModal('userModal')" style="margin: 0 auto;">
+                        Tambah User Pertama
+                    </button>
+                </div>
+                <?php endif; ?>
+
+                <!-- Data Table -->
+                <table id="dataTable" style="display: none;">
                     <thead>
                         <tr>
                             <th>Nama</th>
@@ -166,6 +187,26 @@ $users = [
                 event.target.style.display = 'none';
             }
         }
+
+        // Simulate Data Loading for Skeleton effect
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(function() {
+                const skeleton = document.getElementById('tableSkeleton');
+                const table = document.getElementById('dataTable');
+                const emptyState = document.getElementById('emptyState');
+                const hasData = <?= empty($users) ? 'false' : 'true' ?>;
+                
+                if (skeleton) skeleton.style.display = 'none';
+                
+                if (hasData && table) {
+                    table.style.display = 'table';
+                    table.style.animation = 'fadeInPage 0.4s ease-out';
+                } else if (!hasData && emptyState) {
+                    emptyState.style.display = 'block';
+                    emptyState.style.animation = 'fadeInPage 0.4s ease-out';
+                }
+            }, 800); // 800ms artificial delay for demonstration
+        });
     </script>
 </body>
 </html>
