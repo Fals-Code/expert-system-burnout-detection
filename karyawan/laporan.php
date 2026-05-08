@@ -5,7 +5,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     exit();
 }
 $user = $_SESSION['user'];
-$nama = "Budi Santoso";
+$nama = $user['nama'];
 $tanggal = isset($_GET['tgl']) ? htmlspecialchars($_GET['tgl']) : "12 April 2025";
 $level = "TINGGI";
 $confidence = 78;

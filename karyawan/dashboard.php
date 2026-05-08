@@ -354,7 +354,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             </div>
         </div>
         <div class="topbar__right">
-            <div class="topbar__date" id="current-date">Kamis, 8 Mei 2026</div>
+            <div class="topbar__date" id="current-date"><?= date('l, d F Y') ?></div>
             <div style="display:flex;align-items:center;gap:0.6rem;">
                 <div class="topbar__name"><?= htmlspecialchars($nama) ?></div>
                 <div class="topbar__avatar" title="<?= htmlspecialchars($nama) ?>"><?= htmlspecialchars($initials) ?></div>

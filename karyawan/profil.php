@@ -5,9 +5,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     exit();
 }
 $user = $_SESSION['user'];
-$nama = "Budi Santoso"; // As requested
+$nama = $user['nama'];
 $active_menu = 'profil';
-$initials = "BS";
+$initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -127,7 +127,7 @@ $initials = "BS";
                     <button class="btn-change-photo">Ganti Foto</button>
                 </div>
                 <h1 class="profile-name"><?= $nama ?></h1>
-                <p class="profile-title">Staff IT - Teknologi Informasi</p>
+                <p class="profile-title">Software Engineer - Engineering</p>
                 <span class="status-badge">Burnout Tinggi</span>
                 
                 <div class="stats-row">
@@ -149,11 +149,11 @@ $initials = "BS";
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Nama Lengkap</label>
-                            <input type="text" class="form-input" value="Budi Santoso">
+                            <input type="text" class="form-input" value="<?= htmlspecialchars($nama) ?>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Alamat Email</label>
-                            <input type="email" class="form-input" value="budi.santoso@example.com">
+                            <input type="email" class="form-input" value="<?= htmlspecialchars($user['email']) ?>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">No. Telepon</label>
@@ -161,11 +161,11 @@ $initials = "BS";
                         </div>
                         <div class="form-group">
                             <label class="form-label">Divisi</label>
-                            <input type="text" class="form-input" value="Teknologi Informasi" disabled>
+                            <input type="text" class="form-input" value="<?= htmlspecialchars($user['divisi']) ?>" disabled>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Jabatan</label>
-                            <input type="text" class="form-input" value="Staff IT" disabled>
+                            <input type="text" class="form-input" value="Software Engineer" disabled>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tanggal Bergabung</label>

@@ -5,7 +5,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     exit();
 }
 $user = $_SESSION['user'];
-$nama = "Budi Santoso"; // As requested for this mock page
+$nama = $user['nama'];
 $active_menu = 'riwayat';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
