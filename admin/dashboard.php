@@ -12,13 +12,8 @@ $active_menu = 'dashboard';
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
@@ -29,27 +24,6 @@ $active_menu = 'dashboard';
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-        }
-
-        /* ── Top Header ── */
-        .topbar {
-            background: #fff;
-            border-bottom: 1px solid var(--color-gray-200);
-            padding: 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 40;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .topbar__left { display: flex; flex-direction: column; gap: 2px; }
-        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
-        .topbar__breadcrumb { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 500; }
-
-        .hamburger {
-            display: none;
-            background: none; border: none; cursor: pointer;
-            padding: 0.4rem;
-            color: var(--color-primary);
         }
 
         /* ── Page Content ── */
@@ -109,35 +83,16 @@ $active_menu = 'dashboard';
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .actions-grid { grid-template-columns: 1fr; }
         }
-        @media (max-width: 768px) {
-            .main-wrapper { margin-left: 0; }
-            .hamburger { display: flex; }
-            .stats-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
 
     <div class="main-wrapper">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <line x1="3" y1="12" x2="21" y2="12"/>
-                        <line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <div class="topbar__left">
-                    <div class="topbar__title">Dashboard Admin</div>
-                    <div class="topbar__breadcrumb">BurnoutXpert › Admin › Dashboard</div>
-                </div>
-            </div>
-            <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-gray-600);">
-                <?= htmlspecialchars($user['nama']) ?> 🛡️
-            </div>
-                   <h2 class="action-title">Statistik Sistem</h2>
+        <?php include '../includes/topbar.php'; ?>
+
+        <main class="page-content">
+            <h2 class="action-title">Statistik Sistem</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon bg-blue">
@@ -198,8 +153,6 @@ $active_menu = 'dashboard';
                     <span class="action-card__icon">⚙️</span>
                     <span class="action-card__name">Pengaturan Profil</span>
                     <span class="action-card__desc">Update informasi akun administrator Anda.</span>
-                </a>
-            </div>i pengguna.</span>
                 </a>
             </div>
         </main>

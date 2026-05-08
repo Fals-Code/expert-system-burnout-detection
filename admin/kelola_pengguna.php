@@ -19,23 +19,18 @@ $users = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Pengguna – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+
         .page-content { padding: 2rem; flex: 1; }
 
         .card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
         
-        .btn-add { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-add { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 1rem; border-bottom: 2px solid var(--color-gray-50); color: var(--color-gray-400); font-size: 0.8rem; text-transform: uppercase; }
@@ -50,22 +45,38 @@ $users = [
         .btn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--color-gray-200); background: #fff; transition: 0.2s; }
         .btn-edit:hover { background: var(--color-primary-50); color: var(--color-primary); border-color: var(--color-primary); }
         .btn-delete:hover { background: var(--color-error-bg); color: var(--color-error); border-color: var(--color-error); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: #fff; border-radius: 24px; width: 100%; max-width: 500px; padding: 2.5rem; box-shadow: var(--shadow-xl); position: relative; animation: modalSlideUp 0.3s ease; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-gray-400); }
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid var(--color-gray-200); outline: none; transition: 0.3s; font-family: inherit; }
+        .form-input:focus { border-color: var(--color-primary); }
+        .btn-submit { width: 100%; background: var(--color-primary); color: #fff; padding: 0.75rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; margin-top: 1rem; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Manajemen Pengguna</div>
-        <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
-    </header>
+    <?php 
+        $page_title = "Manajemen Pengguna";
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="card">
             <div class="card-header">
                 <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary);">Daftar Pengguna Sistem</h2>
-                <button class="btn-add" onclick="alert('Fitur tambah user akan dihubungkan ke backend database.')">
+                <button class="btn-add" onclick="openModal('userModal')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Tambah User
                 </button>
@@ -91,10 +102,10 @@ $users = [
                             <td><?= $u['divisi'] ?></td>
                             <td>
                                 <div class="actions">
-                                    <button class="btn-icon btn-edit" title="Edit User">
+                                    <button class="btn-icon btn-edit" title="Edit User" onclick="openModal('userModal')">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </button>
-                                    <button class="btn-icon btn-delete" title="Hapus User" onclick="confirm('Hapus pengguna ini?')">
+                                    <button class="btn-icon btn-delete" title="Hapus User" onclick="if(confirm('Hapus pengguna ini?')) alert('User berhasil dihapus (Mock)')">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                     </button>
                                 </div>
@@ -107,5 +118,54 @@ $users = [
         </div>
     </main>
 </div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Manajemen Pengguna</h3>
+            <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+        </div>
+        <form onsubmit="event.preventDefault(); alert('Data berhasil disimpan (Mock)'); closeModal('userModal');">
+            <div class="form-group">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" class="form-input" placeholder="Masukkan nama..." required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" placeholder="contoh@burnoutxpert.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                <select class="form-input">
+                    <option value="karyawan">Karyawan</option>
+                    <option value="hrd">HRD</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Divisi</label>
+                <input type="text" class="form-input" placeholder="Masukkan divisi...">
+            </div>
+            <button type="submit" class="btn-submit">Simpan Data</button>
+        </form>
+    </div>
+</div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

@@ -34,17 +34,11 @@ elseif ($k['tingkat'] === 'Rendah') { $status_color = '#10B981'; $status_bg = '#
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Karyawan – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
         .page-content { padding: 2rem; flex: 1; }
 
         .detail-grid { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
@@ -93,16 +87,10 @@ elseif ($k['tingkat'] === 'Rendah') { $status_color = '#10B981'; $status_bg = '#
 <?php include '../includes/sidebar_hrd.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-            <a href="dashboard.php" style="color: var(--color-gray-400);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
-            <div style="display:flex; flex-direction:column;">
-                <div style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Detail Monitoring Karyawan</div>
-                <div style="font-size: 0.75rem; color: var(--color-gray-400); font-weight: 600;">Profil / <?= $k['nama'] ?></div>
-            </div>
-        </div>
-        <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
-    </header>
+    <?php 
+        $page_title = "Detail Karyawan";
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="detail-grid">

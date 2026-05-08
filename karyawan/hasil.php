@@ -30,21 +30,13 @@ $tanggal_deteksi   = $hasil['tanggal'];
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Diagnosis – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
 
         /* ── Main Wrapper ── */
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-        /* ── Top Bar ── */
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
-        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
 
         /* ── Result Content ── */
         .result-container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; width: 100%; }
@@ -83,8 +75,6 @@ $tanggal_deteksi   = $hasil['tanggal'];
         .pill-group { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
         .pill { padding: 0.6rem 1.25rem; border-radius: 99px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.6rem; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05); transition: 0.2s; }
         .pill:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .pill--red { background: #FFF5F5; color: #DC3545; }
-        .pill--yellow { background: #FFFBEB; color: #D97706; }
         .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
         /* ── Tooltip ── */
@@ -134,14 +124,12 @@ $tanggal_deteksi   = $hasil['tanggal'];
         .btn-back:hover { background: var(--color-gray-50); border-color: var(--color-gray-300); }
 
         @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
             .timeline-grid { grid-template-columns: 1fr; gap: 3rem; }
             .timeline-grid::before { display: none; }
         }
 
         @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-wrapper { margin-left: 0; }
-            .hamburger { display: flex; }
             .main-result-card { grid-template-columns: 1fr; padding: 2rem; text-align: center; }
             .main-result-card::before { width: 100%; height: 6px; top: 0; left: 0; }
             .circular-progress { margin: 0 auto; }
@@ -155,17 +143,7 @@ $tanggal_deteksi   = $hasil['tanggal'];
 <?php include '../includes/sidebar_karyawan.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-            <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-            <div class="topbar__title">Hasil Diagnosis</div>
-        </div>
-        <div style="font-size: 0.875rem; color: var(--color-gray-500);">Laporan Medis #BX-<?= date('Ymd') ?></div>
-    </header>
+    <?php include '../includes/topbar.php'; ?>
 
     <main class="result-container">
         <div class="result-header">

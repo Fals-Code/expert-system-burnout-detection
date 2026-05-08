@@ -24,17 +24,12 @@ $karyawan_list = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Karyawan – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+
         .page-content { padding: 2rem; flex: 1; }
 
         .content-card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
@@ -57,6 +52,12 @@ $karyawan_list = [
         .badge--rendah { background: #F0FFF4; color: #10B981; }
 
         .btn-detail { color: var(--color-primary); font-weight: 700; text-decoration: underline; font-size: 0.85rem; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .search-box { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -64,10 +65,10 @@ $karyawan_list = [
 <?php include '../includes/sidebar_hrd.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Data Karyawan</div>
-        <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
-    </header>
+    <?php 
+        $page_title = "Data Karyawan";
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="content-card">

@@ -28,16 +28,11 @@ $distribusi_divisi = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Global – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
         .page-content { padding: 2rem; flex: 1; }
 
         .card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
@@ -54,19 +49,31 @@ $distribusi_divisi = [
         .bar-inner { height: 100%; border-radius: 99px; }
 
         .btn-export { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
+            .grid-stats { grid-template-columns: 1fr; }
+            .btn-export span { display: none; }
+        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Laporan Statistik Global</div>
-        <button class="btn-export" onclick="window.print()">
+    <?php 
+        $page_title = "Statistik Global";
+        ob_start(); ?>
+        <button class="btn-export" onclick="window.print()" style="background:var(--color-primary); color:#fff; border:none; padding:0.6rem 1.25rem; border-radius:10px; font-weight:700; display:flex; align-items:center; gap:0.6rem; cursor:pointer; font-size:0.875rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Export Laporan
+            <span>Export Laporan</span>
         </button>
-    </header>
+        <?php 
+        $topbar_extra = ob_get_clean();
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="grid-stats">

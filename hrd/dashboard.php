@@ -34,14 +34,8 @@ $chart_data = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard HRD – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
@@ -54,28 +48,7 @@ $chart_data = [
             min-height: 100vh;
         }
 
-        /* ── Top Header ── */
-        .topbar {
-            background: #fff;
-            border-bottom: 1px solid var(--color-gray-200);
-            padding: 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 40;
-            box-shadow: var(--shadow-sm);
-        }
 
-        .topbar__left { display: flex; flex-direction: column; gap: 2px; }
-        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
-        .topbar__breadcrumb { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 500; }
-
-        .topbar__right { display: flex; align-items: center; gap: 1rem; }
-
-        .hamburger {
-            display: none;
-            background: none; border: none; cursor: pointer;
-            padding: 0.4rem;
-            color: var(--color-primary);
-        }
 
         /* ── Page Content ── */
         .page-content {
@@ -83,8 +56,6 @@ $chart_data = [
             flex: 1;
         }
 
-        /* ── Container ── */
-        /* ── Container ── */
         .dashboard-container { width: 100%; margin: 0; padding: 0; }
 
         /* ── Summary Cards ── */
@@ -145,64 +116,29 @@ $chart_data = [
         
         .btn-detail { color: var(--color-primary); font-weight: 700; font-size: 0.8rem; text-decoration: underline; }
 
-        /* ── Chart Section ── */
-        .chart-container { height: 300px; display: flex; align-items: flex-end; gap: 1.5rem; padding-top: 2rem; border-bottom: 1px solid var(--color-gray-200); position: relative; }
-        .chart-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-        .bar-stack { width: 40px; display: flex; flex-direction: column-reverse; border-radius: 4px 4px 0 0; overflow: hidden; }
-        .bar-segment { width: 100%; animation: growUp 1s ease-out forwards; transform-origin: bottom; }
-        .bar-label { font-size: 0.7rem; font-weight: 700; color: var(--color-gray-500); }
-        
-        @keyframes growUp {
-            from { transform: scaleY(0); }
-            to { transform: scaleY(1); }
-        }
-        
-        .legend { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); }
-        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        .chart-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
 
-        @media (max-width: 992px) {
+        @media (max-width: 1200px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 992px) {
             .main-grid { grid-template-columns: 1fr; }
             .main-wrapper { margin-left: 0; }
-            .hamburger { display: flex; }
+        }
+        @media (max-width: 576px) {
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
-        .chart-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-    </style>
 </head>
 <body>
 
 <?php include '../includes/sidebar_hrd.php'; ?>
 
     <div class="main-wrapper">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <line x1="3" y1="12" x2="21" y2="12"/>
-                        <line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <div class="topbar__left">
-                    <div class="topbar__title">Dashboard Monitoring HRD</div>
-                    <div class="topbar__breadcrumb">BurnoutXpert › HRD › Dashboard</div>
-                </div>
-            </div>
-            <div class="topbar__right">
-                <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" id="sun-icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                </button>
-                <div style="display:flex;align-items:center;gap:0.6rem;">
-                    <div class="topbar__name" style="font-size: 0.875rem; font-weight: 700; color: var(--color-gray-700);"><?= htmlspecialchars($nama) ?></div>
-                    <div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800; border: 2px solid var(--color-accent-50);"><?= $initials ?></div>
-                </div>
-            </div>
-        </header>
+        <?php include '../includes/topbar.php'; ?>
 
         <main class="page-content">
             <div class="dashboard-container">
@@ -309,31 +245,6 @@ $chart_data = [
     </div>
 
     <script>
-        // Theme Toggle Logic
-        function toggleTheme() {
-            const body = document.body;
-            const theme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const icon = document.querySelector('#theme-toggle svg');
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
-            }
-        }
-
-        // Apply theme on load
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            updateThemeIcon();
-        }
-
         function filterTable(status, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');

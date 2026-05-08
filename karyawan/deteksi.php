@@ -26,12 +26,8 @@ $questions = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deteksi Burnout – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
@@ -39,8 +35,7 @@ $questions = [
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
         /* ── Top Bar ── */
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
-        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
+
 
         /* ── Detection Wizard ── */
         .wizard-container { max-width: 700px; margin: 3rem auto; padding: 0 1.5rem; width: 100%; }
@@ -82,11 +77,6 @@ $questions = [
         @keyframes slideInLeft { from { transform: translate(-100%, -50%); opacity: 0; } to { transform: translate(0, -50%); opacity: 1; } }
         @keyframes slideOutRight { from { transform: translate(0, -50%); opacity: 1; } to { transform: translate(100%, -50%); opacity: 0; } }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         .question-text { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); line-height: 1.4; text-align: center; margin-bottom: 2.5rem; }
 
         /* Options */
@@ -100,20 +90,7 @@ $questions = [
         }
 
         .option-btn:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-50); }
-        
         .option-btn.selected { background: var(--color-accent); color: #fff; border-color: var(--color-accent); box-shadow: var(--shadow-accent); transform: scale(1.02); }
-
-        /* Ripple Effect */
-        .option-btn::after {
-            content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255, 255, 255, .5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%;
-        }
-        .option-btn:active::after { animation: ripple .6s ease-out; }
-        @keyframes ripple { from { opacity: 1; transform: scale(0, 0); } to { opacity: 0; transform: scale(40, 40); } }
-
-        /* Icon inside button */
-        .check-icon { display: none; width: 22px; height: 22px; stroke: currentColor; stroke-width: 3; }
-        .selected .check-icon { display: block; animation: scaleIn 0.2s ease-out; }
-        @keyframes scaleIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Step Indicators */
         .step-indicators { display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 1.5rem; }
@@ -155,9 +132,10 @@ $questions = [
         .btn-result:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+        @media (max-width: 992px) {
             .main-wrapper { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
             .wizard-container { margin: 1.5rem auto; }
             .question-card { padding: 0; min-height: 400px; }
             .step { padding: 2rem 1.5rem; }
@@ -173,17 +151,7 @@ $questions = [
 <?php include '../includes/sidebar_karyawan.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-            <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu" style="display:none; background:none; border:none; cursor:pointer; color:var(--color-primary); padding:0.4rem;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-            <div class="topbar__title">Deteksi Burnout</div>
-        </div>
-        <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
-    </header>
+    <?php include '../includes/topbar.php'; ?>
 
     <main class="wizard-container">
         <!-- Step Indicators -->

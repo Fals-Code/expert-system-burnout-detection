@@ -11,17 +11,11 @@ $active_menu = 'bantuan';
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bantuan & FAQ – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
         .page-content { padding: 2rem; flex: 1; max-width: 1000px; margin: 0 auto; width: 100%; }
 
         .help-header { text-align: center; margin-bottom: 3rem; }
@@ -33,19 +27,25 @@ $active_menu = 'bantuan';
         .faq-question { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
         .faq-answer { font-size: 0.95rem; color: var(--color-gray-600); line-height: 1.6; }
 
-        .emergency-box { background: var(--color-error-bg); border: 2px dashed var(--color-error); border-radius: 20px; padding: 2rem; margin-top: 3rem; text-align: center; }
-        .emergency-box h2 { color: var(--color-error); font-weight: 800; margin-bottom: 1rem; }
+        .emergency-box { background: #FFF5F5; border: 2px dashed #DC3545; border-radius: 20px; padding: 2rem; margin-top: 3rem; text-align: center; }
+        .emergency-box h2 { color: #DC3545; font-weight: 800; margin-bottom: 1rem; }
         .contact-grid { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; }
         .contact-item { font-weight: 700; color: var(--color-primary); font-size: 1.1rem; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
+            .contact-grid { flex-direction: column; gap: 1rem; }
+            .help-header h1 { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_karyawan.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Pusat Bantuan</div>
-    </header>
+    <?php include '../includes/topbar.php'; ?>
 
     <main class="page-content">
         <div class="help-header">

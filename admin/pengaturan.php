@@ -20,17 +20,11 @@ $settings = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan Sistem – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+
         .page-content { padding: 2rem; flex: 1; max-width: 900px; }
 
         .settings-card { background: #fff; border-radius: 20px; padding: 2.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
@@ -52,15 +46,20 @@ $settings = [
 
         .btn-save { background: var(--color-accent); color: #fff; padding: 0.8rem 2.5rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-accent); }
         .btn-save:hover { transform: translateY(-2px); background: var(--color-accent-dark); }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Pengaturan Global</div>
-    </header>
+    <?php 
+        $page_title = "Pengaturan";
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <?php include '../includes/toast.php'; ?>

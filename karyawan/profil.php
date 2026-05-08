@@ -12,42 +12,12 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Saya – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
 
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-        /* ── Top Header ── */
-        .topbar {
-            background: #fff;
-            border-bottom: 1px solid var(--color-gray-200);
-            padding: 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 40;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 1.5rem;
-        }
-
-        .hamburger {
-            display: none;
-            background: none; border: none; cursor: pointer;
-            padding: 0.4rem;
-            color: var(--color-primary);
-        }
-
-        @media (max-width: 768px) {
-            .profile-grid { grid-template-columns: 1fr; }
-            .main-wrapper { margin-left: 0; }
-            .hamburger { display: flex; }
-            .form-grid { grid-template-columns: 1fr; }
-        }
 
         /* ── Profile Layout ── */
         .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; align-items: start; }
@@ -87,10 +57,11 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         .btn-cancel { background: #fff; color: var(--color-gray-500); border: 1px solid var(--color-gray-200); }
         .btn-cancel:hover { background: var(--color-gray-50); color: var(--color-primary); }
 
-        @media (max-width: 768px) {
-            .profile-grid { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
+        @media (max-width: 992px) {
             .main-wrapper { margin-left: 0; }
+            .profile-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -100,19 +71,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 <?php include '../includes/sidebar_karyawan.php'; ?>
 
     <div class="main-wrapper">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-                <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <line x1="3" y1="12" x2="21" y2="12"/>
-                        <line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Profil Saya</div>
-            </div>
-            <div style="font-size: 0.875rem; color: var(--color-gray-500);"><?= date('d F Y') ?></div>
-        </header>
+        <?php include '../includes/topbar.php'; ?>
 
         <main style="padding: 0 2rem 2rem;">
             <div class="profile-grid">

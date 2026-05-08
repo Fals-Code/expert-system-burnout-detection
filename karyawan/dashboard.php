@@ -21,14 +21,9 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Karyawan – BurnoutXpert</title>
     <meta name="description" content="Dashboard karyawan BurnoutXpert – pantau status burnout dan mulai deteksi sekarang.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         /* ── Layout ── */
         body {
@@ -47,44 +42,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             min-height: 100vh;
         }
 
-        /* ── Top Header ── */
-        .topbar {
-            background: #fff;
-            border-bottom: 1px solid var(--color-gray-200);
-            padding: 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 40;
-            box-shadow: var(--shadow-sm);
-        }
 
-        .topbar__left { display: flex; flex-direction: column; gap: 2px; }
-        .topbar__title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
-        .topbar__breadcrumb { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 500; }
-
-        .topbar__right { display: flex; align-items: center; gap: 1rem; }
-
-        .topbar__date {
-            font-size: 0.8rem; color: var(--color-gray-500); font-weight: 500;
-            background: var(--color-gray-50);
-            border: 1px solid var(--color-gray-200);
-            padding: 0.35rem 0.85rem;
-            border-radius: 8px;
-        }
-
-        .topbar__avatar {
-            width: 38px; height: 38px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.9rem; font-weight: 700; color: #fff;
-            cursor: pointer;
-            border: 2px solid var(--color-accent-50);
-            transition: transform 0.2s;
-        }
-
-        .topbar__avatar:hover { transform: scale(1.08); }
-
-        .topbar__name { font-size: 0.875rem; font-weight: 700; color: var(--color-gray-700); }
 
         /* ── Page Content ── */
         .page-content {
@@ -103,22 +61,6 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             position: relative; overflow: hidden;
             box-shadow: 0 8px 32px rgba(30,58,95,0.22);
             animation: fadeSlideUp 0.5s ease both;
-        }
-
-        .welcome-card::before {
-            content: '';
-            position: absolute; top: -60px; right: -60px;
-            width: 220px; height: 220px;
-            background: radial-gradient(circle, rgba(244,132,95,0.18) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .welcome-card::after {
-            content: '';
-            position: absolute; bottom: -40px; left: 30%;
-            width: 160px; height: 160px;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-            border-radius: 50%;
         }
 
         .welcome-card__text { position: relative; z-index: 1; }
@@ -151,12 +93,6 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
         .mood-btn { width: 48px; height: 48px; border-radius: 12px; background: var(--color-gray-50); border: 1px solid var(--color-gray-200); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .mood-btn:hover { transform: translateY(-3px); border-color: var(--color-accent); background: var(--color-accent-50); }
         .mood-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; box-shadow: var(--shadow-accent); }
-
-        @keyframes floatEmoji {
-            0%,100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
 
         /* ── Stats Grid ── */
         .stats-grid {
@@ -282,23 +218,11 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             position: relative; overflow: hidden;
         }
 
-        .btn-detect::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .btn-detect:hover::before { opacity: 1; }
-
         .btn-detect:hover {
             transform: translateY(-3px);
             box-shadow: 0 12px 32px rgba(244,132,95,0.48);
             color: #fff;
         }
-
-        .btn-detect:active { transform: translateY(0); }
 
         .btn-detect__arrow { transition: transform 0.2s; }
         .btn-detect:hover .btn-detect__arrow { transform: translateX(4px); }
@@ -309,35 +233,17 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Mobile Hamburger ── */
-        .hamburger {
-            display: none;
-            background: none; border: none; cursor: pointer;
-            padding: 0.4rem;
-            color: var(--color-primary);
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 40;
-        }
-
         /* ── Responsive ── */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.open { display: block; }
+        @media (max-width: 992px) {
             .main-wrapper { margin-left: 0; }
-            .hamburger { display: flex; }
+        }
+        @media (max-width: 768px) {
             .page-content { padding: 1.25rem; }
-            .welcome-card { padding: 1.5rem; }
+            .welcome-card { padding: 1.5rem; flex-direction: column; text-align: center; }
             .welcome-card__name { font-size: 1.3rem; }
-            .welcome-card__emoji { font-size: 2.5rem; }
             .cta-card { flex-direction: column; align-items: flex-start; }
             .btn-detect { width: 100%; justify-content: center; }
-            .topbar { padding: 0.85rem 1.25rem; }
+
         }
     </style>
 </head>
@@ -348,31 +254,10 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 <!-- ── MAIN WRAPPER ── -->
 <div class="main-wrapper">
 
-    <header class="topbar">
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-            <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn" aria-label="Toggle menu">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-            <div class="topbar__left">
-                <div class="topbar__title">Dashboard</div>
-                <div class="topbar__breadcrumb">BurnoutXpert › Karyawan › Dashboard</div>
-            </div>
-        </div>
-        <div class="topbar__right">
-            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            </button>
-            <div class="topbar__date" id="current-date"><?= date('l, d F Y') ?></div>
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-                <div class="topbar__name"><?= htmlspecialchars($nama) ?></div>
-                <div class="topbar__avatar" title="<?= htmlspecialchars($nama) ?>"><?= htmlspecialchars($initials) ?></div>
-            </div>
-        </div>
-    </header>
+    <?php 
+        $page_title = "Overview Dashboard";
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <?php include '../includes/toast.php'; ?>
@@ -467,28 +352,8 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 </div>
 
 <script>
-    // Theme Toggle Logic
-    function toggleTheme() {
-        const body = document.body;
-        const theme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        updateThemeIcon();
-    }
-
-    function updateThemeIcon() {
-        const icon = document.querySelector('#theme-toggle svg');
-        const isDark = document.body.getAttribute('data-theme') === 'dark';
-        if (isDark) {
-            icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-        } else {
-            icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
-        }
-    }
-
     if (localStorage.getItem('theme') === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
-        updateThemeIcon();
     }
 
     function setMood(mood, btn) {

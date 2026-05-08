@@ -21,17 +21,11 @@ $laporan_divisi = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Burnout – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
         .page-content { padding: 2rem; flex: 1; }
 
         .content-card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
@@ -50,6 +44,17 @@ $laporan_divisi = [
         .btn-print { background: var(--color-accent); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.2s; }
         .btn-print:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
 
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+
+        }
+
+        @media (max-width: 768px) {
+
+            .topbar__actions { width: 100%; display: flex; gap: 0.5rem; }
+            .topbar__actions .btn-print { flex: 1; padding: 0.6rem; font-size: 0.8rem; }
+        }
+
         @media print {
             .sidebar, .topbar, .btn-print { display: none !important; }
             .main-wrapper { margin-left: 0; }
@@ -62,22 +67,23 @@ $laporan_divisi = [
 <?php include '../includes/sidebar_hrd.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Laporan Burnout Per Divisi</div>
-        <div style="display:flex; gap:0.75rem; align-items:center;">
-            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; padding:0.5rem;" id="theme-toggle">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            </button>
+    <?php 
+        $page_title = "Laporan Divisi";
+        ob_start(); ?>
+        <div class="topbar__actions" style="display:flex; gap:0.75rem; align-items:center;">
             <button class="btn-print" style="background:#28A745;" onclick="showToast('Ekspor Excel sedang disiapkan...', 'info')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                Excel
+                <span>Excel</span>
             </button>
             <button class="btn-print" onclick="window.print()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                Cetak PDF
+                <span>Cetak PDF</span>
             </button>
         </div>
-    </header>
+        <?php 
+        $topbar_extra = ob_get_clean();
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <?php include '../includes/toast.php'; ?>
@@ -102,7 +108,7 @@ $laporan_divisi = [
                         <tr>
                             <td style="font-weight: 700; color: var(--color-primary);"><?= $l['divisi'] ?></td>
                             <td><?= $l['total'] ?> orang</td>
-                            <td><span class="badge-count badge-tinggi"><?= $l['tinggi'] > 0 ? : '' ?><?= $l['tinggi'] ?></span></td>
+                            <td><span class="badge-count badge-tinggi"><?= $l['tinggi'] ?></span></td>
                             <td><span class="badge-count badge-sedang"><?= $l['sedang'] ?></span></td>
                             <td><span class="badge-count badge-rendah"><?= $l['rendah'] ?></span></td>
                         </tr>

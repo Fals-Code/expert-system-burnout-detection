@@ -40,17 +40,12 @@ $notifications = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifikasi – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
         .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+
         .page-content { padding: 2rem; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
 
         .notif-container { display: flex; flex-direction: column; gap: 1rem; }
@@ -69,6 +64,13 @@ $notifications = [
         .notif-time { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 600; }
 
         .btn-mark-all { background: none; border: none; color: var(--color-primary); font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
+            .btn-mark-all span { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -76,10 +78,17 @@ $notifications = [
 <?php include '../includes/sidebar_hrd.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Notifikasi</div>
-        <button class="btn-mark-all">Tandai semua dibaca</button>
-    </header>
+    <?php 
+        $page_title = "Notifikasi";
+        ob_start(); ?>
+        <button class="btn-mark-all" onclick="alert('Semua ditandai dibaca (Mock)')" style="background:none; border:none; color:var(--color-primary); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Tandai semua dibaca</span>
+        </button>
+        <?php 
+        $topbar_extra = ob_get_clean();
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="notif-container">

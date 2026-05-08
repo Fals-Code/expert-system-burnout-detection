@@ -174,7 +174,16 @@
             </svg>
         </div>
         <span class="sidebar-brand__text">Burnout<span>Xpert</span></span>
+        <button class="hamburger" onclick="toggleSidebar()" style="margin-left: auto; color: #fff; background: none; border: none; cursor: pointer; display: none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
     </div>
+
+    <style>
+        @media (max-width: 768px) {
+            .sidebar-brand .hamburger { display: block !important; }
+        }
+    </style>
 
     <div class="sidebar-user">
         <div class="avatar"><?= htmlspecialchars($initials ?? 'A') ?></div>
@@ -233,14 +242,11 @@
         </a>
 
         <a href="profil.php" class="nav-item <?= $active_menu === 'profil' ? 'active' : '' ?>">
-
-
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
             Profil Saya
         </a>
-
     </nav>
 
     <div class="sidebar-footer">

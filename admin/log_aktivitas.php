@@ -20,17 +20,11 @@ $logs = [
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Aktivitas – BurnoutXpert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <?php include '../includes/favicon.php'; ?>
+    <?php include '../includes/head.php'; ?>
     <style>
         body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+
         .page-content { padding: 2rem; flex: 1; }
 
         .log-container { background: #fff; border-radius: 20px; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); overflow: hidden; }
@@ -48,19 +42,30 @@ $logs = [
         .log-time { color: var(--color-gray-400); font-size: 0.8rem; display: block; margin-top: 0.25rem; }
         .log-desc { color: var(--color-gray-700); line-height: 1.5; max-width: 500px; }
         .log-entity { font-family: 'Courier New', monospace; font-weight: 700; background: var(--color-gray-50); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
+
+        @media (max-width: 992px) {
+            .main-wrapper { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
+            .log-desc { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
 
 <div class="main-wrapper">
-    <header class="topbar">
-        <div class="topbar__title" style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary);">Log Aktivitas Sistem</div>
+    <?php 
+        $page_title = "Log Aktivitas";
+        ob_start(); ?>
         <button onclick="location.reload()" style="background:none; border:none; color:var(--color-primary); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-            Refresh
+            <span>Refresh</span>
         </button>
-    </header>
+        <?php 
+        $topbar_extra = ob_get_clean();
+        include '../includes/topbar.php'; 
+    ?>
 
     <main class="page-content">
         <div class="log-container">
