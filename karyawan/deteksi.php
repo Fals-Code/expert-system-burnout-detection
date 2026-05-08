@@ -53,13 +53,34 @@ $questions = [
 
         /* Question Card */
         .question-card {
-            background: #fff; border-radius: 20px; padding: 3rem; box-shadow: var(--shadow-lg);
-            min-height: 300px; display: flex; flex-direction: column; justify-content: center;
+            background: #fff; border-radius: 24px; padding: 0; box-shadow: var(--shadow-lg);
+            min-height: 350px; display: flex; flex-direction: column; justify-content: center;
             position: relative; overflow: hidden;
+            border: 1px solid var(--color-gray-100);
         }
 
-        .step { display: none; animation: fadeIn 0.4s ease; }
+        .step {
+            display: none;
+            width: 100%;
+            padding: 3rem;
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
         .step.active { display: block; }
+
+        /* Animations */
+        .slide-in-right { animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .slide-out-left { animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .slide-in-left { animation: slideInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .slide-out-right { animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        @keyframes slideInRight { from { transform: translate(100%, -50%); opacity: 0; } to { transform: translate(0, -50%); opacity: 1; } }
+        @keyframes slideOutLeft { from { transform: translate(0, -50%); opacity: 1; } to { transform: translate(-100%, -50%); opacity: 0; } }
+        @keyframes slideInLeft { from { transform: translate(-100%, -50%); opacity: 0; } to { transform: translate(0, -50%); opacity: 1; } }
+        @keyframes slideOutRight { from { transform: translate(0, -50%); opacity: 1; } to { transform: translate(100%, -50%); opacity: 0; } }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -69,17 +90,50 @@ $questions = [
         .question-text { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); line-height: 1.4; text-align: center; margin-bottom: 2.5rem; }
 
         /* Options */
-        .options-group { display: flex; gap: 1rem; justify-content: center; }
+        .options-group { display: flex; gap: 1.25rem; justify-content: center; }
         
         .option-btn {
-            padding: 1rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1rem;
-            cursor: pointer; transition: all 0.2s; border: 2px solid var(--color-gray-200);
-            background: #fff; color: var(--color-gray-600); min-width: 140px; text-align: center;
+            padding: 1.25rem 2.5rem; border-radius: 16px; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid var(--color-gray-200);
+            background: #fff; color: var(--color-gray-600); min-width: 160px; text-align: center;
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
         }
 
         .option-btn:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-50); }
         
-        .option-btn.selected { background: var(--color-accent); color: #fff; border-color: var(--color-accent); box-shadow: var(--shadow-accent); }
+        .option-btn.selected { background: var(--color-accent); color: #fff; border-color: var(--color-accent); box-shadow: var(--shadow-accent); transform: scale(1.02); }
+
+        /* Ripple Effect */
+        .option-btn::after {
+            content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255, 255, 255, .5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%;
+        }
+        .option-btn:active::after { animation: ripple .6s ease-out; }
+        @keyframes ripple { from { opacity: 1; transform: scale(0, 0); } to { opacity: 0; transform: scale(40, 40); } }
+
+        /* Icon inside button */
+        .check-icon { display: none; width: 22px; height: 22px; stroke: currentColor; stroke-width: 3; }
+        .selected .check-icon { display: block; animation: scaleIn 0.2s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* Step Indicators */
+        .step-indicators { display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 1.5rem; }
+        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-gray-200); transition: 0.3s; }
+        .indicator-dot.active { background: var(--color-accent); transform: scale(1.3); }
+        .indicator-dot.completed { background: var(--color-primary); }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.98);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; gap: 1.5rem; backdrop-filter: blur(5px);
+        }
+        .loading-content { text-align: center; }
+        .spinner-icon { font-size: 3.5rem; margin-bottom: 1rem; display: block; animation: pulseGear 1.5s ease-in-out infinite; }
+        .loading-text { font-size: 1.2rem; font-weight: 800; color: var(--color-primary); letter-spacing: 0.02em; }
+        @keyframes pulseGear { 
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+        }
 
         /* Navigation Buttons */
         .nav-buttons { display: flex; justify-content: space-between; margin-top: 2rem; }
@@ -104,10 +158,13 @@ $questions = [
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .main-wrapper { margin-left: 0; }
-            .question-card { padding: 2rem; }
+            .wizard-container { margin: 1.5rem auto; }
+            .question-card { padding: 0; min-height: 400px; }
+            .step { padding: 2rem 1.5rem; }
             .question-text { font-size: 1.25rem; }
-            .options-group { flex-direction: column; }
-            .option-btn { width: 100%; }
+            .options-group { flex-direction: column; width: 100%; }
+            .option-btn { width: 100%; min-height: 56px; padding: 1rem; }
+            .indicator-dot { width: 8px; height: 8px; gap: 0.4rem; }
         }
     </style>
 </head>
@@ -129,6 +186,13 @@ $questions = [
     </header>
 
     <main class="wizard-container">
+        <!-- Step Indicators -->
+        <div class="step-indicators" id="step-indicators">
+            <?php for($i=1; $i<=10; $i++): ?>
+                <div class="indicator-dot <?= $i===1 ? 'active' : '' ?>"></div>
+            <?php endfor; ?>
+        </div>
+
         <!-- Progress Bar -->
         <div class="progress-wrapper">
             <span class="progress-text" id="progress-text">Langkah 1 dari 10</span>
@@ -137,8 +201,16 @@ $questions = [
             </div>
         </div>
 
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <span class="spinner-icon">⚙️</span>
+                <p class="loading-text">Sedang menganalisis jawaban Anda...</p>
+            </div>
+        </div>
+
         <!-- Form Konsultasi -->
-        <form id="burnoutForm" action="proses_deteksi.php" method="POST">
+        <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)">
             <div class="question-card">
                 <?php foreach ($questions as $index => $q): ?>
                 <div class="step <?= $index === 0 ? 'active' : '' ?>" data-step="<?= $index + 1 ?>">
@@ -146,10 +218,16 @@ $questions = [
                     <div class="options-group">
                         <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Ya')">
                             <input type="radio" name="q<?= $index + 1 ?>" value="Ya" style="display:none">
+                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
                             Ya
                         </label>
                         <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Tidak')">
                             <input type="radio" name="q<?= $index + 1 ?>" value="Tidak" style="display:none">
+                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
                             Tidak
                         </label>
                     </div>
@@ -192,7 +270,7 @@ $questions = [
         const btns = stepEl.querySelectorAll('.option-btn');
         btns.forEach(btn => {
             btn.classList.remove('selected');
-            if (btn.innerText.trim() === val) btn.classList.add('selected');
+            if (btn.innerText.trim().includes(val)) btn.classList.add('selected');
         });
 
         // Store answer
@@ -201,6 +279,9 @@ $questions = [
         // Enable Next or Submit
         checkNav();
         
+        // Update Indicator
+        updateIndicators();
+
         // Auto next with slight delay
         if (step < totalSteps) {
             setTimeout(() => {
@@ -211,16 +292,25 @@ $questions = [
 
     function changeStep(n) {
         const steps = document.querySelectorAll('.step');
-        steps[currentStep - 1].classList.remove('active');
-        
-        currentStep += n;
-        
-        if (currentStep < 1) currentStep = 1;
-        if (currentStep > totalSteps) currentStep = totalSteps;
-        
-        steps[currentStep - 1].classList.add('active');
-        
-        updateUI();
+        const prevStepIdx = currentStep - 1;
+        const nextStepIdx = currentStep + n - 1;
+
+        if (nextStepIdx < 0 || nextStepIdx >= totalSteps) return;
+
+        // Apply animations
+        steps[prevStepIdx].classList.remove('active', 'slide-in-right', 'slide-in-left');
+        steps[prevStepIdx].classList.add(n > 0 ? 'slide-out-left' : 'slide-out-right');
+
+        setTimeout(() => {
+            steps[prevStepIdx].style.display = 'none';
+            steps[prevStepIdx].classList.remove('slide-out-left', 'slide-out-right');
+            
+            steps[nextStepIdx].style.display = 'block';
+            steps[nextStepIdx].classList.add('active', n > 0 ? 'slide-in-right' : 'slide-in-left');
+            
+            currentStep += n;
+            updateUI();
+        }, 300);
     }
 
     function updateUI() {
@@ -240,13 +330,39 @@ $questions = [
             document.getElementById('submitBtn').style.display = 'none';
         }
         
+        updateIndicators();
         checkNav();
+    }
+
+    function updateIndicators() {
+        const dots = document.querySelectorAll('.indicator-dot');
+        dots.forEach((dot, idx) => {
+            dot.classList.remove('active', 'completed');
+            if (idx + 1 === currentStep) {
+                dot.classList.add('active');
+            } else if (answers[idx + 1]) {
+                dot.classList.add('completed');
+            }
+        });
     }
 
     function checkNav() {
         const hasAnswer = !!answers[currentStep];
         document.getElementById('nextBtn').disabled = !hasAnswer;
         document.getElementById('submitBtn').disabled = !hasAnswer;
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        
+        // Simulate analysis for 2 seconds
+        setTimeout(() => {
+            document.getElementById('burnoutForm').submit();
+        }, 2000);
+        
+        return false;
     }
 
     updateUI();
