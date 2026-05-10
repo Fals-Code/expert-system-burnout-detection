@@ -17,23 +17,21 @@ $user_cf = [];
 $gejala_terdeteksi = [];
 $total_skor = 0;
 
-for ($i = 1; $i <= 10; $i++) {
-    $gid = 'G' . str_pad($i, 3, '0', STR_PAD_LEFT);
-    $val = isset($_POST["q$i"]) ? $_POST["q$i"] : 'Tidak Pernah';
-    $jawaban[$i] = $val;
+foreach ($kb_gejala as $g) {
+    $gid = $g['id'];
+    $val = isset($_POST[$gid]) ? $_POST[$gid] : 'Tidak Pernah';
+    $jawaban[$gid] = $val;
     
     $skor = 0;
     $cf_val = 0.0;
     if ($val === 'Sering') {
         $skor = 2;
         $cf_val = 1.0;
-        $nama_g = array_values(array_filter($kb_gejala, fn($g) => $g['id'] === $gid))[0]['nama'] ?? $gid;
-        $gejala_terdeteksi[] = $nama_g . ' (Sering)';
+        $gejala_terdeteksi[] = $g['nama'] . ' (Sering)';
     } elseif ($val === 'Kadang') {
         $skor = 1;
         $cf_val = 0.5;
-        $nama_g = array_values(array_filter($kb_gejala, fn($g) => $g['id'] === $gid))[0]['nama'] ?? $gid;
-        $gejala_terdeteksi[] = $nama_g . ' (Kadang)';
+        $gejala_terdeteksi[] = $g['nama'] . ' (Kadang)';
     }
     
     $user_cf[$gid] = $cf_val;

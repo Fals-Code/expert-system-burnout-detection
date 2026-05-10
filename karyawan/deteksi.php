@@ -10,19 +10,20 @@ $page_title = "Deteksi Burnout";
 $active_menu = 'deteksi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
-// Daftar Pertanyaan
-$questions = [
-    "Apakah Anda merasa kelelahan fisik setiap hari meskipun sudah cukup tidur?",
-    "Apakah Anda merasa emosi mudah terkuras saat bekerja?",
-    "Apakah Anda merasa tidak peduli dengan hasil pekerjaan Anda?",
-    "Apakah Anda merasa sulit berkonsentrasi saat bekerja?",
-    "Apakah Anda merasa prestasi kerja Anda menurun?",
-    "Apakah Anda merasa sinis terhadap rekan kerja atau klien Anda?",
-    "Apakah Anda merasa beban kerja Anda terlalu berat untuk ditangani sendiri?",
-    "Apakah Anda merasa kurang dihargai atas upaya yang Anda berikan?",
-    "Apakah Anda merasa sulit untuk memulai pekerjaan di pagi hari?",
-    "Apakah Anda sering merasa putus asa terhadap target pekerjaan Anda?"
-];
+if (!isset($_SESSION['mock_kb'])) {
+    $_SESSION['mock_kb'] = include '../config/mock_db.php';
+}
+
+$kb_gejala = $_SESSION['mock_kb']['gejala'];
+
+// Daftar Pertanyaan Dinamis
+$questions = [];
+foreach ($kb_gejala as $g) {
+    $questions[$g['id']] = "Seberapa sering Anda mengalami: " . $g['nama'] . "?";
+}
+
+$total_questions = count($questions);
+$total_steps = $total_questions + 1;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -79,19 +80,22 @@ $questions = [
                 <!-- Integrated Progress Header -->
                 <div class="progress-container">
                     <div class="progress-header">
-                        <span class="progress-title" id="progress-text">Langkah 1 dari 10</span>
-                        <span class="progress-percentage" id="progress-percent">10%</span>
+                        <span class="progress-title" id="progress-text">Langkah 1 dari <?= $total_questions ?></span>
+                        <span class="progress-percentage" id="progress-percent">0%</span>
                     </div>
                     <div class="modern-progress-bar">
-                        <div class="modern-progress-fill" id="progress-bar" style="width: 10%;"></div>
+                        <div class="modern-progress-fill" id="progress-bar" style="width: 0%;"></div>
                     </div>
                 </div>
-                <?php foreach ($questions as $index => $q): ?>
-                <div class="step <?= $index === 0 ? 'active' : '' ?>" data-step="<?= $index + 1 ?>">
-                    <h2 class="question-text"><?= $q ?></h2>
+                
+                <?php 
+                $step_idx = 1;
+                foreach ($questions as $gid => $q_text): ?>
+                <div class="step <?= $step_idx === 1 ? 'active' : '' ?>" data-step="<?= $step_idx ?>">
+                    <h2 class="question-text"><?= htmlspecialchars($q_text) ?></h2>
                     <div class="options-group options-group--3">
-                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Sering')">
-                            <input type="radio" name="q<?= $index + 1 ?>" value="Sering" style="display:none">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Sering', '<?= $gid ?>')">
+                            <input type="radio" name="<?= $gid ?>" value="Sering" style="display:none">
                             <div class="option-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
@@ -99,8 +103,8 @@ $questions = [
                             </div>
                             <span>Sering Merasakan</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Kadang')">
-                            <input type="radio" name="q<?= $index + 1 ?>" value="Kadang" style="display:none">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Kadang', '<?= $gid ?>')">
+                            <input type="radio" name="<?= $gid ?>" value="Kadang" style="display:none">
                             <div class="option-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -108,8 +112,8 @@ $questions = [
                             </div>
                             <span>Kadang-kadang</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Tidak Pernah')">
-                            <input type="radio" name="q<?= $index + 1 ?>" value="Tidak Pernah" style="display:none">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Tidak Pernah', '<?= $gid ?>')">
+                            <input type="radio" name="<?= $gid ?>" value="Tidak Pernah" style="display:none">
                             <div class="option-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -120,10 +124,12 @@ $questions = [
                         </label>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <?php 
+                $step_idx++;
+                endforeach; ?>
 
                 <!-- Summary Step -->
-                <div class="step" data-step="11">
+                <div class="step" data-step="<?= $total_steps ?>">
                     <div class="confetti-decoration">
                         <div class="confetti-piece" style="left: 10%; animation: confettiDrop 4s linear infinite; background: #FFD700;"></div>
                         <div class="confetti-piece" style="left: 30%; animation: confettiDrop 5s linear infinite; background: var(--color-accent); animation-delay: 1s;"></div>
@@ -184,7 +190,8 @@ $questions = [
 
 <script>
     let currentStep = 1;
-    const totalSteps = 11;
+    const totalSteps = <?= $total_steps ?>;
+    const totalQuestions = <?= $total_questions ?>;
     let answers = {};
     let isAnimating = false;
     let autoNextTimeout = null;
@@ -222,7 +229,7 @@ $questions = [
                 updateUI();
 
                 // Jump to the current step without animation
-                const steps = document.querySelectorAll('.step');
+                const steps = document.querySelectorAll('#burnoutForm .step');
                 steps.forEach(s => {
                     s.classList.remove('active');
                     s.style.display = 'none';
@@ -242,10 +249,10 @@ $questions = [
         setTimeout(() => { isAnimating = false; }, 500);
     }
 
-    function selectOption(step, val) {
+    function selectOption(step, val, gid) {
         if (isAnimating) return;
         // Highlight selection
-        const stepEl = document.querySelector(`.step[data-step="${step}"]`);
+        const stepEl = document.querySelector(`#burnoutForm .step[data-step="${step}"]`);
         const btns = stepEl.querySelectorAll('.option-btn');
         btns.forEach(btn => {
             btn.classList.remove('selected');
@@ -272,7 +279,7 @@ $questions = [
 
     function changeStep(n) {
         if (isAnimating) return;
-        const steps = document.querySelectorAll('.step');
+        const steps = document.querySelectorAll('#burnoutForm .step');
         const prevStepIdx = currentStep - 1;
         const nextStepIdx = currentStep + n - 1;
 
@@ -309,8 +316,8 @@ $questions = [
         const percentEl = document.getElementById('progress-percent');
         if (percentEl) percentEl.innerText = percent + '%';
         
-        if (currentStep <= 10) {
-            document.getElementById('progress-text').innerText = `Gejala ${currentStep} dari 10`;
+        if (currentStep <= totalQuestions) {
+            document.getElementById('progress-text').innerText = `Gejala ${currentStep} dari ${totalQuestions}`;
         } else {
             document.getElementById('progress-text').innerText = `Analisis Selesai`;
         }
@@ -331,7 +338,7 @@ $questions = [
 
 
     function checkNav() {
-        if (currentStep > 10) {
+        if (currentStep > totalQuestions) {
             document.getElementById('nextBtn').disabled = true;
             document.getElementById('submitBtn').disabled = false;
             return;

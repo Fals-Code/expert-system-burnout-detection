@@ -97,11 +97,11 @@ $chart_data = [
             <div class="content-card">
                 <div class="card-header">
                     <h2 class="card-title">Daftar Monitoring Karyawan</h2>
-                    <div class="filter-group">
-                        <button class="filter-btn active" onclick="filterTable('Semua', this)">Semua</button>
-                        <button class="filter-btn" onclick="filterTable('Tinggi', this)">Tinggi</button>
-                        <button class="filter-btn" onclick="filterTable('Sedang', this)">Sedang</button>
-                        <button class="filter-btn" onclick="filterTable('Rendah', this)">Rendah</button>
+                    <div class="segmented-tabs">
+                        <button class="tab-item active" onclick="filterTable('Semua', this)">Semua</button>
+                        <button class="tab-item" onclick="filterTable('Tinggi', this)">Tinggi</button>
+                        <button class="tab-item" onclick="filterTable('Sedang', this)">Sedang</button>
+                        <button class="tab-item" onclick="filterTable('Rendah', this)">Rendah</button>
                     </div>
                 </div>
                 
@@ -125,7 +125,7 @@ $chart_data = [
                                 <td data-label="Divisi"><?= htmlspecialchars($k['divisi']) ?></td>
                                 <td data-label="Tanggal Deteksi"><?= htmlspecialchars($k['tanggal']) ?></td>
                                 <td data-label="Tingkat">
-                                    <span class="badge badge-<?= strtolower($k['tingkat']) ?>">
+                                    <span class="badge-pill badge-<?= strtolower($k['tingkat']) ?>">
                                         <?= $k['tingkat'] ?>
                                     </span>
                                 </td>
@@ -151,7 +151,7 @@ $chart_data = [
 
     <script>
         function filterTable(status, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const rows = document.querySelectorAll('#employeeTable tbody tr');
             rows.forEach(row => {
