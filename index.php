@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="checkbox-custom" aria-hidden="true"></span>
                         <span class="checkbox-text">Ingat Saya</span>
                     </label>
-                    <a href="#" class="form-link" onclick="alert('Fitur reset password belum tersedia.')">Lupa Password?</a>
+                    <a href="lupa_password.php" class="form-link">Lupa Password?</a>
                 </div>
 
                 <!-- Submit Button -->

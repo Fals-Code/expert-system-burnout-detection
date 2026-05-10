@@ -36,109 +36,7 @@ $chart_data = [
 <head>
     <title>Dashboard HRD – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* ── Main Wrapper ── */
-        .main-wrapper {
-            margin-left: 260px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-
-
-        /* ── Page Content ── */
-        .page-content {
-            padding: 2rem;
-            flex: 1;
-        }
-
-        .dashboard-container { width: 100%; margin: 0; padding: 0; }
-
-        /* ── Summary Cards ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
-        .stat-card {
-            background: #fff;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-gray-100);
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: 0.3s;
-        }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        
-        .stat-icon {
-            width: 50px; height: 50px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-        
-        .stat-info { display: flex; flex-direction: column; }
-        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; }
-        .stat-label { font-size: 0.7rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; letter-spacing: 0.05em; }
-
-        .bg-blue { background: var(--color-primary-50); color: var(--color-primary); }
-        .bg-red { background: var(--color-error-bg); color: var(--color-error); }
-        .bg-orange { background: var(--color-warning-bg); color: #856404; }
-        .bg-green { background: var(--color-success-bg); color: var(--color-success); }
-
-
-        /* ── Layout Grid ── */
-        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-
-        /* ── Table Section ── */
-        .content-card { background: #fff; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-100); padding: 1.5rem; margin-bottom: 1.5rem; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .card-title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); }
-        
-        .filter-group { display: flex; gap: 0.5rem; }
-        .filter-btn { padding: 0.4rem 1rem; border-radius: 8px; border: 1px solid var(--color-gray-200); background: #fff; color: var(--color-gray-600); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .filter-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
-        .filter-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1rem; font-size: 0.8rem; font-weight: 700; color: var(--color-gray-400); border-bottom: 2px solid var(--color-gray-50); text-transform: uppercase; }
-        td { padding: 1rem; font-size: 0.9rem; border-bottom: 1px solid var(--color-gray-50); }
-        
-        .badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .badge-tinggi { background: var(--color-error-bg); color: var(--color-error); }
-        .badge-sedang { background: var(--color-warning-bg); color: #856404; }
-        .badge-rendah { background: var(--color-success-bg); color: var(--color-success); }
-        
-        .btn-detail { color: var(--color-primary); font-weight: 700; font-size: 0.8rem; text-decoration: underline; }
-
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
-        .chart-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-
-        @media (max-width: 1200px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .charts-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 992px) {
-            .main-grid { grid-template-columns: 1fr; }
-            .main-wrapper { margin-left: 0 !important; }
-        }
-        @media (max-width: 768px) {
-            .page-content { padding: 1rem; }
-            .stats-grid { gap: 1rem; }
-            .stat-card { padding: 1rem; }
-            .stat-value { font-size: 1.25rem; }
-            .charts-grid { margin-top: 1rem; gap: 1rem; }
-            .chart-card { height: 300px; }
-        }
-        @media (max-width: 576px) {
-            .stats-grid { grid-template-columns: 1fr; }
-        }
-    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -209,7 +107,7 @@ $chart_data = [
                 </div>
                 
                 <div class="table-responsive">
-                    <table id="employeeTable">
+                    <table id="employeeTable" class="data-table">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -223,16 +121,16 @@ $chart_data = [
                         <tbody>
                             <?php foreach ($karyawan_list as $index => $k): ?>
                             <tr data-status="<?= $k['tingkat'] ?>">
-                                <td><?= $index + 1 ?></td>
-                                <td><strong><?= htmlspecialchars($k['nama']) ?></strong></td>
-                                <td><?= htmlspecialchars($k['divisi']) ?></td>
-                                <td><?= htmlspecialchars($k['tanggal']) ?></td>
-                                <td>
+                                <td data-label="No"><?= $index + 1 ?></td>
+                                <td data-label="Nama"><strong><?= htmlspecialchars($k['nama']) ?></strong></td>
+                                <td data-label="Divisi"><?= htmlspecialchars($k['divisi']) ?></td>
+                                <td data-label="Tanggal Deteksi"><?= htmlspecialchars($k['tanggal']) ?></td>
+                                <td data-label="Tingkat">
                                     <span class="badge badge-<?= strtolower($k['tingkat']) ?>">
                                         <?= $k['tingkat'] ?>
                                     </span>
                                 </td>
-                                <td><a href="detail_karyawan.php?id=<?= $k['id'] ?>" class="btn-detail">Lihat Detail</a></td>
+                                <td data-label="Aksi"><a href="detail_karyawan.php?id=<?= $k['id'] ?>" class="btn-detail">Lihat Detail</a></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

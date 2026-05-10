@@ -13,33 +13,7 @@ $active_menu = 'bantuan';
 <head>
     <title>Bantuan & FAQ – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .page-content { padding: 2rem; flex: 1; max-width: 1000px; margin: 0 auto; width: 100%; }
-
-        .help-header { text-align: center; margin-bottom: 3rem; }
-        .help-header h1 { font-size: 2rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem; }
-        .help-header p { color: var(--color-gray-500); font-size: 1.1rem; }
-
-        .faq-grid { display: grid; gap: 1.5rem; }
-        .faq-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-        .faq-question { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
-        .faq-answer { font-size: 0.95rem; color: var(--color-gray-600); line-height: 1.6; }
-
-        .emergency-box { background: #FFF5F5; border: 2px dashed #DC3545; border-radius: 20px; padding: 2rem; margin-top: 3rem; text-align: center; }
-        .emergency-box h2 { color: #DC3545; font-weight: 800; margin-bottom: 1rem; }
-        .contact-grid { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; }
-        .contact-item { font-weight: 700; color: var(--color-primary); font-size: 1.1rem; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-        @media (max-width: 768px) {
-            .contact-grid { flex-direction: column; gap: 1rem; }
-            .help-header h1 { font-size: 1.5rem; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_karyawan.php'; ?>

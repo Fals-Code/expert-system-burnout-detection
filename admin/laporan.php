@@ -30,34 +30,7 @@ $distribusi_divisi = [
 <head>
     <title>Laporan Global – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .page-content { padding: 2rem; flex: 1; }
-
-        .card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
-        .card-title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1.5rem; }
-
-        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .mini-card { background: var(--color-gray-50); padding: 1.5rem; border-radius: 16px; text-align: center; }
-        .mini-val { display: block; font-size: 1.5rem; font-weight: 800; color: var(--color-primary); }
-        .mini-lbl { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; }
-
-        .bar-container { margin-bottom: 1.5rem; }
-        .bar-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; }
-        .bar-outer { background: var(--color-gray-100); height: 10px; border-radius: 99px; overflow: hidden; }
-        .bar-inner { height: 100%; border-radius: 99px; }
-
-        .btn-export { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-        @media (max-width: 768px) {
-            .grid-stats { grid-template-columns: 1fr; }
-            .btn-export span { display: none; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>

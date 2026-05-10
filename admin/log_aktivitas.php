@@ -22,34 +22,7 @@ $logs = [
 <head>
     <title>Log Aktivitas – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-
-        .page-content { padding: 2rem; flex: 1; }
-
-        .log-container { background: #fff; border-radius: 20px; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); overflow: hidden; }
-        .log-table { width: 100%; border-collapse: collapse; }
-        .log-table th { background: var(--color-gray-50); text-align: left; padding: 1.25rem 1.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; border-bottom: 1px solid var(--color-gray-200); }
-        .log-table td { padding: 1.25rem 1.5rem; font-size: 0.9rem; border-bottom: 1px solid var(--color-gray-50); vertical-align: top; }
-        
-        .action-pill { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 800; font-size: 0.7rem; color: #fff; text-transform: uppercase; }
-        .act-update { background: #0D6EFD; }
-        .act-create { background: #198754; }
-        .act-delete { background: #DC3545; }
-        .act-system { background: #6C757D; }
-
-        .log-user { font-weight: 700; color: var(--color-primary); }
-        .log-time { color: var(--color-gray-400); font-size: 0.8rem; display: block; margin-top: 0.25rem; }
-        .log-desc { color: var(--color-gray-700); line-height: 1.5; max-width: 500px; }
-        .log-entity { font-family: 'Courier New', monospace; font-weight: 700; background: var(--color-gray-50); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-        @media (max-width: 768px) {
-            .log-desc { max-width: 100%; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>

@@ -5,167 +5,13 @@
 ?>
 
 <!-- Sidebar Styles -->
-<style>
-    /* ── Sidebar ── */
-    .sidebar {
-        width: 260px;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #0D1F36 0%, #1E3A5F 60%, #2A5080 100%);
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        top: 0; left: 0;
-        z-index: 100;
-        box-shadow: 4px 0 24px rgba(14,31,54,0.18);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 
-    .sidebar-brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1.75rem 1.5rem 1.25rem;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .sidebar-brand__icon {
-        width: 40px; height: 40px;
-        background: rgba(244,132,95,0.18);
-        border: 1px solid rgba(244,132,95,0.35);
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .sidebar-brand__icon svg { color: #F4845F; }
-
-    .sidebar-brand__text {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -0.02em;
-    }
-
-    .sidebar-brand__text span { color: #F4845F; }
-
-    .sidebar-user {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .avatar {
-        width: 42px; height: 42px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #28A745 0%, #1a7a33 100%);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1rem; font-weight: 700; color: #fff;
-        flex-shrink: 0;
-        border: 2px solid rgba(255,255,255,0.2);
-    }
-
-    .sidebar-user__info { overflow: hidden; }
-    .sidebar-user__name {
-        font-size: 0.875rem; font-weight: 700; color: #fff;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .sidebar-user__role {
-        font-size: 0.7rem; font-weight: 600;
-        color: #98EE99;
-        text-transform: uppercase; letter-spacing: 0.06em;
-    }
-
-    .sidebar-nav {
-        flex: 1;
-        padding: 1rem 0.75rem;
-        display: flex; flex-direction: column; gap: 0.25rem;
-    }
-
-    .nav-label {
-        font-size: 0.65rem; font-weight: 700;
-        color: rgba(255,255,255,0.35);
-        text-transform: uppercase; letter-spacing: 0.1em;
-        padding: 0.75rem 0.75rem 0.4rem;
-    }
-
-    .nav-item {
-        display: flex; align-items: center; gap: 0.75rem;
-        padding: 0.7rem 1rem;
-        border-radius: 10px;
-        color: rgba(255,255,255,0.65);
-        font-size: 0.875rem; font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-
-    .nav-item svg { flex-shrink: 0; width: 18px; height: 18px; }
-
-    .nav-item:hover {
-        background: rgba(255,255,255,0.08);
-        color: #fff;
-    }
-
-    .nav-item.active {
-        background: linear-gradient(135deg, rgba(244,132,95,0.22) 0%, rgba(244,132,95,0.10) 100%);
-        color: #fff;
-        border: 1px solid rgba(244,132,95,0.3);
-    }
-
-    .nav-item.active::before {
-        content: '';
-        position: absolute; left: 0; top: 50%;
-        transform: translateY(-50%);
-        width: 3px; height: 60%;
-        background: #F4845F;
-        border-radius: 0 3px 3px 0;
-    }
-
-    .nav-item.active svg { color: #F4845F; }
-
-    .sidebar-footer {
-        padding: 1rem 0.75rem 1.5rem;
-        border-top: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .sidebar-logout {
-        display: flex; align-items: center; gap: 0.75rem;
-        padding: 0.7rem 1rem;
-        border-radius: 10px;
-        color: rgba(255,255,255,0.55);
-        font-size: 0.875rem; font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        width: 100%; background: none; border: none; cursor: pointer;
-        font-family: inherit;
-    }
-
-    .sidebar-logout:hover {
-        background: rgba(220,53,69,0.15);
-        color: #ff6b6b;
-    }
-
-    .sidebar-overlay {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.45);
-        z-index: 90;
-    }
-
-    @media (max-width: 768px) {
-        .sidebar { transform: translateX(-100%); }
-        .sidebar.open { transform: translateX(0); }
-        .sidebar-overlay.open { display: block; }
-    }
-</style>
 
 <!-- Sidebar Overlay (Mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <!-- ── SIDEBAR ── -->
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar" style="--avatar-bg: linear-gradient(135deg, #28A745 0%, #1a7a33 100%); --role-color: #98EE99;">
     <div class="sidebar-brand">
         <div class="sidebar-brand__icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -179,11 +25,7 @@
         </button>
     </div>
 
-    <style>
-        @media (max-width: 768px) {
-            .sidebar-brand .hamburger { display: block !important; }
-        }
-    </style>
+    <!-- Sidebar Brand -->
 
     <div class="sidebar-user">
         <div class="avatar"><?= htmlspecialchars($initials ?? 'H') ?></div>

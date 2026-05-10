@@ -68,46 +68,7 @@ $notifications = [
 <head>
     <title>Notifikasi – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
-
-        /* ── Content ── */
-        .page-content { padding: 2rem; max-width: 900px; margin: 0 auto; width: 100%; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .btn-mark-read { background: none; border: none; color: var(--color-primary); font-weight: 700; font-size: 0.875rem; cursor: pointer; text-decoration: underline; }
-
-        /* Filters */
-        .filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-gray-200); padding-bottom: 0.5rem; overflow-x: auto; }
-        .filter-tab { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 700; color: var(--color-gray-500); cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .filter-tab:hover { color: var(--color-primary); background: var(--color-gray-100); }
-        .filter-tab.active { color: var(--color-primary); background: var(--color-primary-50); border: 1px solid var(--color-primary-100); }
-
-        /* Notif List */
-        .notif-list { display: flex; flex-direction: column; gap: 1rem; }
-        .notif-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); display: flex; gap: 1.25rem; transition: 0.2s; cursor: pointer; position: relative; }
-        .notif-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-primary-100); }
-        .notif-card.unread { background: #F0F7FF; border-left: 4px solid var(--color-primary); }
-        
-        .notif-card__icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
-        .notif-card__body { flex: 1; }
-        .notif-card__top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
-        .notif-card__title { font-size: 1rem; font-weight: 800; color: var(--color-primary); }
-        .notif-card__time { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 600; }
-        .notif-card__text { font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-        @media (max-width: 768px) {
-
-            .page-content { padding: 1.25rem; }
-            .filter-tabs { padding-bottom: 1rem; }
-            .topbar__actions { gap: 0.75rem; }
-            .topbar__actions span { display: none; }
-        }
-    </style>
+    
 </head>
 <body>
 

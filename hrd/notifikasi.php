@@ -42,36 +42,7 @@ $notifications = [
 <head>
     <title>Notifikasi – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-        .page-content { padding: 2rem; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
-
-        .notif-container { display: flex; flex-direction: column; gap: 1rem; }
-        .notif-card { background: #fff; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--color-gray-100); display: flex; gap: 1.25rem; transition: 0.2s; position: relative; }
-        .notif-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--color-primary-100); }
-        .notif-card.unread { background: var(--color-primary-50)20; border-left: 4px solid var(--color-primary); }
-        
-        .notif-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .icon-critical { background: var(--color-error-bg); color: var(--color-error); }
-        .icon-warning { background: var(--color-warning-bg); color: #856404; }
-        .icon-info { background: var(--color-info-bg); color: var(--color-info); }
-
-        .notif-body { flex: 1; }
-        .notif-title { font-size: 1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.25rem; }
-        .notif-msg { font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5; margin-bottom: 0.75rem; }
-        .notif-time { font-size: 0.75rem; color: var(--color-gray-400); font-weight: 600; }
-
-        .btn-mark-all { background: none; border: none; color: var(--color-primary); font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-        @media (max-width: 768px) {
-            .btn-mark-all span { display: none; }
-        }
-    </style>
+    
 </head>
 <body>
 

@@ -14,76 +14,7 @@ $active_menu = 'dashboard';
 <head>
     <title>Dashboard Admin – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* ── Main Wrapper ── */
-        .main-wrapper {
-            margin-left: 260px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* ── Page Content ── */
-        .page-content { padding: 2rem; flex: 1; }
-
-        /* ── Summary Cards ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
-        .stat-card {
-            background: #fff;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-gray-100);
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: 0.3s;
-        }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        
-        .stat-icon {
-            width: 54px; height: 54px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-        }
-        
-        .stat-info { display: flex; flex-direction: column; }
-        .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; }
-        .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; letter-spacing: 0.05em; }
-
-        /* Colors for icons */
-        .bg-blue { background: #E3F2FD; color: #1976D2; }
-        .bg-purple { background: #F3E5F5; color: #7B1FA2; }
-        .bg-green { background: #E8F5E9; color: #388E3C; }
-        .bg-orange { background: #FFF3E0; color: #F57C00; }
-
-        /* ── Quick Actions ── */
-        .action-title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1.25rem; }
-        .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .action-card {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 20px;
-            text-align: center;
-            text-decoration: none;
-            border: 1px solid var(--color-gray-100);
-            box-shadow: var(--shadow-sm);
-            transition: 0.3s;
-        }
-        .action-card:hover { border-color: var(--color-accent); transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        .action-card__icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
-        .action-card__name { display: block; font-size: 1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem; }
-        .action-card__desc { display: block; font-size: 0.8rem; color: var(--color-gray-500); line-height: 1.5; }
-
-        @media (max-width: 1200px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .actions-grid { grid-template-columns: 1fr; }
-        }
-    </style>
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>

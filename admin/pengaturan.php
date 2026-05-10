@@ -22,35 +22,7 @@ $settings = [
 <head>
     <title>Pengaturan Sistem – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-
-        .page-content { padding: 2rem; flex: 1; max-width: 900px; }
-
-        .settings-card { background: #fff; border-radius: 20px; padding: 2.5rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-        .setting-group { margin-bottom: 2rem; border-bottom: 1px solid var(--color-gray-50); padding-bottom: 1.5rem; }
-        .setting-group:last-child { border-bottom: none; }
-        
-        .setting-info { margin-bottom: 1rem; }
-        .setting-label { display: block; font-size: 1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.25rem; }
-        .setting-desc { font-size: 0.85rem; color: var(--color-gray-500); }
-
-        .form-input { width: 100%; max-width: 400px; padding: 0.8rem 1rem; border-radius: 10px; border: 1.5px solid var(--color-gray-200); font-family: inherit; font-size: 0.9rem; margin-top: 0.5rem; }
-        
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--color-accent); }
-        input:checked + .slider:before { transform: translateX(24px); }
-
-        .btn-save { background: var(--color-accent); color: #fff; padding: 0.8rem 2.5rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-accent); }
-        .btn-save:hover { transform: translateY(-2px); background: var(--color-accent-dark); }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>

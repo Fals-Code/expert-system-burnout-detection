@@ -33,66 +33,7 @@ if ($hasil_ada) {
 <head>
     <title>Riwayat Deteksi – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        .page-header { margin-bottom: 2rem; }
-        .page-title { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); }
-        
-        .content-grid { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
-        .card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-100); }
-        .card-title { font-size: 1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1.5rem; }
 
-        /* ── Timeline ── */
-        .timeline { position: relative; padding-left: 2rem; }
-        .timeline::before { content: ''; position: absolute; left: 0.35rem; top: 0; bottom: 0; width: 2px; background: var(--color-gray-100); }
-        .timeline-item { position: relative; margin-bottom: 2rem; }
-        .timeline-dot { position: absolute; left: -1.95rem; top: 0.25rem; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--color-gray-100); z-index: 2; }
-        .timeline-content { display: flex; justify-content: space-between; align-items: center; }
-        .timeline-date { font-size: 0.8rem; font-weight: 700; color: var(--color-gray-400); margin-bottom: 0.25rem; }
-        .timeline-level { font-size: 1rem; font-weight: 800; color: var(--color-primary); }
-        
-        .badge { padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .badge-tinggi { background: #FFF5F5; color: #DC3545; }
-        .badge-sedang { background: #FFFBEB; color: #D97706; }
-        .badge-rendah { background: #F0FFF4; color: #28A745; }
-
-        /* ── Trend Chart (SVG) ── */
-        .chart-container { height: 220px; width: 100%; margin-top: 1rem; position: relative; }
-        .chart-svg { width: 100%; height: 100%; overflow: visible; }
-        .chart-line { 
-            fill: none; stroke: var(--color-primary); stroke-width: 4; 
-            stroke-linecap: round; stroke-linejoin: round; 
-            stroke-dasharray: 1000; stroke-dashoffset: 1000;
-            animation: drawLine 2s ease-out forwards;
-        }
-        .chart-area { fill: url(#chartGradient); opacity: 0; animation: fadeIn 1s ease-out 1.5s forwards; }
-        .chart-point { fill: #fff; stroke: var(--color-primary); stroke-width: 3; opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
-        .chart-label { font-size: 10px; fill: var(--color-gray-400); font-weight: 700; }
-
-        @keyframes drawLine { to { stroke-dashoffset: 0; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .btn-cta { background: var(--color-accent); color: #fff; padding: 0.7rem 1.25rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; box-shadow: var(--shadow-accent); }
-        .btn-cta:hover { transform: translateY(-2px); background: var(--color-accent-dark); }
-
-
-        .btn-report { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary); text-decoration: underline; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0 !important; }
-            .content-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 768px) {
-            .page-header { flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
-            .btn-cta { width: 100%; justify-content: center; }
-            .timeline { padding-left: 1.5rem; }
-            .timeline-content { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-            .timeline-content > div:last-child { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-gray-50); padding-top: 0.5rem; }
-        }
-    </style>
 </head>
 <body>
 
@@ -115,13 +56,13 @@ if ($hasil_ada) {
 
         <?php if (empty($history)): ?>
             <!-- Empty State -->
-            <div style="background: #fff; border-radius: 24px; padding: 5rem 2rem; text-align: center; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-top: 2rem;">
-                <div style="font-size: 5rem; margin-bottom: 1.5rem;">🧘‍♂️</div>
-                <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem;">Belum Ada Riwayat Deteksi</h2>
-                <p style="color: var(--color-gray-500); font-size: 1.1rem; max-width: 500px; margin: 0 auto 2.5rem;">
+            <div class="empty-state">
+                <div class="empty-state__icon">🧘‍♂️</div>
+                <h2 class="empty-state__title">Belum Ada Riwayat Deteksi</h2>
+                <p class="empty-state__desc">
                     Sepertinya Anda belum melakukan pengecekan kesehatan mental. Mulailah sekarang untuk memantau kondisi Anda.
                 </p>
-                <a href="deteksi.php" class="btn-cta" style="display: inline-flex; width: auto; padding: 1rem 2.5rem;">
+                <a href="deteksi.php" class="btn-cta empty-state__action">
                     Mulai Deteksi Sekarang
                 </a>
             </div>

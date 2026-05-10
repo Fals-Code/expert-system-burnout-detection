@@ -28,52 +28,7 @@ $aturan_list = [
 <head>
     <title>Basis Pengetahuan – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .page-content { padding: 2rem; flex: 1; }
-
-        .tabs { display: flex; gap: 2rem; border-bottom: 2px solid var(--color-gray-100); margin-bottom: 2rem; }
-        .tab-item { padding: 1rem 0; font-weight: 700; color: var(--color-gray-400); cursor: pointer; position: relative; transition: 0.3s; }
-        .tab-item:hover { color: var(--color-primary); }
-        .tab-item.active { color: var(--color-primary); }
-        .tab-item.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--color-primary); }
-
-        .content-card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        
-        .btn-add { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s; }
-        .btn-add:hover { background: var(--color-primary-dark); transform: translateY(-2px); }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1.25rem 1rem; font-size: 0.8rem; font-weight: 700; color: var(--color-gray-400); border-bottom: 2px solid var(--color-gray-50); text-transform: uppercase; }
-        td { padding: 1.25rem 1rem; font-size: 0.95rem; border-bottom: 1px solid var(--color-gray-50); color: var(--color-gray-700); }
-        
-        .badge-cat { padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: capitalize; }
-        .cat-fisik { background: #E3F2FD; color: #1976D2; }
-        .cat-emosional { background: #F3E5F5; color: #7B1FA2; }
-        
-        .actions { display: flex; gap: 0.75rem; }
-        .btn-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-gray-200); background: #fff; cursor: pointer; transition: 0.2s; }
-        .btn-edit:hover { background: var(--color-primary-50); color: var(--color-primary); border-color: var(--color-primary); }
-        .btn-delete:hover { background: var(--color-error-bg); color: var(--color-error); border-color: var(--color-error); }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: #fff; border-radius: 24px; width: 100%; max-width: 500px; padding: 2.5rem; box-shadow: var(--shadow-xl); position: relative; animation: modalSlideUp 0.3s ease; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-gray-400); }
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Form Modal Styles */
-        .form-group { margin-bottom: 1.25rem; }
-        .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem; }
-        .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid var(--color-gray-200); outline: none; transition: 0.3s; font-family: inherit; }
-        .form-input:focus { border-color: var(--color-primary); }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>

@@ -36,58 +36,7 @@ elseif ($k['tingkat'] === 'Rendah') { $status_color = '#10B981'; $status_bg = '#
 <head>
     <title>Detail Karyawan – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .page-content { padding: 2rem; flex: 1; }
-
-        .detail-grid { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
-        
-        /* Card Kiri */
-        .card-profile { background: #fff; border-radius: 20px; padding: 2.5rem 1.5rem; text-align: center; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-        .avatar-large { width: 100px; height: 100px; border-radius: 50%; background: var(--color-primary-50); color: var(--color-primary); font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 4px solid #fff; box-shadow: var(--shadow-md); }
-        .profile-name { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.25rem; }
-        .profile-info { font-size: 0.875rem; color: var(--color-gray-500); margin-bottom: 1.5rem; font-weight: 600; }
-        
-        .status-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 99px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; background: <?= $status_bg ?>; color: <?= $status_color ?>; margin-bottom: 2rem; }
-
-        .contact-info { text-align: left; background: var(--color-gray-50); padding: 1.25rem; border-radius: 12px; margin-top: 1rem; }
-        .contact-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--color-gray-600); }
-        .contact-item:last-child { margin-bottom: 0; }
-        .contact-item svg { color: var(--color-gray-400); }
-
-        /* Card Kanan */
-        .content-card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; }
-        .card-title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
-        
-        .rec-box { background: <?= $status_bg ?>20; border-left: 4px solid <?= $status_color ?>; padding: 1.5rem; border-radius: 0 12px 12px 0; margin-bottom: 1.5rem; }
-        .rec-title { font-weight: 800; color: <?= $status_color ?>; margin-bottom: 0.5rem; font-size: 0.95rem; }
-        .rec-text { font-size: 0.9rem; color: var(--color-gray-700); line-height: 1.6; }
-
-        .btn-group { display: flex; gap: 1rem; margin-top: 2rem; }
-        .btn { padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 0.6rem; transition: 0.2s; border: none; }
-        .btn-primary { background: var(--color-primary); color: #fff; }
-        .btn-primary:hover { background: var(--color-primary-dark); transform: translateY(-2px); }
-        .btn-outline { background: #fff; border: 1px solid var(--color-gray-200); color: var(--color-gray-600); }
-        .btn-outline:hover { background: var(--color-gray-50); border-color: var(--color-primary); color: var(--color-primary); }
-
-        .history-list { display: flex; flex-direction: column; gap: 1rem; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 12px; background: var(--color-gray-50); border: 1px solid var(--color-gray-100); }
-        .history-date { font-weight: 700; color: var(--color-primary); font-size: 0.9rem; }
-        .history-level { font-size: 0.8rem; font-weight: 800; }
-
-        @media (max-width: 992px) {
-            .detail-grid { grid-template-columns: 1fr; }
-            .main-wrapper { margin-left: 0 !important; }
-        }
-        @media (max-width: 768px) {
-            .page-content { padding: 1rem; }
-            .card-profile { padding: 1.5rem; }
-            .content-card { padding: 1.5rem; }
-            .btn-group { gap: 0.75rem; }
-            .btn { width: 100%; justify-content: center; }
-        }
-    </style>
+    
 </head>
 <body>
 

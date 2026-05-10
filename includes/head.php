@@ -11,6 +11,13 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERV
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/style.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/sidebar.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/dashboard.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/table.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/wizard.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/empty-state.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/report.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/profile.css">
 <?php include $base_path . 'includes/favicon.php'; ?>
 <script>
     // Immediate Theme Application (Prevent FOUC)

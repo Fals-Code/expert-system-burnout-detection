@@ -23,45 +23,7 @@ $laporan_divisi = [
 <head>
     <title>Laporan Burnout – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; overflow-x: hidden; }
-        .main-wrapper { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .page-content { padding: 2rem; flex: 1; }
-
-        .content-card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
-        .card-title { font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1.5rem; }
-
-        /* Table Style */
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th { text-align: left; padding: 1rem; font-size: 0.8rem; font-weight: 700; color: var(--color-gray-400); border-bottom: 2px solid var(--color-gray-50); text-transform: uppercase; }
-        td { padding: 1rem; font-size: 0.95rem; border-bottom: 1px solid var(--color-gray-50); color: var(--color-gray-700); }
-        
-        .badge-count { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 800; font-size: 0.75rem; }
-        .badge-tinggi { background: var(--color-error-bg); color: var(--color-error); }
-        .badge-sedang { background: var(--color-warning-bg); color: #856404; }
-        .badge-rendah { background: var(--color-success-bg); color: var(--color-success); }
-
-        .btn-print { background: var(--color-accent); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.2s; }
-        .btn-print:hover { background: var(--color-accent-dark); transform: translateY(-2px); }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0 !important; }
-        }
-
-        @media (max-width: 768px) {
-            .page-content { padding: 1rem; }
-            .content-card { padding: 1.25rem; }
-            .topbar__actions { width: 100%; display: flex; gap: 0.5rem; justify-content: space-between; }
-            .btn-print { flex: 1; padding: 0.6rem; font-size: 0.8rem; justify-content: center; }
-            th, td { padding: 0.75rem 0.5rem; font-size: 0.85rem; }
-        }
-
-        @media print {
-            .sidebar, .topbar, .btn-print { display: none !important; }
-            .main-wrapper { margin-left: 0; }
-            .content-card { box-shadow: none; border: none; }
-        }
-    </style>
+    
 </head>
 <body>
 

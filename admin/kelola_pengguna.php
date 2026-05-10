@@ -21,47 +21,7 @@ $users = [
 <head>
     <title>Kelola Pengguna – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-    <style>
-        body { background: var(--color-gray-50); display: flex; min-height: 100vh; }
-
-        .page-content { padding: 2rem; flex: 1; }
-
-        .card { background: #fff; border-radius: 20px; padding: 2rem; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        
-        .btn-add { background: var(--color-primary); color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s; }
-        .btn-add:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1rem; border-bottom: 2px solid var(--color-gray-50); color: var(--color-gray-400); font-size: 0.8rem; text-transform: uppercase; }
-        td { padding: 1rem; border-bottom: 1px solid var(--color-gray-50); font-size: 0.9rem; }
-        
-        .role-badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-        .role-admin { background: #EBF2FA; color: #1E3A5F; }
-        .role-hrd { background: #E8F5E9; color: #2E7D32; }
-        .role-karyawan { background: #FFF3E0; color: #EF6C00; }
-
-        .actions { display: flex; gap: 0.5rem; }
-        .btn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--color-gray-200); background: #fff; transition: 0.2s; }
-        .btn-edit:hover { background: var(--color-primary-50); color: var(--color-primary); border-color: var(--color-primary); }
-        .btn-delete:hover { background: var(--color-error-bg); color: var(--color-error); border-color: var(--color-error); }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: #fff; border-radius: 24px; width: 100%; max-width: 500px; padding: 2.5rem; box-shadow: var(--shadow-xl); position: relative; animation: modalSlideUp 0.3s ease; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-gray-400); }
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .form-group { margin-bottom: 1.5rem; }
-        .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem; }
-        .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid var(--color-gray-200); outline: none; transition: 0.3s; font-family: inherit; }
-        .form-input:focus { border-color: var(--color-primary); }
-        .btn-submit { width: 100%; background: var(--color-primary); color: #fff; padding: 0.75rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; margin-top: 1rem; }
-
-        @media (max-width: 992px) {
-            .main-wrapper { margin-left: 0; }
-        }
-    </style>
+    
 </head>
 <body>
 <?php include '../includes/sidebar_admin.php'; ?>
