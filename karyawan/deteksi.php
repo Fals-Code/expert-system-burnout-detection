@@ -39,39 +39,36 @@ $questions = [
     <?php include '../includes/topbar.php'; ?>
 
     <main class="wizard-container">
-        <!-- Step Indicators -->
-        <div class="step-indicators" id="step-indicators" style="display:none">
-            <?php for($i=1; $i<=11; $i++): ?>
-                <div class="indicator-dot <?= $i===1 ? 'active' : '' ?>"></div>
-            <?php endfor; ?>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="progress-wrapper" style="display:none">
-            <span class="progress-text" id="progress-text">Langkah 1 dari 10</span>
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progress-bar"></div>
-            </div>
-        </div>
-
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-content">
-                <span class="spinner-icon">⚙️</span>
-                <p class="loading-text">Sedang menganalisis jawaban Anda...</p>
+                <div class="spinner-container">
+                    <div class="spinner-pulse"></div>
+                    <span class="spinner-icon">⚙️</span>
+                </div>
+                <p class="loading-text">Menganalisis Jawaban Anda...</p>
+                <p style="font-size: 0.875rem; color: var(--color-gray-400); margin-top: 0.5rem;">Sistem pakar sedang memproses data klinis...</p>
             </div>
         </div>
 
         <!-- Welcome Step -->
-        <div id="startScreen" class="question-card" style="display: flex; text-align: center; justify-content: center; align-items: center; padding: 3rem;">
-            <div style="max-width: 500px;">
-                <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🏥</div>
-                <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: 1rem;">Mulai Analisis Burnout</h2>
-                <p style="color: var(--color-gray-500); line-height: 1.6; margin-bottom: 2rem;">
-                    Sistem pakar kami akan membuktikan hipotesis kondisi kesehatan mental Anda melalui 10 pertanyaan klinis. Mohon jawab dengan jujur untuk hasil yang akurat.
+        <div id="startScreen" class="question-card" style="text-align: center;">
+            <div class="step active" style="opacity: 1; transform: none;">
+                <div class="finish-icon-wrapper" style="margin-bottom: 2rem;">
+                    <div class="pulse-ring"></div>
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                </div>
+                <h1 class="question-text" style="margin-bottom: 1rem;">Mulai Deteksi Burnout</h1>
+                <p style="color: var(--color-gray-500); line-height: 1.6; margin-bottom: 3rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    Sistem pakar kami akan menganalisis kondisi kesehatan mental Anda melalui serangkaian pertanyaan klinis. Mohon jawab dengan jujur untuk hasil yang paling akurat.
                 </p>
-                <button type="button" class="btn-nav btn-result" style="margin: 0 auto; padding: 1rem 2.5rem;" onclick="startDetection()">
-                    Mulai Sekarang
+                <button type="button" class="btn-nav btn-result" style="margin: 0 auto; padding: 1.25rem 3rem;" onclick="startDetection()">
+                    Mulai Analisis Sekarang
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -79,23 +76,47 @@ $questions = [
         <!-- Form Konsultasi -->
         <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)" style="display:none">
             <div class="question-card">
+                <!-- Integrated Progress Header -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-title" id="progress-text">Langkah 1 dari 10</span>
+                        <span class="progress-percentage" id="progress-percent">10%</span>
+                    </div>
+                    <div class="modern-progress-bar">
+                        <div class="modern-progress-fill" id="progress-bar" style="width: 10%;"></div>
+                    </div>
+                </div>
                 <?php foreach ($questions as $index => $q): ?>
                 <div class="step <?= $index === 0 ? 'active' : '' ?>" data-step="<?= $index + 1 ?>">
                     <h2 class="question-text"><?= $q ?></h2>
-                    <div class="options-group">
-                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Ya')">
-                            <input type="radio" name="q<?= $index + 1 ?>" value="Ya" style="display:none">
-                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Ya
+                    <div class="options-group options-group--3">
+                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Sering')">
+                            <input type="radio" name="q<?= $index + 1 ?>" value="Sering" style="display:none">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <span>Sering Merasakan</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Tidak')">
-                            <input type="radio" name="q<?= $index + 1 ?>" value="Tidak" style="display:none">
-                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Tidak
+                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Kadang')">
+                            <input type="radio" name="q<?= $index + 1 ?>" value="Kadang" style="display:none">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                                </svg>
+                            </div>
+                            <span>Kadang-kadang</span>
+                        </label>
+                        <label class="option-btn" onclick="selectOption(<?= $index + 1 ?>, 'Tidak Pernah')">
+                            <input type="radio" name="q<?= $index + 1 ?>" value="Tidak Pernah" style="display:none">
+                            <div class="option-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                            <span>Tidak Pernah</span>
                         </label>
                     </div>
                 </div>
@@ -103,38 +124,59 @@ $questions = [
 
                 <!-- Summary Step -->
                 <div class="step" data-step="11">
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1.5rem;">📊</div>
+                    <div class="confetti-decoration">
+                        <div class="confetti-piece" style="left: 10%; animation: confettiDrop 4s linear infinite; background: #FFD700;"></div>
+                        <div class="confetti-piece" style="left: 30%; animation: confettiDrop 5s linear infinite; background: var(--color-accent); animation-delay: 1s;"></div>
+                        <div class="confetti-piece" style="left: 50%; animation: confettiDrop 3s linear infinite; background: #4FACFE; animation-delay: 2s;"></div>
+                        <div class="confetti-piece" style="left: 70%; animation: confettiDrop 6s linear infinite; background: #F4845F; animation-delay: 0.5s;"></div>
+                        <div class="confetti-piece" style="left: 90%; animation: confettiDrop 4.5s linear infinite; background: #10B981; animation-delay: 1.5s;"></div>
+                    </div>
+                    <div class="finish-screen">
+                        <div class="finish-icon-wrapper">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring" style="animation-delay: 0.5s"></div>
+                            <svg class="finish-svg" width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9882C18.7182 19.7217 16.9033 20.9982 14.8354 21.6263C12.7674 22.2544 10.5573 22.2019 8.52419 21.4768C6.49106 20.7517 4.7502 19.3957 3.56066 17.6078C2.37111 15.8199 1.79619 13.6931 1.92131 11.5401C2.04642 9.38716 2.8647 7.33045 4.25206 5.67389C5.63942 4.01733 7.51862 2.85198 9.60803 2.3508C11.6974 1.84961 13.882 2.03961 15.84 2.89" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 4L12 14.01L9 11.01" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
                         <h2 class="question-text">Analisis Selesai</h2>
-                        <p style="color: var(--color-gray-500); margin-bottom: 2rem;">
+                        <p class="finish-subtitle">
                             Terima kasih telah menjawab semua pertanyaan. Sistem siap menganalisis tingkat burnout Anda berdasarkan gejala yang dilaporkan.
                         </p>
-                        <div style="background: var(--color-gray-50); padding: 1.5rem; border-radius: 16px; border: 1px dashed var(--color-gray-300); display: inline-block; width: 100%;">
-                            <p style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary);">Semua data Anda bersifat rahasia dan hanya digunakan untuk keperluan deteksi ini.</p>
+                        <div class="finish-info-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <p>Data Anda bersifat rahasia & aman.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="nav-buttons" style="display:none">
-                <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                    Sebelumnya
-                </button>
-                <button type="button" class="btn-nav btn-next" id="nextBtn" onclick="changeStep(1)" disabled>
-                    Selanjutnya
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-                <button type="submit" class="btn-nav btn-result" id="submitBtn" style="display:none">
-                    Lihat Hasil
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                </button>
+                <!-- Navigation Buttons -->
+                <div class="nav-buttons">
+                    <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Sebelumnya
+                    </button>
+                    <button type="button" class="btn-nav btn-next" id="nextBtn" onclick="changeStep(1)" disabled>
+                        Lanjutkan
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                    <button type="submit" class="btn-nav btn-result" id="submitBtn" style="display:none">
+                        Lihat Hasil Analisis
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </form>
     </main>
@@ -177,9 +219,7 @@ $questions = [
                 // Hide start screen and show form
                 document.getElementById('startScreen').style.display = 'none';
                 document.getElementById('burnoutForm').style.display = 'block';
-                document.getElementById('step-indicators').style.display = 'flex';
-                document.querySelector('.progress-wrapper').style.display = 'block';
-                document.querySelector('.nav-buttons').style.display = 'flex';
+                updateUI();
 
                 // Jump to the current step without animation
                 const steps = document.querySelectorAll('.step');
@@ -195,15 +235,15 @@ $questions = [
 
     function startDetection() {
         if (isAnimating) return;
+        isAnimating = true;
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('burnoutForm').style.display = 'block';
-        document.getElementById('step-indicators').style.display = 'flex';
-        document.querySelector('.progress-wrapper').style.display = 'block';
-        document.querySelector('.nav-buttons').style.display = 'flex';
         updateUI();
+        setTimeout(() => { isAnimating = false; }, 500);
     }
 
     function selectOption(step, val) {
+        if (isAnimating) return;
         // Highlight selection
         const stepEl = document.querySelector(`.step[data-step="${step}"]`);
         const btns = stepEl.querySelectorAll('.option-btn');
@@ -219,27 +259,27 @@ $questions = [
         
         saveState();
 
-        // Enable Next or Submit
         checkNav();
-        
-        // Update Indicator
-        updateIndicators();
 
         // Auto next with slight delay
         if (step < totalSteps) {
             if (autoNextTimeout) clearTimeout(autoNextTimeout);
             autoNextTimeout = setTimeout(() => {
-                if (currentStep === step) changeStep(1);
+                if (currentStep === step && !isAnimating) changeStep(1);
             }, 500);
         }
     }
 
     function changeStep(n) {
+        if (isAnimating) return;
         const steps = document.querySelectorAll('.step');
         const prevStepIdx = currentStep - 1;
         const nextStepIdx = currentStep + n - 1;
 
         if (nextStepIdx < 0 || nextStepIdx >= totalSteps) return;
+
+        if (autoNextTimeout) clearTimeout(autoNextTimeout);
+        isAnimating = true;
 
         // Apply animations
         steps[prevStepIdx].classList.remove('active', 'slide-in-right', 'slide-in-left');
@@ -255,18 +295,24 @@ $questions = [
             currentStep += n;
             saveState();
             updateUI();
+            
+            setTimeout(() => { isAnimating = false; }, 300);
         }, 300);
     }
 
     function updateUI() {
         // Update Progress
-        const percent = (currentStep / totalSteps) * 100;
+        const percent = Math.round((currentStep / totalSteps) * 100);
         document.getElementById('progress-bar').style.width = percent + '%';
+        
+        // Update percentage text if it exists
+        const percentEl = document.getElementById('progress-percent');
+        if (percentEl) percentEl.innerText = percent + '%';
         
         if (currentStep <= 10) {
             document.getElementById('progress-text').innerText = `Gejala ${currentStep} dari 10`;
         } else {
-            document.getElementById('progress-text').innerText = `Konfirmasi Akhir`;
+            document.getElementById('progress-text').innerText = `Analisis Selesai`;
         }
         
         // Update Buttons
@@ -280,21 +326,9 @@ $questions = [
             document.getElementById('submitBtn').style.display = 'none';
         }
         
-        updateIndicators();
         checkNav();
     }
 
-    function updateIndicators() {
-        const dots = document.querySelectorAll('.indicator-dot');
-        dots.forEach((dot, idx) => {
-            dot.classList.remove('active', 'completed');
-            if (idx + 1 === currentStep) {
-                dot.classList.add('active');
-            } else if (answers[idx + 1]) {
-                dot.classList.add('completed');
-            }
-        });
-    }
 
     function checkNav() {
         if (currentStep > 10) {

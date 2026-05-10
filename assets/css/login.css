@@ -5,13 +5,34 @@
 /* ── Login Body ──────────────────────────────────────────── */
 .login-body {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0D1F36 0%, #1E3A5F 45%, #2A5080 100%);
+    background: radial-gradient(circle at top right, #1E3A5F, #0D1F36);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
     padding: var(--space-6) var(--space-4);
+}
+
+/* ── Floating Abstract Shapes ──────────────────────────────── */
+.shape {
+    position: absolute;
+    filter: blur(80px);
+    z-index: 0;
+    opacity: 0.4;
+    border-radius: 50%;
+    animation: floatShape 20s infinite alternate;
+}
+
+.shape--1 { width: 400px; height: 400px; background: var(--color-accent); top: -100px; left: -100px; }
+.shape--2 { width: 300px; height: 300px; background: var(--color-primary-light); bottom: -50px; right: 10%; animation-delay: -5s; }
+.shape--3 { width: 250px; height: 250px; background: #4facfe; top: 20%; right: -50px; animation-delay: -10s; }
+
+@keyframes floatShape {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(30px, -50px) scale(1.1); }
+    66%  { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
 }
 
 /* ── Animated Background Circles ───────────────────────────── */
@@ -125,13 +146,25 @@
 /* ── Login Card ──────────────────────────────────────────────── */
 .login-card {
     width: 100%;
-    background: var(--color-white);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: var(--radius-xl);
-    padding: var(--space-6) var(--space-6);
-    box-shadow: var(--shadow-xl);
-    border: 1px solid rgba(255,255,255,0.08);
-    animation: slideUpFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    padding: var(--space-10) var(--space-8);
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUpFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    position: relative;
+    overflow: hidden;
 }
+
+/* Card entry animation delay classes */
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
 
 @keyframes slideUpFadeIn {
     from {
@@ -259,12 +292,13 @@
 .form-label {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 0.6rem;
     font-size: var(--font-size-sm);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-gray-700);
     letter-spacing: 0.01em;
     cursor: pointer;
+    margin-bottom: 0.2rem;
 }
 
 .form-label__icon {
@@ -275,12 +309,18 @@
 /* Input Wrapper (for icon + focus ring) */
 .input-wrapper {
     position: relative;
+    width: 100%;
+    display: grid;
+    grid-template-areas: "stack";
+    align-items: center;
 }
 
 /* Input Field */
 .form-input {
+    grid-area: stack;
     width: 100%;
-    padding: 0.75rem var(--space-4);
+    padding: 0.75rem 1rem;
+    padding-right: 3rem;
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     color: var(--color-gray-800);
@@ -288,10 +328,7 @@
     border: 2px solid var(--color-gray-200);
     border-radius: var(--radius-md);
     outline: none;
-    transition:
-        border-color var(--transition-base),
-        background var(--transition-base),
-        box-shadow var(--transition-base);
+    transition: all var(--transition-base);
     line-height: 1.5;
     caret-color: var(--color-accent);
 }
@@ -299,6 +336,12 @@
 .form-input::placeholder {
     color: var(--color-gray-400);
     font-weight: 400;
+}
+
+/* Hide default browser icons */
+.form-input::-ms-reveal,
+.form-input::-ms-clear {
+    display: none;
 }
 
 .form-input:hover {
@@ -328,10 +371,10 @@
 
 /* Password toggle button */
 .input-toggle-pw {
-    position: absolute;
-    right: var(--space-3);
-    top: 50%;
-    transform: translateY(-50%);
+    grid-area: stack;
+    justify-self: end;
+    margin-right: 0.5rem;
+    z-index: 10;
     background: none;
     border: none;
     cursor: pointer;
@@ -339,10 +382,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-1);
-    border-radius: var(--radius-sm);
-    transition: color var(--transition-fast), background var(--transition-fast);
-    line-height: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    position: relative; /* Remove absolute */
 }
 
 .input-toggle-pw:hover {
@@ -428,8 +472,8 @@
 
 .checkbox-text {
     font-size: var(--font-size-sm);
-    color: var(--color-gray-600);
-    font-weight: 500;
+    color: var(--color-gray-700);
+    font-weight: 600;
 }
 
 .form-link {
@@ -451,7 +495,7 @@
     justify-content: center;
     gap: var(--space-2);
     width: 100%;
-    padding: 0.875rem var(--space-6);
+    padding: 1rem var(--space-6);
     background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
     color: var(--color-white);
     font-family: var(--font-family);
@@ -460,15 +504,19 @@
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    letter-spacing: 0.02em;
-    transition:
-        transform var(--transition-base),
-        box-shadow var(--transition-base),
-        background var(--transition-base);
-    box-shadow: var(--shadow-accent);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 8px 20px rgba(244, 132, 95, 0.35);
     position: relative;
     overflow: hidden;
     margin-top: var(--space-2);
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(244, 132, 95, 0.45);
+    letter-spacing: 0.05em;
 }
 
 .btn-login::before {
@@ -486,7 +534,7 @@
 
 .btn-login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(244,132,95,0.42);
+    box-shadow: 0 12px 32px rgba(244,132,95,0.45), 0 0 0 4px rgba(244,132,95,0.1);
 }
 
 .btn-login:active {
@@ -561,8 +609,8 @@
 }
 
 .demo-credentials__chevron {
-    margin-left: auto;
-    transition: transform var(--transition-base);
+    margin-left: 0.5rem;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
@@ -718,4 +766,29 @@
         grid-template-columns: 70px 1fr 70px;
         font-size: 10px;
     }
+}
+
+/* ── Password Strength Meter ────────────────────────────────── */
+.strength-meter {
+    height: 6px;
+    background: var(--color-gray-100);
+    border-radius: 99px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+    display: flex;
+}
+
+.strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
+    text-align: right;
+    transition: color 0.3s ease;
 }

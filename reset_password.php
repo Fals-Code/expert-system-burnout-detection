@@ -29,11 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Reset Password – BurnoutXpert</title>
     <?php include 'includes/head.php'; ?>
     <link rel="stylesheet" href="assets/css/login.css" />
-    <style>
-        .strength-meter { height: 6px; background: var(--color-gray-100); border-radius: 4px; margin-top: 0.5rem; overflow: hidden; display: flex; }
-        .strength-bar { height: 100%; width: 0; transition: 0.3s ease; }
-        .strength-text { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-500); margin-top: 0.25rem; text-align: right; }
-    </style>
 </head>
 <body class="login-body">
 
@@ -42,13 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="bg-circle bg-circle--2"></div>
     </div>
 
+    <!-- ===== Top-left Brand Logo ===== -->
+    <a href="index.php" class="brand-logo" aria-label="BurnoutXpert Home">
+        <div class="brand-logo__icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="14" cy="14" r="14" fill="#F4845F"/>
+                <path d="M14 6C14 6 8 10 8 15C8 18.314 10.686 21 14 21C17.314 21 20 18.314 20 15C20 10 14 6 14 6Z" fill="white" opacity="0.9"/>
+                <path d="M14 11C14 11 11 13.5 11 16C11 17.657 12.343 19 14 19C15.657 19 17 17.657 17 16C17 13.5 14 11 14 11Z" fill="#1E3A5F"/>
+            </svg>
+        </div>
+        <span class="brand-logo__text">Burnout<span class="brand-logo__accent">Xpert</span></span>
+    </a>
+
     <main class="login-wrapper" role="main">
         <div class="login-card">
             <div class="login-card__header">
-                <div class="login-card__icon">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        <path d="M8 11l3 3 5-5"></path>
+                <div class="login-card__icon" aria-hidden="true">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="20" fill="#F4845F" opacity="0.15"/>
+                        <circle cx="20" cy="20" r="14" fill="#F4845F" opacity="0.2"/>
+                        <path d="M20 12V18M20 18L23 15M20 18L17 15M11 20C11 24.9706 15.0294 29 20 29C24.9706 29 29 24.9706 29 20C29 15.0294 24.9706 11 20 11C15.0294 11 11 15.0294 11 20Z" stroke="#F4845F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
                 <h1 class="login-card__title">Buat Password Baru</h1>

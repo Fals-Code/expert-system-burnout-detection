@@ -23,7 +23,7 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
     <div class="main-wrapper">
         <?php include '../includes/topbar.php'; ?>
 
-        <main style="padding: 0 2rem 2rem;">
+        <main class="page-content">
             <div class="profile-grid">
             
             <!-- Left Column: Profile Card -->

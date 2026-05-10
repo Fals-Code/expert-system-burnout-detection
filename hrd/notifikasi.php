@@ -77,7 +77,7 @@ $notifications = [
                 <div class="notif-body">
                     <div class="notif-title"><?= $n['title'] ?></div>
                     <div class="notif-msg"><?= $n['message'] ?></div>
-                    <div class="notif-time"><?= $n['time'] ?></div>
+                    <span class="notif-time"><?= $n['time'] ?></span>
                 </div>
             </div>
             <?php endforeach; ?>

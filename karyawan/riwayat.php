@@ -42,8 +42,8 @@ if ($hasil_ada) {
     <div class="main-wrapper">
         <?php include '../includes/topbar.php'; ?>
 
-        <main style="padding: 0 2rem 2rem;">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <main class="page-content">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <div>
                     <h1 class="page-title">Riwayat Deteksi Burnout</h1>
                     <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
@@ -67,9 +67,9 @@ if ($hasil_ada) {
                 </a>
             </div>
         <?php else: ?>
-            <div class="content-grid">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <!-- Timeline Riwayat -->
-                <div class="card">
+                <div class="content-card">
                     <h2 class="card-title">Timeline Aktivitas</h2>
                     <div class="timeline">
                         <?php foreach ($history as $h): ?>
@@ -96,7 +96,7 @@ if ($hasil_ada) {
                 </div>
 
                 <!-- Trend Chart -->
-                <div class="card">
+                <div class="content-card">
                     <h2 class="card-title">Tren Kondisi</h2>
                     <div class="chart-container">
                         <div id="trendChart"></div>

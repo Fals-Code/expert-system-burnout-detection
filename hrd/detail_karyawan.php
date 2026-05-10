@@ -58,7 +58,7 @@ elseif ($k['tingkat'] === 'Rendah') { $status_color = '#10B981'; $status_bg = '#
                     <h1 class="profile-name"><?= htmlspecialchars($k['nama']) ?></h1>
                     <p class="profile-info"><?= $k['posisi'] ?> • <?= $k['divisi'] ?></p>
                     
-                    <span class="status-badge">Tingkat Burnout: <?= $k['tingkat'] ?></span>
+                    <span class="status-badge" style="background: <?= $status_bg ?>; color: <?= $status_color ?>;">Tingkat Burnout: <?= $k['tingkat'] ?></span>
                     
                     <div class="contact-info">
                         <div class="contact-item">

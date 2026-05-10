@@ -33,7 +33,7 @@ $users = [
     ?>
 
     <main class="page-content">
-        <div class="card">
+        <div class="content-card">
             <div class="card-header">
                 <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary);">Daftar Pengguna Sistem</h2>
                 <button class="btn-add" onclick="openModal('userModal')">
@@ -64,8 +64,9 @@ $users = [
                 <?php endif; ?>
 
                 <!-- Data Table -->
-                <table id="dataTable" style="display: none;">
-                    <thead>
+                <div class="table-container" id="dataTableContainer" style="display: none;">
+                    <table class="premium-table">
+                        <thead>
                         <tr>
                             <th>Nama</th>
                             <th>Email</th>
@@ -79,7 +80,7 @@ $users = [
                         <tr>
                             <td style="font-weight: 700;"><?= $u['nama'] ?></td>
                             <td><?= $u['email'] ?></td>
-                            <td><span class="role-badge role-<?= $u['role'] ?>"><?= $u['role'] ?></span></td>
+                            <td><span class="badge-pill role-<?= $u['role'] ?>"><?= ucfirst($u['role']) ?></span></td>
                             <td><?= $u['divisi'] ?></td>
                             <td>
                                 <div class="actions">
@@ -94,7 +95,8 @@ $users = [
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
@@ -142,24 +144,24 @@ $users = [
             document.getElementById(id).style.display = 'none';
         }
 
-        window.onclick = function(event) {
+        window.addEventListener('click', function(event) {
             if (event.target.classList.contains('modal-overlay')) {
-                event.target.style.display = 'none';
+                event.target.classList.remove('active');
             }
-        }
+        })
 
         // Simulate Data Loading for Skeleton effect
         document.addEventListener("DOMContentLoaded", function() {
             setTimeout(function() {
                 const skeleton = document.getElementById('tableSkeleton');
-                const table = document.getElementById('dataTable');
+                const table = document.getElementById('dataTableContainer');
                 const emptyState = document.getElementById('emptyState');
                 const hasData = <?= empty($users) ? 'false' : 'true' ?>;
                 
                 if (skeleton) skeleton.style.display = 'none';
                 
                 if (hasData && table) {
-                    table.style.display = 'table';
+                    table.style.display = 'block';
                     table.style.animation = 'fadeInPage 0.4s ease-out';
                 } else if (!hasData && emptyState) {
                     emptyState.style.display = 'block';

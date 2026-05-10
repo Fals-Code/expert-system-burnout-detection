@@ -34,7 +34,7 @@ $laporan_divisi = [
         $page_title = "Laporan Divisi";
         ob_start(); ?>
         <div class="topbar__actions" style="display:flex; gap:0.75rem; align-items:center;">
-            <button class="btn-print" style="background:#28A745;" onclick="showToast('Ekspor Excel sedang disiapkan...', 'info')">
+            <button class="btn-print" style="background:#28A745;" onclick="exportTableToCSV('laporan_burnout_mei2026.csv')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 <span>Excel</span>
             </button>
@@ -55,8 +55,8 @@ $laporan_divisi = [
             <h2 class="card-title">Rekapitulasi Deteksi - Mei 2026</h2>
             <p style="color: var(--color-gray-500); font-size: 0.9rem; margin-bottom: 2rem;">Laporan ini merangkum tingkat burnout karyawan di setiap divisi untuk periode berjalan.</p>
             
-            <div style="overflow-x: auto;">
-                <table>
+            <div class="table-container">
+                <table class="premium-table">
                     <thead>
                         <tr>
                             <th>Divisi</th>
@@ -89,6 +89,35 @@ $laporan_divisi = [
         </div>
     </main>
 </div>
+
+<script>
+function exportTableToCSV(filename) {
+    var csv = [];
+    var rows = document.querySelectorAll("table tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (var j = 0; j < cols.length; j++) 
+            row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+        
+        csv.push(row.join(","));        
+    }
+
+    // Download CSV file
+    var csvFile;
+    var downloadLink;
+
+    csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+    downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
 
 </body>
 </html>

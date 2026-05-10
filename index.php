@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+// Inisialisasi Mock Knowledge Base
+if (!isset($_SESSION['mock_kb'])) {
+    $_SESSION['mock_kb'] = include 'config/mock_db.php';
+}
+
 // Redirect jika sudah login
 if (isset($_SESSION['user'])) {
     $role = $_SESSION['user']['role'];
@@ -73,13 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="id">
 <head>
     <title>Login – BurnoutXpert</title>
+    <meta name="description" content="BurnoutXpert - Sistem Pakar Deteksi Burnout Karyawan menggunakan metode Certainty Factor. Masuk untuk memulai analisis kesehatan mental kerja Anda.">
+    <meta name="keywords" content="burnout, deteksi burnout, sistem pakar, kesehatan mental, karyawan, certainty factor">
     <?php include 'includes/head.php'; ?>
     <link rel="stylesheet" href="assets/css/login.css" />
 </head>
 <body class="login-body">
 
-    <!-- ===== Background Decoration ===== -->
+    <!-- Background Decoration -->
     <div class="bg-decoration">
+        <div class="shape shape--1"></div>
+        <div class="shape shape--2"></div>
+        <div class="shape shape--3"></div>
         <div class="bg-circle bg-circle--1"></div>
         <div class="bg-circle bg-circle--2"></div>
         <div class="bg-circle bg-circle--3"></div>
@@ -104,15 +114,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Card Header -->
             <div class="login-card__header">
                 <div class="login-card__icon" aria-hidden="true">
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="20" fill="#F4845F" opacity="0.15"/>
-                        <circle cx="20" cy="20" r="14" fill="#F4845F" opacity="0.2"/>
-                        <path d="M20 8C20 8 11 14.286 11 21.429C11 26.163 15.029 30 20 30C24.971 30 29 26.163 29 21.429C29 14.286 20 8 20 8Z" fill="#F4845F"/>
-                        <path d="M20 16C20 16 16 19.571 16 22.857C16 25.143 17.791 27 20 27C22.209 27 24 25.143 24 22.857C24 19.571 20 16 20 16Z" fill="white"/>
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="24" cy="24" r="24" fill="#F4845F" opacity="0.12"/>
+                        <circle cx="24" cy="24" r="18" fill="#F4845F" opacity="0.18"/>
+                        <path d="M24 10C24 10 14 17.5 14 26C14 31.5228 18.4772 36 24 36C29.5228 36 34 31.5228 34 26C34 17.5 24 10 24 10Z" fill="#F4845F"/>
+                        <path d="M24 18C24 18 19 22 19 26C19 28.7614 21.2386 31 24 31C26.7614 31 29 28.7614 29 26C29 22 24 18 24 18Z" fill="white" fill-opacity="0.9"/>
                     </svg>
                 </div>
                 <h1 class="login-card__title">Selamat Datang</h1>
-                <p class="login-card__subtitle">Masuk ke <strong>BurnoutXpert</strong> untuk memulai deteksi burnout karyawan</p>
+                <p class="login-card__subtitle animate-delay-1">Masuk ke <strong>BurnoutXpert</strong> untuk memulai deteksi burnout karyawan</p>
             </div>
 
             <!-- Error / Success Alert -->
@@ -139,10 +149,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <!-- Login Form -->
-            <form class="login-form" method="POST" action="index.php" novalidate id="loginForm">
+            <form class="login-form animate-delay-2" id="loginForm" method="POST" action="index.php" novalidate>
 
                 <!-- Email Field -->
-                <div class="form-group" id="emailGroup">
+                <div class="form-group animate-delay-3" id="emailGroup">
                     <label class="form-label" for="email">
                         <svg class="form-label__icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
@@ -162,7 +172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             required
                             aria-required="true"
                         />
-                        <span class="input-focus-ring" aria-hidden="true"></span>
                     </div>
                     <span class="form-error" id="emailError" role="alert"></span>
                 </div>
@@ -200,13 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <circle cx="9" cy="9" r="2.25" stroke="currentColor" stroke-width="1.4"/>
                             </svg>
                         </button>
-                        <span class="input-focus-ring" aria-hidden="true"></span>
                     </div>
                     <span class="form-error" id="passwordError" role="alert"></span>
                 </div>
 
                 <!-- Remember Me + Forgot Password -->
-                <div class="form-options">
+                <div class="form-options animate-delay-3">
                     <label class="checkbox-label" for="remember">
                         <input type="checkbox" id="remember" name="remember" class="checkbox-input" />
                         <span class="checkbox-custom" aria-hidden="true"></span>
@@ -216,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-login" id="btnLogin">
+                <button type="submit" class="btn-login animate-delay-4" id="btnLogin">
                     <span class="btn-login__text">Masuk Sekarang</span>
                     <span class="btn-login__loader" aria-hidden="true"></span>
                     <svg class="btn-login__arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

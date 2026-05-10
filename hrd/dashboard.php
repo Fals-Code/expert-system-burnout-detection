@@ -105,8 +105,8 @@ $chart_data = [
                     </div>
                 </div>
                 
-                <div class="table-responsive">
-                    <table id="employeeTable" class="data-table">
+                <div class="table-container">
+                    <table id="employeeTable" class="premium-table">
                         <thead>
                             <tr>
                                 <th>No</th>
