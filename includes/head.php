@@ -18,6 +18,16 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERV
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/empty-state.css">
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/report.css">
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/profile.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/notifikasi.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/detail-karyawan.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/hasil.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/bantuan.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/admin-knowledge.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/kelola-pengguna.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/pengaturan.css">
+<link rel="stylesheet" href="<?= $base_path ?>assets/css/log-aktivitas.css">
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <?php include $base_path . 'includes/favicon.php'; ?>
 <script>
     // Immediate Theme Application (Prevent FOUC)

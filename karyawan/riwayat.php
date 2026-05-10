@@ -99,38 +99,76 @@ if ($hasil_ada) {
                 <div class="card">
                     <h2 class="card-title">Tren Kondisi</h2>
                     <div class="chart-container">
-                        <svg class="chart-svg" viewBox="0 0 300 150">
-                            <defs>
-                                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.2" />
-                                    <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-                            
-                            <!-- Grid Lines -->
-                            <line x1="0" y1="130" x2="300" y2="130" stroke="#F1F4F7" stroke-width="1" />
-                            <line x1="0" y1="80" x2="300" y2="80" stroke="#F1F4F7" stroke-width="1" />
-                            <line x1="0" y1="30" x2="300" y2="30" stroke="#F1F4F7" stroke-width="1" />
-                            
-                            <text x="0" y="145" class="chart-label">Des</text>
-                            <text x="75" y="145" class="chart-label">Jan</text>
-                            <text x="150" y="145" class="chart-label">Feb</text>
-                            <text x="225" y="145" class="chart-label">Mar</text>
-                            <text x="280" y="145" class="chart-label">Mei</text>
+                        <div id="trendChart"></div>
+                    </div>
+                    
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var options = {
+                            series: [{
+                                name: "Skor Burnout",
+                                data: [1, 1, 2, 2, 3] // Sesuaikan data dengan dummy (Rendah=1, Sedang=2, Tinggi=3)
+                            }],
+                            chart: {
+                                height: 250,
+                                type: 'area',
+                                zoom: { enabled: false },
+                                toolbar: { show: false },
+                                fontFamily: 'inherit'
+                            },
+                            dataLabels: { enabled: false },
+                            stroke: { curve: 'smooth', width: 3, colors: ['var(--color-primary)'] },
+                            fill: {
+                                type: 'gradient',
+                                gradient: {
+                                    shadeIntensity: 1,
+                                    opacityFrom: 0.4,
+                                    opacityTo: 0.05,
+                                    stops: [0, 90, 100],
+                                    colorStops: [{ offset: 0, color: 'var(--color-primary)', opacity: 0.4 }, { offset: 100, color: 'var(--color-primary)', opacity: 0.05 }]
+                                }
+                            },
+                            markers: {
+                                size: 5,
+                                colors: ['#fff'],
+                                strokeColors: 'var(--color-primary)',
+                                strokeWidth: 2,
+                                hover: { size: 7 }
+                            },
+                            xaxis: {
+                                categories: ['Des', 'Jan', 'Feb', 'Mar', 'Mei'],
+                                labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
+                                axisBorder: { show: false },
+                                axisTicks: { show: false }
+                            },
+                            yaxis: {
+                                min: 0, max: 4,
+                                tickAmount: 4,
+                                labels: {
+                                    formatter: function (val) {
+                                        if(val === 1) return 'Rendah';
+                                        if(val === 2) return 'Sedang';
+                                        if(val === 3) return 'Tinggi';
+                                        return '';
+                                    },
+                                    style: { colors: 'var(--color-gray-500)', fontSize: '12px' }
+                                }
+                            },
+                            grid: {
+                                borderColor: 'var(--color-gray-100)',
+                                strokeDashArray: 4,
+                                yaxis: { lines: { show: true } }
+                            },
+                            tooltip: {
+                                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light',
+                                y: { formatter: function (val) { return val === 1 ? 'Rendah' : (val === 2 ? 'Sedang' : 'Tinggi'); } }
+                            }
+                        };
 
-                            <!-- Area Fill -->
-                            <path class="chart-area" d="M 0 130 L 0 130 L 75 130 L 150 80 L 225 80 L 300 30 V 130 H 0 Z" />
-
-                            <!-- Trend Line (Skor: Rendah=130, Sedang=80, Tinggi=30) -->
-                            <path class="chart-line" d="M 0 130 L 75 130 L 150 80 L 225 80 L 300 30" />
-                            
-                            <!-- Points -->
-                            <circle class="chart-point" cx="0" cy="130" r="5" style="animation-delay: 0.2s;" />
-                            <circle class="chart-point" cx="75" cy="130" r="5" style="animation-delay: 0.5s;" />
-                            <circle class="chart-point" cx="150" cy="80" r="5" style="animation-delay: 1.0s;" />
-                            <circle class="chart-point" cx="225" cy="80" r="5" style="animation-delay: 1.5s;" />
-                            <circle class="chart-point" cx="300" cy="30" r="5" style="animation-delay: 2.0s;" />
-                        </svg>
+                        var chart = new ApexCharts(document.querySelector("#trendChart"), options);
+                        chart.render();
+                    });
+                    </script>
                     </div>
                     <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--color-gray-500); line-height: 1.5;">
                         <p>💡 <strong>Analisis:</strong> Tingkat burnout Anda menunjukkan tren meningkat sejak Februari. Disarankan untuk mengambil istirahat terencana.</p>

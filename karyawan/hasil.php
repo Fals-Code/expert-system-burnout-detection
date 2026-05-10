@@ -54,13 +54,13 @@ $tanggal_deteksi   = $hasil['tanggal'];
         <div class="main-result-card">
             <div class="result-info">
                 <h2>Tingkat Burnout</h2>
-                <div class="level-label"><?= $label ?></div>
+                <div class="level-label" style="color: <?= $color ?>;"><?= $label ?></div>
                 <p class="condition-desc"><?= $desc ?></p>
             </div>
             <div class="circular-progress">
                 <svg viewBox="0 0 180 180">
                     <circle class="bg" cx="90" cy="90" r="80"></circle>
-                    <circle class="fg" id="progressCircle" cx="90" cy="90" r="80"></circle>
+                    <circle class="fg" id="progressCircle" cx="90" cy="90" r="80" style="stroke: <?= $color ?>;"></circle>
                 </svg>
                 <div class="progress-val">
                     <span class="percent" id="confidenceCounter">0%</span>

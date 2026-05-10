@@ -145,6 +145,7 @@ $questions = [
     const totalSteps = 11;
     let answers = {};
     let isAnimating = false;
+    let autoNextTimeout = null;
 
     function saveState() {
         localStorage.setItem('burnoutWizardState', JSON.stringify({ currentStep, answers }));
@@ -226,7 +227,8 @@ $questions = [
 
         // Auto next with slight delay
         if (step < totalSteps) {
-            setTimeout(() => {
+            if (autoNextTimeout) clearTimeout(autoNextTimeout);
+            autoNextTimeout = setTimeout(() => {
                 if (currentStep === step) changeStep(1);
             }, 500);
         }

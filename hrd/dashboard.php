@@ -37,7 +37,6 @@ $chart_data = [
     <title>Dashboard HRD – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -84,11 +83,11 @@ $chart_data = [
         <div class="charts-grid">
             <div class="chart-card">
                 <h3 class="card-title" style="margin-bottom: 1.5rem;">Tren Burnout Bulanan</h3>
-                <canvas id="trendChart"></canvas>
+                <div id="trendChart"></div>
             </div>
             <div class="chart-card">
                 <h3 class="card-title" style="margin-bottom: 1.5rem;">Distribusi per Divisi</h3>
-                <canvas id="divisiChart"></canvas>
+                <div id="divisiChart"></div>
             </div>
         </div>
 
@@ -160,47 +159,59 @@ $chart_data = [
             });
         }
 
-        // Chart.js Implementation
-        const ctxTrend = document.getElementById('trendChart').getContext('2d');
-        new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-                datasets: [{
-                    label: 'Kasus Burnout',
-                    data: [5, 8, 12, 10, 15],
-                    borderColor: '#F4845F',
-                    backgroundColor: 'rgba(244,132,95,0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        // ApexCharts Implementation
+        const commonOptions = {
+            chart: { fontFamily: 'inherit', toolbar: { show: false } },
+            tooltip: { theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light' }
+        };
 
-        const ctxDivisi = document.getElementById('divisiChart').getContext('2d');
-        new Chart(ctxDivisi, {
-            type: 'bar',
-            data: {
-                labels: ['IT', 'Mkt', 'Fin', 'HR', 'Ops'],
-                datasets: [
-                    { label: 'Tinggi', data: [2, 1, 0, 0, 0], backgroundColor: '#DC3545' },
-                    { label: 'Sedang', data: [0, 1, 1, 1, 0], backgroundColor: '#FFC107' },
-                    { label: 'Rendah', data: [0, 0, 1, 0, 1], backgroundColor: '#28A745' }
-                ]
+        // Trend Chart (Area/Line)
+        const trendOptions = {
+            ...commonOptions,
+            series: [{ name: 'Kasus Burnout', data: [5, 8, 12, 10, 15] }],
+            chart: { type: 'area', height: 250, ...commonOptions.chart },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3, colors: ['var(--color-accent)'] },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05,
+                    colorStops: [{ offset: 0, color: 'var(--color-accent)', opacity: 0.4 }, { offset: 100, color: 'var(--color-accent)', opacity: 0.05 }]
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: { stacked: true }, y: { stacked: true } }
-            }
-        });
+            markers: { size: 5, colors: ['#fff'], strokeColors: 'var(--color-accent)', strokeWidth: 2 },
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
+                labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            yaxis: { labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } } },
+            grid: { borderColor: 'var(--color-gray-100)', strokeDashArray: 4 }
+        };
+        new ApexCharts(document.querySelector("#trendChart"), trendOptions).render();
+
+        // Divisi Chart (Stacked Bar)
+        const divisiOptions = {
+            ...commonOptions,
+            series: [
+                { name: 'Tinggi', data: [2, 1, 0, 0, 0] },
+                { name: 'Sedang', data: [0, 1, 1, 1, 0] },
+                { name: 'Rendah', data: [0, 0, 1, 0, 1] }
+            ],
+            chart: { type: 'bar', height: 250, stacked: true, ...commonOptions.chart },
+            colors: ['var(--color-error)', 'var(--color-warning)', 'var(--color-success)'],
+            plotOptions: { bar: { horizontal: false, borderRadius: 4, columnWidth: '40%' } },
+            dataLabels: { enabled: false },
+            xaxis: {
+                categories: ['IT', 'Mkt', 'Fin', 'HR', 'Ops'],
+                labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            yaxis: { labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } } },
+            grid: { borderColor: 'var(--color-gray-100)', strokeDashArray: 4 },
+            legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px', markers: { radius: 12 } }
+        };
+        new ApexCharts(document.querySelector("#divisiChart"), divisiOptions).render();
     </script>
 
 </body>

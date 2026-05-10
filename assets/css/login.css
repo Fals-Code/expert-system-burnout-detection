@@ -127,7 +127,7 @@
     width: 100%;
     background: var(--color-white);
     border-radius: var(--radius-xl);
-    padding: var(--space-10) var(--space-8);
+    padding: var(--space-6) var(--space-6);
     box-shadow: var(--shadow-xl);
     border: 1px solid rgba(255,255,255,0.08);
     animation: slideUpFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -147,18 +147,18 @@
 /* ── Card Header ─────────────────────────────────────────────── */
 .login-card__header {
     text-align: center;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-5);
 }
 
 .login-card__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: var(--color-accent-50);
-    margin: 0 auto var(--space-5);
+    margin: 0 auto var(--space-3);
     animation: pulseIcon 3s ease-in-out infinite;
 }
 
@@ -245,7 +245,7 @@
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-4);
 }
 
 /* Form Group */
@@ -536,8 +536,8 @@
 /* ── Demo Credentials ─────────────────────────────────────── */
 .demo-credentials {
     border-top: 1px solid var(--color-gray-100);
-    padding-top: var(--space-5);
-    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    margin-top: var(--space-4);
 }
 
 .demo-credentials__toggle {

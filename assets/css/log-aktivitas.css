@@ -1,0 +1,27 @@
+/* ── LOG AKTIVITAS STYLES ── */
+.log-container { background: var(--color-bg-card); border-radius: 20px; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); overflow: hidden; }
+.log-table { width: 100%; border-collapse: collapse; }
+.log-table th { background: var(--color-primary-50); text-align: left; padding: 1.25rem 1.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; border-bottom: 1px solid var(--color-gray-200); }
+.log-table td { padding: 1.25rem 1.5rem; font-size: 0.9rem; border-bottom: 1px solid var(--color-gray-50); vertical-align: top; color: var(--color-gray-800); }
+
+.action-pill { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 800; font-size: 0.7rem; color: #fff; text-transform: uppercase; }
+.act-update { background: #0D6EFD; }
+.act-create { background: #198754; }
+.act-delete { background: #DC3545; }
+.act-system { background: #6C757D; }
+
+[data-theme='dark'] .act-update { background: rgba(13, 110, 253, 0.2); color: #82b1ff; }
+[data-theme='dark'] .act-create { background: rgba(25, 135, 84, 0.2); color: #81C784; }
+[data-theme='dark'] .act-delete { background: rgba(220, 53, 69, 0.2); color: #ef9a9a; }
+[data-theme='dark'] .act-system { background: rgba(108, 117, 125, 0.2); color: #b0bec5; }
+
+.log-user { font-weight: 700; color: var(--color-primary); }
+.log-time { color: var(--color-gray-400); font-size: 0.8rem; display: block; margin-top: 0.25rem; }
+.log-desc { color: var(--color-gray-700); line-height: 1.5; max-width: 500px; }
+.log-entity { font-family: 'Courier New', monospace; font-weight: 700; background: var(--color-gray-50); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
+
+[data-theme='dark'] .log-entity { background: var(--color-bg-body); }
+
+@media (max-width: 768px) {
+    .log-desc { max-width: 100%; }
+}

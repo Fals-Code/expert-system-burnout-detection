@@ -79,7 +79,30 @@
     body.report-body { background: #fff; padding: 0; }
     .report-paper { box-shadow: none; width: 100%; margin: 0; padding: 0; }
     .controls { display: none; }
-    @page { margin: 15mm; }
+    
+    /* Elegant Print Enhancements */
+    @page { size: A4; margin: 20mm; }
+    
+    /* Ensure elements don't split across pages */
+    .result-box, .info-grid, .report-footer { page-break-inside: avoid; }
+    .rec-item { page-break-inside: avoid; }
+    
+    /* Optional Watermark */
+    .report-paper::after {
+        content: "CONFIDENTIAL";
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 8rem;
+        color: rgba(0, 0, 0, 0.03);
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    /* Print typography optimizations */
+    .content-para, .rec-text p { color: #000; }
+    .brand-kop { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 @media (max-width: 768px) {

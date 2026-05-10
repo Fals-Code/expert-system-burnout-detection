@@ -44,7 +44,7 @@ $karyawan_list = [
                 <h2 class="card-title">Daftar Seluruh Karyawan</h2>
                 <div class="search-box" style="display:flex; gap:0.75rem; background:var(--color-gray-50); padding:0.5rem 1rem; border-radius:12px; border:1.5px solid var(--color-gray-200); width:100%; max-width:300px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-gray-400);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" class="search-input" style="background:none; border:none; font-family:inherit; font-size:0.9rem; width:100%; outline:none;" placeholder="Cari nama atau divisi...">
+                    <input type="text" id="karyawanSearch" class="search-input" style="background:none; border:none; font-family:inherit; font-size:0.9rem; width:100%; outline:none;" placeholder="Cari nama atau divisi...">
                 </div>
             </div>
 
@@ -85,5 +85,28 @@ $karyawan_list = [
     </main>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('karyawanSearch');
+    const tableRows = document.querySelectorAll('.data-table tbody tr');
+
+    if(searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            tableRows.forEach(row => {
+                const name = row.querySelector('td[data-label="Karyawan"]').textContent.toLowerCase();
+                const division = row.querySelector('td[data-label="Divisi"]').textContent.toLowerCase();
+
+                if(name.includes(searchTerm) || division.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 </body>
 </html>

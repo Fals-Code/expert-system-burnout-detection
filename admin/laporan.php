@@ -66,19 +66,7 @@ $distribusi_divisi = [
 
         <div class="card">
             <h3 class="card-title">Distribusi Burnout Tinggi Per Divisi</h3>
-            <?php foreach ($distribusi_divisi as $d): 
-                $percent = ($d['tinggi'] / $stats['kasus_tinggi']) * 100;
-            ?>
-            <div class="bar-container">
-                <div class="bar-header">
-                    <span><?= $d['divisi'] ?></span>
-                    <span><?= $d['tinggi'] ?> Kasus</span>
-                </div>
-                <div class="bar-outer">
-                    <div class="bar-inner" style="width: <?= $percent ?>%; background: var(--color-primary);"></div>
-                </div>
-            </div>
-            <?php endforeach; ?>
+            <div id="divisionChart"></div>
         </div>
 
         <div class="card">
@@ -89,5 +77,48 @@ $distribusi_divisi = [
         </div>
     </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dataDivisi = <?= json_encode($distribusi_divisi) ?>;
+    const categories = dataDivisi.map(d => d.divisi);
+    const seriesData = dataDivisi.map(d => d.tinggi);
+
+    var options = {
+        series: [{ name: 'Kasus Tinggi', data: seriesData }],
+        chart: { type: 'bar', height: 350, fontFamily: 'inherit', toolbar: { show: false } },
+        plotOptions: {
+            bar: { horizontal: true, borderRadius: 6, dataLabels: { position: 'top' } }
+        },
+        colors: ['var(--color-primary)'],
+        dataLabels: {
+            enabled: true,
+            offsetX: 20,
+            style: { fontSize: '12px', colors: ['var(--color-gray-700)'] },
+            formatter: function(val) { return val + " Kasus"; }
+        },
+        xaxis: {
+            categories: categories,
+            labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
+            axisBorder: { show: false }
+        },
+        yaxis: {
+            labels: { style: { colors: 'var(--color-gray-700)', fontSize: '13px', fontWeight: 600 } }
+        },
+        grid: {
+            borderColor: 'var(--color-gray-100)',
+            strokeDashArray: 4,
+            xaxis: { lines: { show: true } },
+            yaxis: { lines: { show: false } }
+        },
+        tooltip: {
+            theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#divisionChart"), options);
+    chart.render();
+});
+</script>
 </body>
 </html>
