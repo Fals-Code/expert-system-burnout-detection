@@ -4,36 +4,36 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     header('Location: ../index.php');
     exit();
 }
-$user = $_SESSION['user'];
-$nama = $user['nama'];
+
+require_once '../config/data_store.php';
+bx_init_store();
+
+$user     = $_SESSION['user'];
+$user_id  = $user['id'] ?? 'U_DEMO_K';
+$nama     = $user['nama'];
 $active_menu = 'riwayat';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
-// Ambil hasil deteksi terbaru dari session jika ada
-$hasil_ada = isset($_SESSION['hasil_deteksi']);
-$history = [
-    ['tanggal' => '15 Mar 2025', 'tingkat' => 'Sedang', 'skor' => 2, 'color' => '#FFC107'],
-    ['tanggal' => '10 Feb 2025', 'tingkat' => 'Sedang', 'skor' => 2, 'color' => '#FFC107'],
-    ['tanggal' => '05 Jan 2025', 'tingkat' => 'Rendah', 'skor' => 1, 'color' => '#28A745'],
-    ['tanggal' => '20 Des 2024', 'tingkat' => 'Rendah', 'skor' => 1, 'color' => '#28A745'],
-];
+// Ambil riwayat dari store (terbaru di depan)
+$history = get_user_history($user_id);
 
-if ($hasil_ada) {
-    array_unshift($history, [
-        'tanggal' => $_SESSION['hasil_deteksi']['tanggal'],
-        'tingkat' => $_SESSION['hasil_deteksi']['level'],
-        'skor' => ($_SESSION['hasil_deteksi']['level'] === 'TINGGI' ? 3 : ($_SESSION['hasil_deteksi']['level'] === 'SEDANG' ? 2 : 1)),
-        'color' => $_SESSION['hasil_deteksi']['color']
-    ]);
+// Siapkan data chart dari riwayat nyata
+$chart_data       = [];
+$chart_categories = [];
+
+$skor_map = ['TINGGI' => 3, 'SEDANG' => 2, 'RENDAH' => 1, 'TIDAK ADA' => 0];
+// Ambil maks 6 entri terbaru, balik urutan (terlama dulu) untuk chart
+$chart_entries = array_slice(array_reverse($history), 0, 6);
+foreach ($chart_entries as $h) {
+    $chart_data[]       = $skor_map[$h['level']] ?? 0;
+    $chart_categories[] = date('d M', strtotime(str_replace(' ', '-', $h['tanggal'])));
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <title>Riwayat Deteksi – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-
 </head>
 <body>
 
@@ -77,13 +77,16 @@ if ($hasil_ada) {
                             <div class="timeline-dot" style="background: <?= $h['color'] ?>;"></div>
                             <div class="timeline-content">
                                 <div>
-                                    <div class="timeline-date"><?= $h['tanggal'] ?></div>
-                                    <div class="timeline-level"><?= $h['tingkat'] ?></div>
+                                    <div class="timeline-date"><?= htmlspecialchars($h['tanggal']) ?></div>
+                                    <div class="timeline-level"><?= htmlspecialchars($h['label']) ?></div>
+                                    <div style="font-size:0.75rem; color:var(--color-gray-400); margin-top:2px;">
+                                        Keyakinan: <?= $h['confidence'] ?>%
+                                    </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span class="badge badge-<?= strtolower($h['tingkat']) ?>">Burnout <?= $h['tingkat'] ?></span>
+                                    <span class="badge badge-<?= strtolower($h['level']) ?>"><?= $h['level'] === 'TIDAK ADA' ? 'Tidak Burnout' : $h['level'] ?></span>
                                     <div style="margin-top: 0.5rem;">
-                                        <a href="laporan.php?tgl=<?= urlencode($h['tanggal']) ?>" class="btn-report">
+                                        <a href="laporan.php?id=<?= urlencode($h['id']) ?>" class="btn-report">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                             Laporan
                                         </a>
@@ -101,67 +104,84 @@ if ($hasil_ada) {
                     <div class="chart-container">
                         <div id="trendChart"></div>
                     </div>
-                    
+
+                    <?php
+                    // Analisis tren otomatis
+                    $analisis = '';
+                    if (count($history) >= 2) {
+                        $latest = $skor_map[$history[0]['level']] ?? 0;
+                        $prev   = $skor_map[$history[1]['level']] ?? 0;
+                        if ($latest > $prev)       $analisis = '📈 Tingkat burnout Anda <strong>meningkat</strong> sejak deteksi terakhir. Segera ambil langkah pencegahan.';
+                        elseif ($latest < $prev)   $analisis = '📉 Tingkat burnout Anda <strong>menurun</strong>. Pertahankan kebiasaan baik Anda!';
+                        else                       $analisis = '📊 Tingkat burnout Anda <strong>stabil</strong> dibanding deteksi sebelumnya.';
+                    } else {
+                        $analisis = '📊 Lakukan deteksi lebih dari satu kali untuk melihat analisis tren Anda.';
+                    }
+                    ?>
+                    <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--color-gray-500); line-height: 1.5;">
+                        <p>💡 <strong>Analisis:</strong> <?= $analisis ?></p>
+                    </div>
+
                     <script>
                     document.addEventListener('DOMContentLoaded', function () {
+                        var chartData       = <?= json_encode($chart_data) ?>;
+                        var chartCategories = <?= json_encode($chart_categories) ?>;
+
+                        if (chartData.length === 0) return;
+
                         var options = {
-                            series: [{
-                                name: "Skor Burnout",
-                                data: [1, 1, 2, 2, 3] // Sesuaikan data dengan dummy (Rendah=1, Sedang=2, Tinggi=3)
-                            }],
+                            series: [{ name: "Skor Burnout", data: chartData }],
                             chart: {
-                                height: 250,
-                                type: 'area',
-                                zoom: { enabled: false },
-                                toolbar: { show: false },
-                                fontFamily: 'inherit'
+                                height: 250, type: 'area',
+                                zoom: { enabled: false }, toolbar: { show: false }, fontFamily: 'inherit'
                             },
                             dataLabels: { enabled: false },
                             stroke: { curve: 'smooth', width: 3, colors: ['var(--color-primary)'] },
                             fill: {
                                 type: 'gradient',
                                 gradient: {
-                                    shadeIntensity: 1,
-                                    opacityFrom: 0.4,
-                                    opacityTo: 0.05,
-                                    stops: [0, 90, 100],
-                                    colorStops: [{ offset: 0, color: 'var(--color-primary)', opacity: 0.4 }, { offset: 100, color: 'var(--color-primary)', opacity: 0.05 }]
+                                    shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100],
+                                    colorStops: [
+                                        { offset: 0, color: 'var(--color-primary)', opacity: 0.4 },
+                                        { offset: 100, color: 'var(--color-primary)', opacity: 0.05 }
+                                    ]
                                 }
                             },
                             markers: {
-                                size: 5,
-                                colors: ['#fff'],
-                                strokeColors: 'var(--color-primary)',
-                                strokeWidth: 2,
-                                hover: { size: 7 }
+                                size: 5, colors: ['#fff'],
+                                strokeColors: 'var(--color-primary)', strokeWidth: 2, hover: { size: 7 }
                             },
                             xaxis: {
-                                categories: ['Des', 'Jan', 'Feb', 'Mar', 'Mei'],
+                                categories: chartCategories,
                                 labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
-                                axisBorder: { show: false },
-                                axisTicks: { show: false }
+                                axisBorder: { show: false }, axisTicks: { show: false }
                             },
                             yaxis: {
-                                min: 0, max: 4,
-                                tickAmount: 4,
+                                min: 0, max: 4, tickAmount: 4,
                                 labels: {
                                     formatter: function (val) {
-                                        if(val === 1) return 'Rendah';
-                                        if(val === 2) return 'Sedang';
-                                        if(val === 3) return 'Tinggi';
+                                        if (val === 1) return 'Rendah';
+                                        if (val === 2) return 'Sedang';
+                                        if (val === 3) return 'Tinggi';
                                         return '';
                                     },
                                     style: { colors: 'var(--color-gray-500)', fontSize: '12px' }
                                 }
                             },
                             grid: {
-                                borderColor: 'var(--color-gray-100)',
-                                strokeDashArray: 4,
+                                borderColor: 'var(--color-gray-100)', strokeDashArray: 4,
                                 yaxis: { lines: { show: true } }
                             },
                             tooltip: {
                                 theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light',
-                                y: { formatter: function (val) { return val === 1 ? 'Rendah' : (val === 2 ? 'Sedang' : 'Tinggi'); } }
+                                y: {
+                                    formatter: function (val) {
+                                        if (val === 1) return 'Rendah';
+                                        if (val === 2) return 'Sedang';
+                                        if (val === 3) return 'Tinggi';
+                                        return 'Tidak Burnout';
+                                    }
+                                }
                             }
                         };
 
@@ -169,10 +189,52 @@ if ($hasil_ada) {
                         chart.render();
                     });
                     </script>
-                    </div>
-                    <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--color-gray-500); line-height: 1.5;">
-                        <p>💡 <strong>Analisis:</strong> Tingkat burnout Anda menunjukkan tren meningkat sejak Februari. Disarankan untuk mengambil istirahat terencana.</p>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Ringkasan -->
+            <div class="content-card" style="margin-top: 1.5rem;">
+                <h2 class="card-title">Ringkasan Semua Deteksi</h2>
+                <div class="table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID Laporan</th>
+                                <th>Tanggal</th>
+                                <th>Hasil Diagnosis</th>
+                                <th>Tingkat Keyakinan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($history as $h): ?>
+                            <tr>
+                                <td style="font-family: monospace; font-size: 0.8rem; color: var(--color-gray-500);">
+                                    <?= htmlspecialchars($h['id'] ?? '-') ?>
+                                </td>
+                                <td><?= htmlspecialchars($h['tanggal']) ?></td>
+                                <td>
+                                    <span class="badge badge-<?= strtolower($h['level'] === 'TIDAK ADA' ? 'rendah' : $h['level']) ?>">
+                                        <?= htmlspecialchars($h['label']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                                        <div style="height:6px; width:80px; background:var(--color-gray-100); border-radius:99px; overflow:hidden;">
+                                            <div style="height:100%; width:<?= $h['confidence'] ?>%; background:<?= $h['color'] ?>; border-radius:99px;"></div>
+                                        </div>
+                                        <span style="font-size:0.8rem; font-weight:700; color:<?= $h['color'] ?>;"><?= $h['confidence'] ?>%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="laporan.php?id=<?= urlencode($h['id']) ?>" class="btn-detail" style="font-size:0.8rem; padding:0.35rem 0.85rem;">
+                                        Lihat Laporan
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         <?php endif; ?>

@@ -1,7 +1,9 @@
 <?php
 session_start();
 
-// Inisialisasi Mock Knowledge Base
+// Inisialisasi Data Store & Knowledge Base
+require_once 'config/data_store.php';
+bx_init_store();
 if (!isset($_SESSION['mock_kb'])) {
     $_SESSION['mock_kb'] = include 'config/mock_db.php';
 }
@@ -9,64 +11,50 @@ if (!isset($_SESSION['mock_kb'])) {
 // Redirect jika sudah login
 if (isset($_SESSION['user'])) {
     $role = $_SESSION['user']['role'];
-    if ($role === 'admin') header('Location: admin/dashboard.php');
+    if ($role === 'admin')  header('Location: admin/dashboard.php');
     elseif ($role === 'hrd') header('Location: hrd/dashboard.php');
-    else header('Location: karyawan/dashboard.php');
+    else                     header('Location: karyawan/dashboard.php');
     exit();
 }
 
-// Mock user data (tanpa database)
-$mock_users = [
-    [
-        'id'       => 1,
-        'nama'     => 'Ahmad Fauzi',
-        'email'    => 'karyawan@burnoutxpert.com',
-        'password' => 'karyawan123',
-        'role'     => 'karyawan',
-        'divisi'   => 'Engineering',
-    ],
-    [
-        'id'       => 2,
-        'nama'     => 'Siti Rahayu',
-        'email'    => 'hrd@burnoutxpert.com',
-        'password' => 'hrd123',
-        'role'     => 'hrd',
-        'divisi'   => 'Human Resources',
-    ],
-    [
-        'id'       => 3,
-        'nama'     => 'Budi Santoso',
-        'email'    => 'admin@burnoutxpert.com',
-        'password' => 'admin123',
-        'role'     => 'admin',
-        'divisi'   => 'IT Administration',
-    ],
+// Akun demo (fallback jika tidak ada di store)
+$fallback_users = [
+    ['id' => 'U_DEMO_K', 'nama' => 'Ahmad Fauzi',   'email' => 'karyawan@burnoutxpert.com', 'password' => 'karyawan123', 'role' => 'karyawan', 'divisi' => 'Engineering',      'posisi' => 'Software Engineer'],
+    ['id' => 'U_DEMO_H', 'nama' => 'Siti Rahayu',   'email' => 'hrd@burnoutxpert.com',      'password' => 'hrd123',       'role' => 'hrd',      'divisi' => 'Human Resources', 'posisi' => 'HRD Manager'],
+    ['id' => 'U_DEMO_A', 'nama' => 'Budi Santoso',  'email' => 'admin@burnoutxpert.com',    'password' => 'admin123',     'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
 ];
 
 $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email'] ?? '');
+    $email    = trim($_POST['email']    ?? '');
     $password = trim($_POST['password'] ?? '');
 
     if (empty($email) || empty($password)) {
         $error = 'Email dan Password wajib diisi.';
     } else {
-        $found = null;
-        foreach ($mock_users as $user) {
-            if ($user['email'] === $email && $user['password'] === $password) {
-                $found = $user;
-                break;
+        // Cari di store terpusat terlebih dahulu
+        $found = find_user_by_email($email);
+        if ($found && $found['password'] !== $password) $found = null;
+
+        // Fallback ke akun demo
+        if (!$found) {
+            foreach ($fallback_users as $fu) {
+                if ($fu['email'] === $email && $fu['password'] === $password) {
+                    $found = $fu;
+                    break;
+                }
             }
         }
 
         if ($found) {
             $_SESSION['user'] = $found;
+            append_log($found['nama'], 'LOGIN', 'Auth', "Login berhasil sebagai {$found['role']}");
             $role = $found['role'];
-            if ($role === 'admin') header('Location: admin/dashboard.php');
+            if ($role === 'admin')  header('Location: admin/dashboard.php');
             elseif ($role === 'hrd') header('Location: hrd/dashboard.php');
-            else header('Location: karyawan/dashboard.php');
+            else                     header('Location: karyawan/dashboard.php');
             exit();
         } else {
             $error = 'Email atau Password salah. Silakan coba lagi.';

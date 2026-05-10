@@ -5,17 +5,54 @@ if (isset($_SESSION['user'])) {
     exit();
 }
 
+require_once 'config/data_store.php';
+bx_init_store();
+
 $success = '';
-$error = '';
+$error   = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $email = strtolower(trim($_POST['email'] ?? ''));
     if (empty($email)) {
         $error = 'Alamat email wajib diisi.';
     } else {
-        // Simulasi pengiriman email
-        $success = 'Tautan pemulihan telah dikirim ke email Anda.';
-        // Untuk demo, kita arahkan pengguna ke reset_password.php dalam beberapa detik menggunakan javascript
+        // Cari user di store
+        $found_user = find_user_by_email($email);
+
+        // Juga cek fallback akun demo
+        if (!$found_user) {
+            $demo_emails = [
+                'karyawan@burnoutxpert.com',
+                'hrd@burnoutxpert.com',
+                'admin@burnoutxpert.com',
+            ];
+            if (in_array($email, $demo_emails)) {
+                $found_user = ['email' => $email, 'nama' => 'Demo User'];
+            }
+        }
+
+        if ($found_user) {
+            // Buat token reset — 6 karakter alphanumeric uppercase
+            $token   = strtoupper(bin2hex(random_bytes(3))); // 6 hex chars
+            $expires = time() + (15 * 60); // 15 menit
+
+            $_SESSION['bx_store']['reset_tokens'][$email] = [
+                'token'   => $token,
+                'expires' => $expires,
+            ];
+
+            // Dalam demo: tampilkan token langsung di halaman (pengganti email)
+            $success = "Token reset password untuk <strong>{$email}</strong>:<br>
+                        <div style='font-size:2rem; font-weight:900; letter-spacing:0.4rem; color:#1E3A5F; font-family:monospace; margin:0.75rem 0;'>{$token}</div>
+                        Token berlaku selama <strong>15 menit</strong>.<br>
+                        <small style='color:#6B7280;'>(Dalam produksi, token dikirim via email. Untuk demo, token ditampilkan di sini.)</small>";
+
+            append_log('System', 'RESET_TOKEN', $email, "Token reset password dibuat untuk: {$email}");
+        } else {
+            // Jangan bocorkan apakah email terdaftar atau tidak (keamanan)
+            $success = "Jika email <strong>{$email}</strong> terdaftar di sistem, instruksi reset akan terkirim.
+                        <br><small style='color:#6B7280;'>(Demo: email tidak ditemukan di sistem)</small>";
+        }
     }
 }
 ?>
@@ -28,14 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-body">
 
-    <!-- Background Decoration -->
     <div class="bg-decoration">
         <div class="bg-circle bg-circle--1"></div>
         <div class="bg-circle bg-circle--2"></div>
         <div class="bg-circle bg-circle--3"></div>
     </div>
 
-    <!-- ===== Top-left Brand Logo ===== -->
     <a href="index.php" class="brand-logo" aria-label="BurnoutXpert Home">
         <div class="brand-logo__icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </svg>
                 </div>
                 <h1 class="login-card__title">Lupa Password?</h1>
-                <p class="login-card__subtitle">Jangan khawatir! Masukkan alamat email Anda dan kami akan mengirimkan instruksi untuk memulihkan akses Anda.</p>
+                <p class="login-card__subtitle">Masukkan alamat email Anda untuk mendapatkan token reset password.</p>
             </div>
 
             <?php if ($error): ?>
@@ -68,15 +103,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <?php if ($success): ?>
-            <div class="alert alert--success">
-                <span><?= htmlspecialchars($success) ?></span>
+            <div class="alert alert--success" style="line-height:1.8;">
+                <?= $success ?>
             </div>
-            <script>
-                setTimeout(function() {
-                    window.location.href = 'reset_password.php?token=demo123';
-                }, 2500);
-            </script>
-            <?php endif; ?>
+            <div style="text-align:center; margin-top:1rem;">
+                <a href="reset_password.php" class="btn-login" style="display:inline-flex; text-decoration:none; padding:0.75rem 1.5rem;">
+                    <span class="btn-login__text">Lanjut ke Reset Password</span>
+                </a>
+            </div>
+            <?php else: ?>
 
             <form class="login-form" method="POST" action="lupa_password.php">
                 <div class="form-group">
@@ -88,13 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             name="email"
                             class="form-input"
                             placeholder="contoh@burnoutxpert.com"
+                            value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                             required
                         />
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login" <?= $success ? 'disabled' : '' ?>>
-                    <span class="btn-login__text">Kirim Tautan Pemulihan</span>
+                <button type="submit" class="btn-login">
+                    <span class="btn-login__text">Kirim Token Reset</span>
                 </button>
 
                 <div style="text-align: center; margin-top: 1.5rem;">
@@ -103,6 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </a>
                 </div>
             </form>
+
+            <?php endif; ?>
         </div>
     </main>
 

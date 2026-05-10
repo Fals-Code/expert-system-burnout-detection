@@ -4,160 +4,123 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     header('Location: ../index.php');
     exit();
 }
-$user          = $_SESSION['user'];
-$nama          = $user['nama'];
 
-// Ambil data deteksi terakhir dari session jika ada
-$hasil_ada = isset($_SESSION['hasil_deteksi']);
-$status_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['label'] : 'Belum Ada Data';
-$tanggal_deteksi = $hasil_ada ? $_SESSION['hasil_deteksi']['tanggal'] : '-';
-$color_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['color'] : '#98AAC0';
-$bg_burnout = $hasil_ada ? $_SESSION['hasil_deteksi']['bg_light'] : '#F1F4F7';
+require_once '../config/data_store.php';
+bx_init_store();
 
-$active_menu   = 'dashboard';
-// Inisial avatar dari nama
+$user     = $_SESSION['user'];
+$user_id  = $user['id'] ?? 'U_DEMO_K';
+$nama     = $user['nama'];
+$active_menu = 'dashboard';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
+
+// Ambil data riwayat untuk statistik
+$history = get_user_history($user_id);
+$total_deteksi = count($history);
+$last_result = $history[0] ?? null;
+
+// Sapaan berdasarkan waktu
+$hour = date('H');
+$greet = ($hour < 11) ? 'Selamat Pagi' : (($hour < 15) ? 'Selamat Siang' : (($hour < 19) ? 'Selamat Sore' : 'Selamat Malam'));
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <title>Dashboard Karyawan – BurnoutXpert</title>
-    <meta name="description" content="Dashboard karyawan BurnoutXpert – pantau status burnout dan mulai deteksi sekarang.">
     <?php include '../includes/head.php'; ?>
-
 </head>
 <body>
 
 <?php include '../includes/sidebar_karyawan.php'; ?>
 
-<!-- ── MAIN WRAPPER ── -->
 <div class="main-wrapper">
-
-    <?php 
-        $page_title = "Overview Dashboard";
-        include '../includes/topbar.php'; 
-    ?>
+    <?php include '../includes/topbar.php'; ?>
 
     <main class="page-content">
-        <?php include '../includes/toast.php'; ?>
-
-        <!-- Welcome Card -->
-        <div class="welcome-card">
-            <div class="welcome-card__text">
-                <div class="welcome-card__greeting">Selamat datang kembali 👋</div>
-                <div class="welcome-card__name">Halo, <span><?= htmlspecialchars($nama) ?></span>!</div>
-                <div class="welcome-card__quote">
-                    "Kesehatan mental adalah fondasi produktivitas. Setiap langkah kecil menuju keseimbangan adalah pencapaian besar."
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1 class="welcome-title"><?= $greet ?>, <?= htmlspecialchars($nama) ?>! 👋</h1>
+                <p class="welcome-subtitle">Bagaimana perasaan Anda hari ini? Lakukan deteksi rutin untuk menjaga keseimbangan kesehatan mental Anda.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="deteksi.php" class="btn-cta">Mulai Deteksi Sekarang</a>
                 </div>
             </div>
-            <div style="font-size: 4rem; position: relative; z-index: 1; animation: floatEmoji 3s ease-in-out infinite;">🧠</div>
-        </div>
-
-        <!-- Mood Check-in -->
-        <div class="mood-container">
-            <div class="mood-text">
-                <h3 class="mood-title">Bagaimana perasaan Anda hari ini?</h3>
-                <p style="font-size: 0.8rem; color: var(--color-gray-400); margin-top: 0.2rem;">Mood Anda membantu kami memantau kesejahteraan Anda.</p>
-            </div>
-            <div class="mood-options">
-                <button class="mood-btn" onclick="setMood('happy', this)" title="Senang">😊</button>
-                <button class="mood-btn" onclick="setMood('neutral', this)" title="Biasa saja">😐</button>
-                <button class="mood-btn" onclick="setMood('tired', this)" title="Lelah">😫</button>
-                <button class="mood-btn" onclick="setMood('stressed', this)" title="Stres">🤯</button>
+            <div class="welcome-illustration">
+                <!-- Illustration SVG -->
+                <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="75" r="70" fill="white" fill-opacity="0.1"/>
+                    <path d="M140 90C140 112.091 122.091 130 100 130C77.9086 130 60 112.091 60 90C60 67.9086 77.9086 50 100 50C122.091 50 140 67.9086 140 90Z" fill="white" fill-opacity="0.2"/>
+                    <path d="M100 70V100M85 85H115" stroke="white" stroke-width="8" stroke-linecap="round"/>
+                </svg>
             </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- Stat 1: Total Deteksi -->
+            <div class="content-card stat-card">
+                <div class="stat-icon" style="background: var(--color-primary-50); color: var(--color-primary);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?= $total_deteksi ?></div>
+                    <div class="stat-label">Total Deteksi Anda</div>
+                </div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-card__icon" style="background: <?= $bg_burnout ?>;">⚠️</div>
-                <div class="stat-card__body">
-                    <div class="stat-card__label">Status Deteksi Terakhir</div>
-                    <div style="margin-top:0.1rem;">
-                        <span class="status-badge" style="background: <?= $bg_burnout ?>; color: <?= $color_burnout ?>; border: 1px solid <?= $color_burnout ?>40;">
-                            <span class="status-badge__dot"></span>
-                            <?= htmlspecialchars($status_burnout) ?>
-                        </span>
+            <!-- Stat 2: Deteksi Terakhir -->
+            <div class="content-card stat-card">
+                <div class="stat-icon" style="background: #F0FFF4; color: #10B981;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" style="font-size: 1.1rem; line-height: 1.4;">
+                        <?= $last_result ? htmlspecialchars($last_result['tanggal']) : 'Belum Ada' ?>
                     </div>
-                    <div class="stat-card__sub"><?= $hasil_ada ? 'Berdasarkan analisis terbaru' : 'Belum ada riwayat deteksi' ?></div>
+                    <div class="stat-label">Terakhir Dicek</div>
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-card__icon stat-card__icon--info">📅</div>
-                <div class="stat-card__body">
-                    <div class="stat-card__label">Tanggal Deteksi Terakhir</div>
-                    <div class="stat-card__value"><?= htmlspecialchars($tanggal_deteksi) ?></div>
-                    <div class="stat-card__sub">Deteksi rutin disarankan setiap bulan</div>
+            <!-- Stat 3: Status Terakhir -->
+            <div class="content-card stat-card">
+                <div class="stat-icon" style="background: <?= $last_result['bg_light'] ?? '#F8FAFB' ?>; color: <?= $last_result['color'] ?? 'var(--color-gray-400)' ?>;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-card__icon" style="background: var(--color-primary-50); color: var(--color-primary);">📊</div>
-                <div class="stat-card__body">
-                    <div class="stat-card__label">Total Deteksi</div>
-                    <div class="stat-card__value"><?= $hasil_ada ? '1' : '0' ?></div>
-                    <div class="stat-card__sub">Asesmen yang telah diselesaikan</div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- CTA Section -->
-        <div class="cta-section">
-            <div class="cta-card">
-                <div class="cta-card__text">
-                    <div class="cta-card__title">Siap untuk deteksi burnout terbaru?</div>
-                    <div class="cta-card__desc">
-                        Ikuti kuesioner singkat berbasis sistem pakar untuk mengetahui tingkat burnout Anda saat ini dan dapatkan rekomendasi penanganannya.
+                <div class="stat-info">
+                    <div class="stat-value" style="color: <?= $last_result['color'] ?? 'inherit' ?>;">
+                        <?= $last_result ? htmlspecialchars($last_result['level'] === 'TIDAK ADA' ? 'Normal' : $last_result['level']) : 'N/A' ?>
                     </div>
+                    <div class="stat-label">Status Terakhir</div>
                 </div>
-                <a href="deteksi.php" class="btn-detect" id="btn-mulai-deteksi">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    Mulai Deteksi Sekarang
-                    <svg class="btn-detect__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                        <polyline points="12 5 19 12 12 19"/>
-                    </svg>
-                </a>
             </div>
         </div>
 
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- Info Card -->
+            <div class="content-card">
+                <h2 class="card-title">Mengapa Harus Deteksi Dini?</h2>
+                <div style="line-height: 1.6; color: var(--color-gray-600);">
+                    <p>Burnout adalah kondisi kelelahan fisik, emosional, dan mental yang disebabkan oleh keterlibatan jangka panjang dalam situasi yang menuntut secara emosional.</p>
+                    <ul style="margin-top: 1rem; padding-left: 1.25rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Akurasi Tinggi:</strong> Menggunakan algoritma Certainty Factor.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Privasi Terjamin:</strong> Data Anda hanya digunakan untuk analisis internal.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Solusi Cepat:</strong> Rekomendasi langsung dari para ahli HR.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Tip Card -->
+            <div class="content-card" style="background: var(--color-accent); color: white;">
+                <h2 class="card-title" style="color: white;">💡 Tips Hari Ini</h2>
+                <p style="font-size: 0.95rem; line-height: 1.6; opacity: 0.9;">
+                    "Luangkan waktu 5 menit setiap jam untuk sekadar meregangkan tubuh atau menjauh dari layar komputer. Hal kecil ini sangat membantu menjaga fokus Anda."
+                </p>
+                <div style="margin-top: 1.5rem; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05rem; text-transform: uppercase;">
+                    #MentalHealthMatters
+                </div>
+            </div>
+        </div>
     </main>
 </div>
-
-<script>
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-    }
-
-    function setMood(mood, btn) {
-        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const messages = {
-            'happy': 'Senang mendengarnya! Pertahankan energi positif Anda. ✨',
-            'neutral': 'Terima kasih telah berbagi perasaan Anda hari ini. 🧘‍♂️',
-            'tired': 'Jangan lupa istirahat sejenak. Kesehatan Anda prioritas. ☕',
-            'stressed': 'Tetap tenang. Kami di sini untuk membantu jika Anda butuh. ❤️'
-        };
-        showToast(messages[mood], 'info');
-    }
-
-    function updateDate() {
-        const el = document.getElementById('current-date');
-        if (!el) return;
-        const now = new Date();
-        el.textContent = now.toLocaleDateString('id-ID', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        });
-    }
-    updateDate();
-</script>
-
 
 </body>
 </html>

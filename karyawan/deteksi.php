@@ -37,7 +37,7 @@ if (!$from_engine) {
         'goal_index'         => 0,
         'answers'            => [],
         'bc_trace'           => [],
-        'current_hypothesis' => $bc_goals[0],
+        'current_hypothesis' => 'Fase 1', // Inisialisasi netral
         'current_goal_index' => 0,
         'pending_questions'  => $initial_gids,
     ];
@@ -45,11 +45,11 @@ if (!$from_engine) {
 
 // ── Hipotesis saat ini ──
 $bc_goals_all = ['BURNOUT TINGGI', 'BURNOUT SEDANG', 'BURNOUT RENDAH'];
-$goal_colors  = ['BURNOUT TINGGI' => '#DC3545', 'BURNOUT SEDANG' => '#F59E0B', 'BURNOUT RENDAH' => '#10B981'];
+$goal_colors_list = ['#DC3545', '#F59E0B', '#10B981']; // Red, Amber, Green
 $current_hypothesis  = $_SESSION['bc_engine']['current_hypothesis'];
 $current_goal_index  = $_SESSION['bc_engine']['current_goal_index'] ?? 0;
 $pending_gids        = $_SESSION['bc_engine']['pending_questions'];
-$hypo_color          = $goal_colors[$current_hypothesis] ?? 'var(--color-primary)';
+$hypo_color          = $goal_colors_list[$current_goal_index] ?? 'var(--color-primary)';
 
 // ── Buat daftar pertanyaan hanya untuk pending symptoms ──
 $questions = [];
@@ -119,19 +119,11 @@ $total_goals     = count($bc_goals_all);
         <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)" style="display:none">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <div class="question-card">
-                <!-- Backward Chaining: Fase / Hipotesis Indicator -->
-                <div style="background: linear-gradient(135deg, <?= $hypo_color ?>18, <?= $hypo_color ?>08); border: 1px solid <?= $hypo_color ?>40; border-radius: 12px; padding: 0.75rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display:flex; align-items:center; gap: 0.6rem;">
-                        <div style="width:8px; height:8px; border-radius:50%; background:<?= $hypo_color ?>; box-shadow: 0 0 6px <?= $hypo_color ?>;">
-                        </div>
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 0.05em;">Menguji Hipotesis</span>
-                        <strong style="font-size: 0.85rem; color: <?= $hypo_color ?>"><?= $current_hypothesis ?></strong>
-                    </div>
-                    <div style="display: flex; gap: 0.35rem;">
-                        <?php foreach ($bc_goals_all as $i => $g): ?>
-                        <div style="width: 28px; height: 6px; border-radius: 999px; background: <?= $i <= $current_goal_index ? $goal_colors[$g] : 'var(--color-gray-200)' ?>;"></div>
-                        <?php endforeach; ?>
-                    </div>
+                <!-- Backward Chaining: Simple Phase Label -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <span style="display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 1px solid var(--color-gray-200); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.15em;">
+                        <?= htmlspecialchars($current_hypothesis) ?>
+                    </span>
                 </div>
 
                 <!-- Integrated Progress Header -->
@@ -149,35 +141,19 @@ $total_goals     = count($bc_goals_all);
                 $step_idx = 1;
                 foreach ($questions as $gid => $q_text): ?>
                 <div class="step <?= $step_idx === 1 ? 'active' : '' ?>" data-step="<?= $step_idx ?>">
-                    <h2 class="question-text"><?= htmlspecialchars($q_text) ?></h2>
+                    <h2 class="question-text" style="font-size: 1.5rem; line-height: 1.4; margin-bottom: 2.5rem;"><?= htmlspecialchars($q_text) ?></h2>
                     <div class="options-group options-group--3">
-                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Sering', '<?= $gid ?>')">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Sering', '<?= $gid ?>')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
                             <input type="radio" name="<?= $gid ?>" value="Sering" style="display:none">
-                            <div class="option-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                </svg>
-                            </div>
-                            <span>Sering Merasakan</span>
+                            <span style="font-weight: 700; font-size: 1.1rem;">Sering Merasakan</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Kadang', '<?= $gid ?>')">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Kadang', '<?= $gid ?>')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
                             <input type="radio" name="<?= $gid ?>" value="Kadang" style="display:none">
-                            <div class="option-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="4" y1="12" x2="20" y2="12"></line>
-                                </svg>
-                            </div>
-                            <span>Kadang-kadang</span>
+                            <span style="font-weight: 700; font-size: 1.1rem;">Kadang-kadang</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Tidak Pernah', '<?= $gid ?>')">
+                        <label class="option-btn" onclick="selectOption(<?= $step_idx ?>, 'Tidak Pernah', '<?= $gid ?>')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
                             <input type="radio" name="<?= $gid ?>" value="Tidak Pernah" style="display:none">
-                            <div class="option-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </div>
-                            <span>Tidak Pernah</span>
+                            <span style="font-weight: 700; font-size: 1.1rem;">Tidak Pernah</span>
                         </label>
                     </div>
                 </div>
@@ -233,7 +209,11 @@ $total_goals     = count($bc_goals_all);
                         </svg>
                     </button>
                     <button type="submit" class="btn-nav btn-result" id="submitBtn" style="display:none">
-                        Lihat Hasil Analisis
+                        <?php if ($current_goal_index < $total_goals - 1): ?>
+                            Proses & Lanjut Tahap Berikutnya
+                        <?php else: ?>
+                            Lihat Hasil Analisis Akhir
+                        <?php endif; ?>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                             <circle cx="12" cy="12" r="3"></circle>

@@ -4,215 +4,148 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'hrd') {
     header('Location: ../index.php');
     exit();
 }
-$user = $_SESSION['user'];
-$nama = $user['nama'];
-$initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
+
+require_once '../config/data_store.php';
+bx_init_store();
+
+$user        = $_SESSION['user'];
+$nama        = $user['nama'];
+$initials    = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 $active_menu = 'dashboard';
-$nama_hrd = $nama; // Keeping this for backward compatibility in case it's used elsewhere
 
-// Mock Data Karyawan (8 orang)
-$karyawan_list = [
-    ['id' => 101, 'nama' => 'Andi Wijaya', 'divisi' => 'IT', 'tanggal' => '10 Mei 2026', 'tingkat' => 'Tinggi'],
-    ['id' => 102, 'nama' => 'Maria Ulfa', 'divisi' => 'Marketing', 'tanggal' => '09 Mei 2026', 'tingkat' => 'Sedang'],
-    ['id' => 103, 'nama' => 'Bambang', 'divisi' => 'Finance', 'tanggal' => '08 Mei 2026', 'tingkat' => 'Rendah'],
-    ['id' => 104, 'nama' => 'Citra', 'divisi' => 'HR', 'tanggal' => '07 Mei 2026', 'tingkat' => 'Sedang'],
-    ['id' => 105, 'nama' => 'Dedi', 'divisi' => 'IT', 'tanggal' => '06 Mei 2026', 'tingkat' => 'Tinggi'],
-    ['id' => 106, 'nama' => 'Eka', 'divisi' => 'Operasional', 'tanggal' => '05 Mei 2026', 'tingkat' => 'Rendah'],
-    ['id' => 107, 'nama' => 'Farhan', 'divisi' => 'Marketing', 'tanggal' => '04 Mei 2026', 'tingkat' => 'Tinggi'],
-    ['id' => 108, 'nama' => 'Gita', 'divisi' => 'Finance', 'tanggal' => '03 Mei 2026', 'tingkat' => 'Sedang'],
-];
+// Ambil statistik dari store
+$karyawan_list = get_all_karyawan();
+$total_karyawan = count($karyawan_list);
 
-// Stats Chart Mock (Tinggi, Sedang, Rendah)
-$chart_data = [
-    'IT' => [2, 0, 0],
-    'Marketing' => [1, 1, 0],
-    'Finance' => [0, 1, 1],
-    'HR' => [0, 1, 0],
-    'Operasional' => [0, 0, 1]
-];
+$stats = ['TINGGI' => 0, 'SEDANG' => 0, 'RENDAH' => 0, 'TIDAK ADA' => 0, 'Belum Deteksi' => 0];
+$urgent_cases = [];
+
+foreach ($karyawan_list as $k) {
+    $lvl = $k['last_level'];
+    if (isset($stats[$lvl])) $stats[$lvl]++;
+    else $stats['Belum Deteksi']++;
+
+    if ($lvl === 'TINGGI') {
+        $urgent_cases[] = $k;
+    }
+}
+
+// Ambil notifikasi unread
+$unread_notif = count(array_filter($_SESSION['bx_store']['hrd_alerts'] ?? [], fn($a) => !($a['read'] ?? false)));
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Dashboard HRD – BurnoutXpert</title>
+    <title>HRD Dashboard – BurnoutXpert</title>
     <?php include '../includes/head.php'; ?>
-
 </head>
 <body>
 
 <?php include '../includes/sidebar_hrd.php'; ?>
 
-    <div class="main-wrapper">
-        <?php include '../includes/topbar.php'; ?>
+<div class="main-wrapper">
+    <?php include '../includes/topbar.php'; ?>
 
-        <main class="page-content">
-            <div class="dashboard-container">
-        
-        <!-- Summary Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon bg-blue">👥</div>
+    <main class="page-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h1 class="page-title">Ringkasan Kesehatan Karyawan</h1>
+            <div style="color: var(--color-gray-500); font-size: 0.9rem;">
+                Terakhir update: <strong><?= date('d M Y, H:i') ?></strong>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;">
+            <div class="content-card stat-card" style="border-bottom: 4px solid var(--color-primary);">
                 <div class="stat-info">
-                    <span class="stat-value">125</span>
-                    <span class="stat-label">Total Karyawan</span>
+                    <div class="stat-value"><?= $total_karyawan ?></div>
+                    <div class="stat-label">Total Karyawan</div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-red">🔥</div>
+            <div class="content-card stat-card" style="border-bottom: 4px solid #DC3545;">
                 <div class="stat-info">
-                    <span class="stat-value">12</span>
-                    <span class="stat-label">Burnout Tinggi</span>
+                    <div class="stat-value" style="color: #DC3545;"><?= $stats['TINGGI'] ?></div>
+                    <div class="stat-label">Burnout Tinggi</div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-orange">⚠️</div>
+            <div class="content-card stat-card" style="border-bottom: 4px solid #F59E0B;">
                 <div class="stat-info">
-                    <span class="stat-value">34</span>
-                    <span class="stat-label">Burnout Sedang</span>
+                    <div class="stat-value" style="color: #D97706;"><?= $stats['SEDANG'] ?></div>
+                    <div class="stat-label">Burnout Sedang</div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-green">✅</div>
+            <div class="content-card stat-card" style="border-bottom: 4px solid #10B981;">
                 <div class="stat-info">
-                    <span class="stat-value">79</span>
-                    <span class="stat-label">Burnout Rendah</span>
+                    <div class="stat-value" style="color: #065F46;"><?= $unread_notif ?></div>
+                    <div class="stat-label">Notifikasi Baru</div>
                 </div>
             </div>
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3 class="card-title" style="margin-bottom: 1.5rem;">Tren Burnout Bulanan</h3>
-                <div id="trendChart"></div>
-            </div>
-            <div class="chart-card">
-                <h3 class="card-title" style="margin-bottom: 1.5rem;">Distribusi per Divisi</h3>
-                <div id="divisiChart"></div>
-            </div>
-        </div>
-
-        <div class="main-grid" style="margin-top: 1.5rem;">
-            
-            <!-- Daftar Karyawan -->
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- Distribusi Chart -->
             <div class="content-card">
-                <div class="card-header">
-                    <h2 class="card-title">Daftar Monitoring Karyawan</h2>
-                    <div class="segmented-tabs">
-                        <button class="tab-item active" onclick="filterTable('Semua', this)">Semua</button>
-                        <button class="tab-item" onclick="filterTable('Tinggi', this)">Tinggi</button>
-                        <button class="tab-item" onclick="filterTable('Sedang', this)">Sedang</button>
-                        <button class="tab-item" onclick="filterTable('Rendah', this)">Rendah</button>
+                <h2 class="card-title">Distribusi Burnout</h2>
+                <div id="burnoutDistribution" style="min-height: 250px;"></div>
+            </div>
+
+            <!-- Kasus Mendesak -->
+            <div class="content-card">
+                <div class="card-header" style="padding: 0; margin-bottom: 1rem;">
+                    <h2 class="card-title">🚨 Kasus Mendesak</h2>
+                    <a href="notifikasi.php" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 700;">Lihat Semua</a>
+                </div>
+                <div class="urgent-list">
+                    <?php if (empty($urgent_cases)): ?>
+                    <div style="text-align: center; padding: 2rem; color: var(--color-gray-400);">
+                        <div style="font-size: 2rem;">✅</div>
+                        <p>Tidak ada kasus burnout tinggi saat ini.</p>
                     </div>
-                </div>
-                
-                <div class="table-container">
-                    <table id="employeeTable" class="premium-table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama</th>
-                                <th>Divisi</th>
-                                <th>Tanggal Deteksi</th>
-                                <th>Tingkat</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($karyawan_list as $index => $k): ?>
-                            <tr data-status="<?= $k['tingkat'] ?>">
-                                <td data-label="No"><?= $index + 1 ?></td>
-                                <td data-label="Nama"><strong><?= htmlspecialchars($k['nama']) ?></strong></td>
-                                <td data-label="Divisi"><?= htmlspecialchars($k['divisi']) ?></td>
-                                <td data-label="Tanggal Deteksi"><?= htmlspecialchars($k['tanggal']) ?></td>
-                                <td data-label="Tingkat">
-                                    <span class="badge-pill badge-<?= strtolower($k['tingkat']) ?>">
-                                        <?= $k['tingkat'] ?>
-                                    </span>
-                                </td>
-                                <td data-label="Aksi"><a href="detail_karyawan.php?id=<?= $k['id'] ?>" class="btn-detail">Lihat Detail</a></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="content-card">
-                <h2 class="card-title">Quick Action</h2>
-                <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem;">
-                    <a href="laporan.php" class="filter-btn" style="text-align:center; display:block; text-decoration:none;">Download Laporan Bulanan</a>
-                    <a href="notifikasi.php" class="filter-btn" style="text-align:center; display:block; text-decoration:none;">Kirim Blast Pengingat</a>
+                    <?php else: ?>
+                    <?php foreach (array_slice($urgent_cases, 0, 4) as $u): ?>
+                    <div class="urgent-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--color-gray-100);">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="avatar-sm" style="width: 32px; height: 32px; border-radius: 50%; background: #FFF5F5; color: #DC3545; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem;">
+                                <?= strtoupper(substr($u['nama'], 0, 1)) ?>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.9rem;"><?= htmlspecialchars($u['nama']) ?></div>
+                                <div style="font-size: 0.75rem; color: var(--color-gray-400);"><?= htmlspecialchars($u['divisi']) ?></div>
+                            </div>
+                        </div>
+                        <a href="detail_karyawan.php?id=<?= urlencode($u['id']) ?>" class="btn-detail" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Periksa</a>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-            </div>
-        </main>
-    </div>
+    </main>
+</div>
 
-    <script>
-        function filterTable(status, btn) {
-            document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const rows = document.querySelectorAll('#employeeTable tbody tr');
-            rows.forEach(row => {
-                row.style.display = (status === 'Semua' || row.getAttribute('data-status') === status) ? '' : 'none';
-            });
-        }
-
-        // ApexCharts Implementation
-        const commonOptions = {
-            chart: { fontFamily: 'inherit', toolbar: { show: false } },
-            tooltip: { theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light' }
-        };
-
-        // Trend Chart (Area/Line)
-        const trendOptions = {
-            ...commonOptions,
-            series: [{ name: 'Kasus Burnout', data: [5, 8, 12, 10, 15] }],
-            chart: { type: 'area', height: 250, ...commonOptions.chart },
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 3, colors: ['var(--color-accent)'] },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05,
-                    colorStops: [{ offset: 0, color: 'var(--color-accent)', opacity: 0.4 }, { offset: 100, color: 'var(--color-accent)', opacity: 0.05 }]
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var options = {
+        series: [<?= $stats['TINGGI'] ?>, <?= $stats['SEDANG'] ?>, <?= $stats['RENDAH'] ?>, <?= $stats['TIDAK ADA'] + $stats['Belum Deteksi'] ?>],
+        chart: { type: 'donut', height: 280, fontFamily: 'inherit' },
+        labels: ['Tinggi', 'Sedang', 'Rendah', 'Normal/Belum'],
+        colors: ['#DC3545', '#F59E0B', '#3B82F6', '#10B981'],
+        legend: { position: 'bottom' },
+        dataLabels: { enabled: false },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '70%',
+                    labels: {
+                        show: true,
+                        total: { show: true, label: 'Karyawan', fontSize: '14px', fontWeight: 600 }
+                    }
                 }
-            },
-            markers: { size: 5, colors: ['#fff'], strokeColors: 'var(--color-accent)', strokeWidth: 2 },
-            xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-                labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
-                axisBorder: { show: false }, axisTicks: { show: false }
-            },
-            yaxis: { labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } } },
-            grid: { borderColor: 'var(--color-gray-100)', strokeDashArray: 4 }
-        };
-        new ApexCharts(document.querySelector("#trendChart"), trendOptions).render();
-
-        // Divisi Chart (Stacked Bar)
-        const divisiOptions = {
-            ...commonOptions,
-            series: [
-                { name: 'Tinggi', data: [2, 1, 0, 0, 0] },
-                { name: 'Sedang', data: [0, 1, 1, 1, 0] },
-                { name: 'Rendah', data: [0, 0, 1, 0, 1] }
-            ],
-            chart: { type: 'bar', height: 250, stacked: true, ...commonOptions.chart },
-            colors: ['var(--color-error)', 'var(--color-warning)', 'var(--color-success)'],
-            plotOptions: { bar: { horizontal: false, borderRadius: 4, columnWidth: '40%' } },
-            dataLabels: { enabled: false },
-            xaxis: {
-                categories: ['IT', 'Mkt', 'Fin', 'HR', 'Ops'],
-                labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } },
-                axisBorder: { show: false }, axisTicks: { show: false }
-            },
-            yaxis: { labels: { style: { colors: 'var(--color-gray-500)', fontSize: '12px' } } },
-            grid: { borderColor: 'var(--color-gray-100)', strokeDashArray: 4 },
-            legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px', markers: { radius: 12 } }
-        };
-        new ApexCharts(document.querySelector("#divisiChart"), divisiOptions).render();
-    </script>
-
+            }
+        }
+    };
+    var chart = new ApexCharts(document.querySelector("#burnoutDistribution"), options);
+    chart.render();
+});
+</script>
 </body>
 </html>
