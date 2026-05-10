@@ -43,11 +43,12 @@ function get_cf_user(string $answer): float {
 /**
  * Cari gejala yang belum ditanya dari kumpulan rules.
  */
-function get_new_symptoms_needed(array $rules, array $answered): array {
+function get_new_symptoms_needed(array $rules, array $answered, array $kb_gejala): array {
+    $valid_gids = array_column($kb_gejala, 'id');
     $needed = [];
     foreach ($rules as $rule) {
         foreach ($rule['gejala'] as $gid) {
-            if (!in_array($gid, $answered) && !in_array($gid, $needed)) {
+            if (in_array($gid, $valid_gids) && !in_array($gid, $answered) && !in_array($gid, $needed)) {
                 $needed[] = $gid;
             }
         }
@@ -146,7 +147,7 @@ while ($_SESSION['bc_engine']['goal_index'] < count($bc_goals)) {
 
     // Cek gejala yang belum ditanya
     $answered = array_keys($_SESSION['bc_engine']['answers']);
-    $needed   = get_new_symptoms_needed($goal_rules, $answered);
+    $needed   = get_new_symptoms_needed($goal_rules, $answered, $kb_gejala);
 
     if (!empty($needed)) {
         // BC: butuh lebih banyak data → kembali ke wizard

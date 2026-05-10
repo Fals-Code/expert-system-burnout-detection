@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Cari di store terpusat terlebih dahulu
         $found = find_user_by_email($email);
-        if ($found && $found['password'] !== $password) $found = null;
+        if ($found && !password_verify($password, $found['password'])) $found = null;
 
         // Fallback ke akun demo
         if (!$found) {

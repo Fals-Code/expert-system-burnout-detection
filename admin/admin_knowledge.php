@@ -178,11 +178,11 @@ $aturan_json = json_encode(array_column($aturan_list, null, 'id'));
 
         <?php if (isset($_GET['ok'])): ?>
         <div class="alert-inline alert-inline--success" style="margin-bottom:1rem; padding:0.75rem 1.25rem; border-radius:10px; background:#F0FFF4; border:1px solid #BBF7D0; color:#065F46;">
-            ✅ <?= $_GET['ok'] ?>
+            ✅ <?= htmlspecialchars($_GET['ok']) ?>
         </div>
         <?php elseif (isset($_GET['err'])): ?>
         <div class="alert-inline alert-inline--error" style="margin-bottom:1rem; padding:0.75rem 1.25rem; border-radius:10px; background:#FFF5F5; border:1px solid #FECACA; color:#991B1B;">
-            ❌ <?= $_GET['err'] ?>
+            ❌ <?= htmlspecialchars($_GET['err']) ?>
         </div>
         <?php endif; ?>
 

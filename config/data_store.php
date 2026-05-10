@@ -15,16 +15,16 @@ function bx_init_store(): void {
     $_SESSION['bx_store'] = [
         // Daftar pengguna sistem (karyawan, hrd, admin)
         'users' => [
-            ['id' => 'U001', 'nama' => 'Andi Wijaya',   'email' => 'andi@company.com',    'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'IT',              'posisi' => 'Senior Developer'],
-            ['id' => 'U002', 'nama' => 'Maria Ulfa',    'email' => 'maria@company.com',   'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'Marketing',       'posisi' => 'SEO Specialist'],
-            ['id' => 'U003', 'nama' => 'Bambang S.',    'email' => 'bambang@company.com', 'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'Finance',         'posisi' => 'Accountant'],
-            ['id' => 'U004', 'nama' => 'Citra Dewi',    'email' => 'citra@company.com',   'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'HR',              'posisi' => 'HR Generalist'],
-            ['id' => 'U005', 'nama' => 'Dedi Kurnia',   'email' => 'dedi@company.com',    'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'IT',              'posisi' => 'UI/UX Designer'],
-            ['id' => 'U006', 'nama' => 'Eka Pratiwi',   'email' => 'eka@company.com',     'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'Operasional',     'posisi' => 'Admin Ops'],
-            ['id' => 'U007', 'nama' => 'Farhan Rizky',  'email' => 'farhan@company.com',  'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'Marketing',       'posisi' => 'Copywriter'],
-            ['id' => 'U008', 'nama' => 'Gita Nuraini',  'email' => 'gita@company.com',    'password' => 'karyawan', 'role' => 'karyawan', 'divisi' => 'Finance',         'posisi' => 'Tax Officer'],
-            ['id' => 'U009', 'nama' => 'Budi Santoso',  'email' => 'hrd@burnout.com',     'password' => 'hrd',      'role' => 'hrd',      'divisi' => 'Human Resources', 'posisi' => 'HRD Manager'],
-            ['id' => 'U010', 'nama' => 'Admin BurnoutXpert', 'email' => 'admin@burnout.com', 'password' => 'admin', 'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
+            ['id' => 'U001', 'nama' => 'Andi Wijaya',   'email' => 'andi@company.com',    'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'IT',              'posisi' => 'Senior Developer'],
+            ['id' => 'U002', 'nama' => 'Maria Ulfa',    'email' => 'maria@company.com',   'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Marketing',       'posisi' => 'SEO Specialist'],
+            ['id' => 'U003', 'nama' => 'Bambang S.',    'email' => 'bambang@company.com', 'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Finance',         'posisi' => 'Accountant'],
+            ['id' => 'U004', 'nama' => 'Citra Dewi',    'email' => 'citra@company.com',   'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'HR',              'posisi' => 'HR Generalist'],
+            ['id' => 'U005', 'nama' => 'Dedi Kurnia',   'email' => 'dedi@company.com',    'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'IT',              'posisi' => 'UI/UX Designer'],
+            ['id' => 'U006', 'nama' => 'Eka Pratiwi',   'email' => 'eka@company.com',     'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Operasional',     'posisi' => 'Admin Ops'],
+            ['id' => 'U007', 'nama' => 'Farhan Rizky',  'email' => 'farhan@company.com',  'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Marketing',       'posisi' => 'Copywriter'],
+            ['id' => 'U008', 'nama' => 'Gita Nuraini',  'email' => 'gita@company.com',    'password' => password_hash('karyawan', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Finance',         'posisi' => 'Tax Officer'],
+            ['id' => 'U009', 'nama' => 'Budi Santoso',  'email' => 'hrd@burnout.com',     'password' => password_hash('hrd', PASSWORD_DEFAULT),      'role' => 'hrd',      'divisi' => 'Human Resources', 'posisi' => 'HRD Manager'],
+            ['id' => 'U010', 'nama' => 'Admin BurnoutXpert', 'email' => 'admin@burnout.com', 'password' => password_hash('admin', PASSWORD_DEFAULT), 'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
         ],
 
         // Riwayat deteksi: array berindeks user_id
@@ -154,7 +154,7 @@ function find_user_by_id(string $id): ?array {
 function update_user_password(string $email, string $new_password): bool {
     foreach ($_SESSION['bx_store']['users'] as &$u) {
         if (strtolower($u['email']) === strtolower($email)) {
-            $u['password'] = $new_password;
+            $u['password'] = password_hash($new_password, PASSWORD_DEFAULT);
             return true;
         }
     }

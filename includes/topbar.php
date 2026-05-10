@@ -55,13 +55,20 @@ if (strpos($_SERVER['PHP_SELF'], '/hrd/') !== false) $folder = 'HRD';
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
-                <div class="notif-badge">3</div>
+                <?php 
+                $unread_count = 0;
+                if ($current_role === 'hrd') {
+                    $unread_count = count(array_filter($_SESSION['bx_store']['hrd_alerts'] ?? [], fn($a) => !($a['read'] ?? false)));
+                }
+                if ($unread_count > 0): ?>
+                <div class="notif-badge"><?= $unread_count ?></div>
+                <?php endif; ?>
             </div>
 
             <div class="notif-dropdown" id="globalBellDropdown">
                 <div class="dropdown-header">
                     <h3>Notifikasi Terbaru</h3>
-                    <span>3 Baru</span>
+                    <span><?= $unread_count ?> Baru</span>
                 </div>
                 <div class="dropdown-list">
                     <?php 
@@ -124,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if(themeBtn) {
         themeBtn.addEventListener('click', () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
             
             if (isDark) {
                 document.documentElement.removeAttribute('data-theme');
@@ -141,6 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     sunIcon.style.display = 'block';
                     moonIcon.style.display = 'none';
                 }
+            }
+
+            // Sync ApexCharts if exists
+            if (window.ApexCharts) {
+                ApexCharts.exec('burnoutDistribution', 'updateOptions', {
+                    theme: { mode: newTheme }
+                }, true);
             }
         });
     }
@@ -168,18 +183,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php 
 // --- Proactive Alerts for HRD ---
-if ($current_role === 'hrd' && !empty($_SESSION['hrd_alerts'])) {
+if ($current_role === 'hrd' && !empty($_SESSION['bx_store']['hrd_alerts'])) {
     // Include toast library if not already included
     if (!function_exists('showToast')) {
         include_once __DIR__ . '/toast.php';
     }
     
     echo "<script>";
-    foreach ($_SESSION['hrd_alerts'] as $index => $alert) {
+    foreach ($_SESSION['bx_store']['hrd_alerts'] as $index => $alert) {
         if (!$alert['read']) {
             $msg = addslashes($alert['message']);
             echo "setTimeout(() => showToast('{$msg}', 'error'), " . ($index * 1000 + 500) . ");\n";
-            $_SESSION['hrd_alerts'][$index]['read'] = true;
+            $_SESSION['bx_store']['hrd_alerts'][$index]['read'] = true;
         }
     }
     echo "</script>";

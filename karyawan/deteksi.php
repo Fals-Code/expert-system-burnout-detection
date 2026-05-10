@@ -65,6 +65,12 @@ foreach ($pending_gids as $gid) {
 $total_questions = count($questions);
 $total_steps     = $total_questions + 1; // +1 for summary step
 $total_goals     = count($bc_goals_all);
+
+// Safety: Jika dari engine tapi tidak ada pertanyaan, paksa evaluasi ulang
+if ($from_engine && $total_questions === 0) {
+    header('Location: proses_deteksi.php');
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
