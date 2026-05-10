@@ -185,8 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Proactive Alerts for HRD ---
 if ($current_role === 'hrd' && !empty($_SESSION['bx_store']['hrd_alerts'])) {
     // Include toast library if not already included
-    if (!function_exists('showToast')) {
+    if (!isset($GLOBALS['toast_included'])) {
         include_once __DIR__ . '/toast.php';
+        $GLOBALS['toast_included'] = true;
     }
     
     echo "<script>";

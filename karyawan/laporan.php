@@ -72,8 +72,33 @@ $rid          = $hasil['id'] ?? ('BX-' . date('Ymd') . '-' . rand(100, 999));
 
     <div class="controls">
         <a href="riwayat.php" class="btn btn-back">← Kembali ke Riwayat</a>
-        <button onclick="window.print()" class="btn btn-print">🖨️ Cetak Laporan</button>
+        <button onclick="generatePDF()" class="btn btn-print">📄 Unduh Laporan (PDF)</button>
     </div>
+
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function generatePDF() {
+            const element = document.querySelector('.report-paper');
+            const opt = {
+                margin:       0.5,
+                filename:     'Laporan_Burnout_<?= $rid ?>.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // Show loading or disable button
+            const btn = document.querySelector('.btn-print');
+            btn.innerHTML = '⏳ Sedang Memproses...';
+            btn.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = '📄 Unduh Laporan (PDF)';
+                btn.disabled = false;
+            });
+        }
+    </script>
 
     <div class="report-paper">
         <!-- Kop Surat -->

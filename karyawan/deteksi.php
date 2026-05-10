@@ -25,12 +25,17 @@ $from_engine = isset($_SESSION['bc_engine']['pending_questions']);
 
 if (!$from_engine) {
     // Sesi baru: inisialisasi dan tentukan pertanyaan untuk hipotesis pertama
+    // Sesi baru: inisialisasi dan tentukan pertanyaan untuk hipotesis awal
     $bc_goals = ['BURNOUT TINGGI', 'BURNOUT SEDANG', 'BURNOUT RENDAH'];
-    $first_goal_rules = array_filter($kb_aturan, fn($r) => $r['diagnosa'] === $bc_goals[0]);
+    
+    // Optimasi: Ambil gejala dari 2 goal pertama sekaligus untuk efisiensi
+    $goals_to_prefill = [$bc_goals[0], $bc_goals[1]];
     $initial_gids = [];
-    foreach ($first_goal_rules as $rule) {
-        foreach ($rule['gejala'] as $gid) {
-            if (!in_array($gid, $initial_gids)) $initial_gids[] = $gid;
+    foreach ($kb_aturan as $rule) {
+        if (in_array($rule['diagnosa'], $goals_to_prefill)) {
+            foreach ($rule['gejala'] as $gid) {
+                if (!in_array($gid, $initial_gids)) $initial_gids[] = $gid;
+            }
         }
     }
     $_SESSION['bc_engine'] = [

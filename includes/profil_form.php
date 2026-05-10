@@ -27,9 +27,21 @@ unset($_SESSION['feedback']);
     <?php endif; ?>
 
     <div class="profile-header-card">
-        <div class="profile-avatar-large">
-            <?= htmlspecialchars($initials) ?>
+        <div class="profile-avatar-large" style="position: relative; cursor: pointer;" onclick="document.getElementById('photoInput').click()">
+            <?php if (!empty($user['photo'])): ?>
+                <img src="<?= $user['photo'] ?>" style="width: 100%; height: 100%; border-radius: 24px; object-fit: cover;">
+            <?php else: ?>
+                <?= htmlspecialchars($initials) ?>
+            <?php endif; ?>
+            <div style="position: absolute; bottom: -5px; right: -5px; background: #fff; color: var(--color-primary); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                📷
+            </div>
         </div>
+        <form id="photoForm" method="POST" action="profil.php" enctype="multipart/form-data" style="display: none;">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+            <input type="hidden" name="action" value="update_photo">
+            <input type="file" name="photo" id="photoInput" onchange="document.getElementById('photoForm').submit()" accept="image/*">
+        </form>
         <div class="profile-header-info">
             <h1 class="profile-name"><?= htmlspecialchars($nama) ?></h1>
             <p class="profile-role-badge"><?= strtoupper($role) ?> &bull; <?= htmlspecialchars($divisi) ?></p>

@@ -2,76 +2,100 @@
 
 > **Proyek UAS Kecerdasan Buatan** | D4 Teknologi Informasi | Semester 4
 
-Sistem pakar berbasis **Backward Chaining** untuk mendeteksi tingkat burnout karyawan secara dini dan memberikan rekomendasi penanganan yang tepat berdasarkan aturan gejala burnout (MBI).
+Sistem pakar berbasis **Backward Chaining** dan **Certainty Factor (CF)** untuk mendeteksi tingkat burnout karyawan secara dini dan memberikan rekomendasi penanganan yang tepat berdasarkan aturan gejala burnout (MBI).
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Algorithm
 
-- **Language** : PHP (Native/Custom)
-- **Frontend** : CSS & JS Custom + Design System
-- **Database** : MySQL
-- **Server** : XAMPP / PHP Built-in Server
+- **Core Logic** : PHP Native (Modular Architecture)
+- **Algorithms** : 
+  - **Backward Chaining** (Goal-driven inference)
+  - **Certainty Factor** (Handling uncertainty in diagnosis)
+- **Frontend** : Vanilla CSS & JS (Custom Design System)
+- **Charts** : ApexCharts.js (Data Analytics)
+- **PDF Export** : html2pdf.js (Client-side PDF Generation)
+- **State** : Session-based Persistent Data Store (`bx_store`)
+
+---
+
+## ✨ Fitur Utama
+
+### 1. 🛡️ Keamanan (Security Hardening)
+- **Rate Limiting**: Melindungi dari brute-force login (5 percobaan per menit).
+- **Session Fixation Protection**: Regenerasi ID sesi otomatis setelah login.
+- **CSRF Protection**: Token keamanan untuk semua operasi kritis (POST).
+- **Password Hashing**: Menggunakan `password_hash()` (Argon2id/Bcrypt) untuk penyimpanan kredensial.
+- **Directory Protection**: Access control via `.htaccess` untuk mengunci folder `/config` dan `/includes`.
+
+### 2. 🧠 Mesin Diagnosis (Expert System)
+- **Hybrid Inference**: Menggabungkan Backward Chaining untuk pencarian fakta dan Certainty Factor untuk akurasi persentase.
+- **Wizard Deteksi**: UI interaktif yang hanya menanyakan gejala relevan berdasarkan hipotesis saat ini (efisien).
+- **Analisis Tren**: Grafik fluktuasi tingkat burnout pribadi bagi karyawan.
+
+### 3. 📊 Dashboard Khusus Role
+- **Karyawan**: Deteksi mandiri, riwayat laporan, dan panduan bantuan.
+- **HRD**: Monitoring kesehatan mental organisasi, statistik distribusi burnout, dan grafik tren bulanan.
+- **Admin**: Manajemen Basis Pengetahuan (CRUD Gejala & Aturan) dengan validasi integritas data.
+
+### 4. 📄 Reporting & Analytics
+- **Export PDF**: Menghasilkan dokumen laporan resmi secara instan dengan format premium.
+- **Notifikasi Persisten**: Sistem peringatan kritis bagi HRD jika ditemukan indikasi burnout tinggi.
 
 ---
 
 ## 📁 Struktur Proyek
 
+```text
 UAS/
-├── index.php ← Halaman Login (entry point)
-├── logout.php ← Handler logout
-├── config/ ← Konfigurasi DB & konstanta app
-├── database/ ← Skema & seed data MySQL (burnoutxpert.sql)
-├── assets/ ← CSS, JS, & Media
-├── karyawan/ ← Dashboard role Karyawan (Konsultasi & Riwayat)
-├── hrd/ ← Dashboard role HRD (Monitoring Data)
-└── admin/ ← Dashboard role Admin (Kelola Knowledge Base)
+├── index.php             ← Entry point & Sistem Auth
+├── logout.php            ← Pembersih sesi
+├── config/               ← Data Store, Mock DB, & Logic Konfigurasi
+├── includes/             ← Komponen UI (Sidebar, Topbar, Security)
+├── assets/               ← CSS, JS, Media, & Design Tokens
+├── uploads/              ← Penyimpanan Foto Profil
+├── karyawan/             ← Modul Diagnosa & Laporan
+├── hrd/                  ← Modul Monitoring & Analytics
+└── admin/                ← Modul Knowledge Base Management
+```
 
 ---
 
-## 🎨 Color Palette
+## 🧠 Cara Kerja Backward Chaining & CF
 
-| Token      | Hex       | Kegunaan               |
-| ---------- | --------- | ---------------------- |
-| Primary    | `#1E3A5F` | Navbar, teks heading   |
-| Accent     | `#F4845F` | CTA, tombol, highlight |
-| Background | `#FFFFFF` | Latar halaman          |
-| Gray-50    | `#F8FAFB` | Background card        |
-
----
-
-## 🧠 Konsep Sistem Pakar
-
-| Komponen             | Implementasi                                                      |
-| -------------------- | ----------------------------------------------------------------- |
-| **Metode Inferensi** | **Backward Chaining** (Penalaran mundur dari hipotesis ke fakta)  |
-| **Knowledge Base**   | Aturan gejala burnout berdasarkan Maslach Burnout Inventory (MBI) |
-| **Working Memory**   | Session Management & Temporary Input                              |
-| **User Interface**   | Web Responsive (Native PHP + Custom CSS)                          |
-
-**Cara Kerja Backward Chaining:**
-Sistem memulai penalaran dari **hipotesis tertinggi** (misal: Burnout Berat), lalu membuktikannya secara mundur berdasarkan gejala yang dijawab pengguna. Jika hipotesis tidak terbukti, sistem turun ke hipotesis berikutnya hingga ditemukan kesimpulan yang valid.
+Sistem memulai penalaran dari **Hipotesis Tertinggi (BURNOUT TINGGI)**.
+1. **Goal Selection**: Sistem mencari aturan (rules) yang mengarah ke hipotesis tersebut.
+2. **Fact Verification**: Sistem menanyakan gejala yang menjadi syarat aturan tersebut.
+3. **Certainty Calculation**: Setiap jawaban (Sering, Kadang, Tidak Pernah) dikalikan dengan bobot pakar (Expert CF) menggunakan rumus:
+   `CF[h,e] = CF[e] * CF[pakar]`
+4. **CF Combination**: Jika beberapa gejala terdeteksi, nilai CF digabungkan:
+   `CF_combine = CF1 + CF2 * (1 - CF1)`
+5. **Decision**: Jika hipotesis tertinggi gagal/tidak cukup bukti, sistem otomatis beralih ke hipotesis berikutnya (Sedang -> Rendah).
 
 ---
 
 ## 🚀 Cara Menjalankan
 
-1. Copy folder `UAS/` ke direktori web server (contoh: `C:\xampp\htdocs\UAS`)
-2. Import `database/burnoutxpert.sql` ke phpMyAdmin.
-3. Buka browser: `http://localhost/UAS/`
-4. Login menggunakan akun demo (lihat di file database atau dashboard admin).
+1. Ekstrak folder `UAS/` ke direktori server lokal (misal: `C:\xampp\htdocs\UAS`).
+2. Jalankan server (Apache atau PHP Built-in Server).
+3. Buka browser: `http://localhost/UAS/`.
+4. **Login Demo**:
+   - **Karyawan**: `karyawan@burnoutxpert.com` / `karyawan`
+   - **HRD**: `hrd@burnoutxpert.com` / `hrd`
+   - **Admin**: `admin@burnoutxpert.com` / `admin`
 
 ---
 
-## 📌 Roadmap Pengembangan
+## ✅ Status Proyek: FINISHED (Production Ready)
 
-- [x] Halaman Login (3 Role) & Struktur direktori
-- [x] Desain sistem & skema database
-- [ ] Mesin inferensi Backward Chaining
-- [ ] Fitur Konsultasi & Hasil Diagnosa (Karyawan)
-- [ ] Dashboard monitoring & laporan (HRD)
-- [ ] Manajemen Rule & Gejala (Admin)
+- [x] Autentikasi 3 Role (Secure)
+- [x] Mesin Inferensi Backward Chaining + CF
+- [x] Manajemen Basis Pengetahuan (CRUD Admin)
+- [x] Export Laporan PDF
+- [x] Dashboard Monitoring HRD (Analytics)
+- [x] Upload Foto Profil & Keamanan Direktori
 
 ---
 
 _Dibuat untuk keperluan akademik – Mata Kuliah Kecerdasan Buatan_
+_© 2026 BurnoutXpert Team_

@@ -223,3 +223,16 @@ function generate_report_id(string $timestamp): string {
     $hash = substr(md5($timestamp . $uid), 0, 4);
     return "BX-{$date}-" . strtoupper($hash);
 }
+
+/**
+ * Update user photo in session store
+ */
+function update_user_photo($user_id, $photo_path) {
+    if (!isset($_SESSION['bx_store']['users'])) return;
+    foreach ($_SESSION['bx_store']['users'] as &$u) {
+        if ($u['id'] === $user_id) {
+            $u['photo'] = $photo_path;
+            break;
+        }
+    }
+}

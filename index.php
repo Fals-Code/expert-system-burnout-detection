@@ -28,36 +28,55 @@ $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email']    ?? '');
-    $password = trim($_POST['password'] ?? '');
+    // Basic Rate Limiting
+    $now = time();
+    $attempts = $_SESSION['login_attempts'] ?? 0;
+    $last_attempt = $_SESSION['last_attempt_time'] ?? 0;
 
-    if (empty($email) || empty($password)) {
-        $error = 'Email dan Password wajib diisi.';
+    if ($attempts >= 5 && ($now - $last_attempt) < 60) {
+        $error = 'Terlalu banyak percobaan login. Silakan tunggu 1 menit.';
     } else {
-        // Cari di store terpusat terlebih dahulu
-        $found = find_user_by_email($email);
-        if ($found && !password_verify($password, $found['password'])) $found = null;
+        $email    = trim($_POST['email']    ?? '');
+        $password = trim($_POST['password'] ?? '');
 
-        // Fallback ke akun demo
-        if (!$found) {
-            foreach ($fallback_users as $fu) {
-                if ($fu['email'] === $email && $fu['password'] === $password) {
-                    $found = $fu;
-                    break;
+        if (empty($email) || empty($password)) {
+            $error = 'Email dan Password wajib diisi.';
+        } else {
+            // Cari di store terpusat
+            $found = find_user_by_email($email);
+            if ($found && !password_verify($password, $found['password'])) $found = null;
+
+            // Fallback ke akun demo (jika tidak ada di store)
+            if (!$found) {
+                foreach ($fallback_users as $fu) {
+                    if ($fu['email'] === $email && password_verify($password, $fu['password'])) {
+                        $found = $fu;
+                        break;
+                    }
                 }
             }
-        }
 
-        if ($found) {
-            $_SESSION['user'] = $found;
-            append_log($found['nama'], 'LOGIN', 'Auth', "Login berhasil sebagai {$found['role']}");
-            $role = $found['role'];
-            if ($role === 'admin')  header('Location: admin/dashboard.php');
-            elseif ($role === 'hrd') header('Location: hrd/dashboard.php');
-            else                     header('Location: karyawan/dashboard.php');
-            exit();
-        } else {
-            $error = 'Email atau Password salah. Silakan coba lagi.';
+            if ($found) {
+                // Reset rate limiting
+                unset($_SESSION['login_attempts']);
+                unset($_SESSION['last_attempt_time']);
+
+                // Session Fixation Protection
+                session_regenerate_id(true);
+                
+                $_SESSION['user'] = $found;
+                append_log($found['nama'], 'LOGIN', 'Auth', "Login berhasil sebagai {$found['role']}");
+                
+                $role = $found['role'];
+                if ($role === 'admin')  header('Location: admin/dashboard.php');
+                elseif ($role === 'hrd') header('Location: hrd/dashboard.php');
+                else                     header('Location: karyawan/dashboard.php');
+                exit();
+            } else {
+                $_SESSION['login_attempts'] = $attempts + 1;
+                $_SESSION['last_attempt_time'] = $now;
+                $error = 'Email atau Password salah. Silakan coba lagi.';
+            }
         }
     }
 }

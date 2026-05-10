@@ -17,6 +17,17 @@ $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explo
 // Ambil riwayat dari store (terbaru di depan)
 $history = get_user_history($user_id);
 
+// Fitur Pencarian
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+    $history = array_filter($history, function($h) use ($q) {
+        $search = strtolower($q);
+        return str_contains(strtolower($h['label'] ?? ''), $search) || 
+               str_contains(strtolower($h['tanggal'] ?? ''), $search) ||
+               str_contains(strtolower($h['id'] ?? ''), $search);
+    });
+}
+
 // Siapkan data chart dari riwayat nyata
 $chart_data       = [];
 $chart_categories = [];
@@ -48,10 +59,19 @@ foreach ($chart_entries as $h) {
                     <h1 class="page-title">Riwayat Deteksi Burnout</h1>
                     <p style="color: var(--color-gray-500); font-size: 0.9rem;">Pantau tren kondisi kesehatan mental Anda dari waktu ke waktu.</p>
                 </div>
-                <a href="deteksi.php" class="btn-cta">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    Mulai Deteksi Baru
-                </a>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <form method="GET" action="" style="display: flex; align-items: center; background: #fff; border: 1px solid var(--color-gray-200); border-radius: 10px; padding: 0.25rem 0.75rem; width: 300px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cari diagnosa atau tanggal..." style="border: none; outline: none; padding: 0.5rem; width: 100%; font-size: 0.85rem;">
+                        <?php if($q): ?>
+                            <a href="riwayat.php" style="color: var(--color-gray-400);">&times;</a>
+                        <?php endif; ?>
+                    </form>
+                    <a href="deteksi.php" class="btn-cta">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        Mulai Deteksi Baru
+                    </a>
+                </div>
             </div>
 
         <?php if (empty($history)): ?>

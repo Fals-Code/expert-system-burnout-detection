@@ -32,6 +32,28 @@ foreach ($karyawan_list as $k) {
 
 // Ambil notifikasi unread
 $unread_notif = count(array_filter($_SESSION['bx_store']['hrd_alerts'] ?? [], fn($a) => !($a['read'] ?? false)));
+
+// Kalkulasi Tren (6 Bulan Terakhir)
+$trend_data = [];
+for ($i = 5; $i >= 0; $i--) {
+    $month_label = date('M Y', strtotime("-$i months"));
+    $month_key   = date('Y-m', strtotime("-$i months"));
+    $trend_data[$month_key] = ['label' => $month_label, 'TINGGI' => 0, 'SEDANG' => 0];
+}
+
+foreach ($karyawan_list as $k) {
+    $history = get_user_history($k['id']);
+    foreach ($history as $h) {
+        $m_key = date('Y-m', strtotime($h['timestamp'] ?? ''));
+        if (isset($trend_data[$m_key])) {
+            if ($h['level'] === 'TINGGI') $trend_data[$m_key]['TINGGI']++;
+            elseif ($h['level'] === 'SEDANG') $trend_data[$m_key]['SEDANG']++;
+        }
+    }
+}
+$trend_labels = array_column($trend_data, 'label');
+$trend_tinggi = array_column($trend_data, 'TINGGI');
+$trend_sedang = array_column($trend_data, 'SEDANG');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -88,6 +110,14 @@ $unread_notif = count(array_filter($_SESSION['bx_store']['hrd_alerts'] ?? [], fn
                 <div id="burnoutDistribution" style="min-height: 250px;"></div>
             </div>
 
+            <!-- Trend Chart -->
+            <div class="content-card">
+                <h2 class="card-title">Tren Burnout Karyawan (6 Bulan)</h2>
+                <div id="burnoutTrend" style="min-height: 250px;"></div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 1.5rem;">
             <!-- Kasus Mendesak -->
             <div class="content-card">
                 <div class="card-header" style="padding: 0; margin-bottom: 1rem;">
@@ -145,6 +175,27 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     var chart = new ApexCharts(document.querySelector("#burnoutDistribution"), options);
     chart.render();
+
+    // Trend Chart
+    var trendOptions = {
+        series: [
+            { name: 'Burnout Tinggi', data: <?= json_encode($trend_tinggi) ?> },
+            { name: 'Burnout Sedang', data: <?= json_encode($trend_sedang) ?> }
+        ],
+        chart: { type: 'area', height: 280, fontFamily: 'inherit', toolbar: { show: false } },
+        colors: ['#DC3545', '#F59E0B'],
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 3 },
+        xaxis: { categories: <?= json_encode($trend_labels) ?> },
+        yaxis: { labels: { formatter: val => Math.floor(val) } },
+        tooltip: { x: { format: 'dd/MM/yy HH:mm' } },
+        fill: {
+            type: 'gradient',
+            gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] }
+        }
+    };
+    var trendChart = new ApexCharts(document.querySelector("#burnoutTrend"), trendOptions);
+    trendChart.render();
 });
 </script>
 </body>

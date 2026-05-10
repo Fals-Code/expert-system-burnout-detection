@@ -63,6 +63,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header('Location: profil.php');
         exit();
+    } elseif ($action === 'update_photo') {
+        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === 0) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            $filename = $_FILES['photo']['name'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            if (in_array($ext, $allowed)) {
+                $new_filename = 'avatar_' . $user['id'] . '_' . time() . '.' . $ext;
+                $target = '../uploads/' . $new_filename;
+                if (move_uploaded_file($_FILES['photo']['tmp_name'], $target)) {
+                    update_user_photo($user['id'], $target);
+                    // Update current session user
+                    $_SESSION['user']['photo'] = $target;
+                    append_log($user['nama'], 'UPDATE_PHOTO', $user['id'], "Memperbarui foto profil.");
+                    $_SESSION['feedback'] = ['type' => 'success', 'message' => 'Foto profil berhasil diperbarui.'];
+                } else {
+                    $_SESSION['feedback'] = ['type' => 'error', 'message' => 'Gagal mengunggah file ke server.'];
+                }
+            } else {
+                $_SESSION['feedback'] = ['type' => 'error', 'message' => 'Format file tidak diizinkan. Gunakan JPG/PNG/GIF.'];
+            }
+        }
+        header('Location: profil.php');
+        exit();
     }
 }
 

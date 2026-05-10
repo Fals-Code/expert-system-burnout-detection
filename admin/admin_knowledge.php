@@ -84,6 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gejala_arr = array_map('trim', array_filter(explode(',', $_POST['gejala'] ?? '')));
         $diagnosa   = $_POST['diagnosa'] ?? 'BURNOUT RENDAH';
 
+        // Validasi: Apakah semua kode gejala ada?
+        $valid_gids = array_column($_SESSION['mock_kb']['gejala'], 'id');
+        $invalid_gids = array_diff($gejala_arr, $valid_gids);
+
+        if (!empty($invalid_gids)) {
+            $feedback = "Gagal: Kode gejala berikut tidak ditemukan: " . implode(', ', $invalid_gids);
+            $feedback_type = 'error';
+            header('Location: admin_knowledge.php?err=' . urlencode($feedback));
+            exit();
+        }
+
         $color_map = [
             'BURNOUT TINGGI' => ['color' => '#DC3545', 'bg' => '#FFF5F5'],
             'BURNOUT SEDANG' => ['color' => '#F59E0B', 'bg' => '#FFFBEB'],
@@ -108,6 +119,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rule_id    = $_POST['id'] ?? '';
         $gejala_arr = array_map('trim', array_filter(explode(',', $_POST['gejala'] ?? '')));
         $diagnosa   = $_POST['diagnosa'] ?? 'BURNOUT RENDAH';
+
+        // Validasi: Apakah semua kode gejala ada?
+        $valid_gids = array_column($_SESSION['mock_kb']['gejala'], 'id');
+        $invalid_gids = array_diff($gejala_arr, $valid_gids);
+
+        if (!empty($invalid_gids)) {
+            $feedback = "Gagal: Kode gejala berikut tidak ditemukan: " . implode(', ', $invalid_gids);
+            $feedback_type = 'error';
+            header('Location: admin_knowledge.php?err=' . urlencode($feedback));
+            exit();
+        }
 
         $color_map = [
             'BURNOUT TINGGI' => ['color' => '#DC3545', 'bg' => '#FFF5F5'],

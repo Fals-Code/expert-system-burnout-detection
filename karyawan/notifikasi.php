@@ -9,8 +9,19 @@ $nama = $user['nama'];
 $active_menu = 'notifikasi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
+// POST: tandai semua dibaca
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'mark_all_read') {
+    if (isset($_SESSION['bx_store']['user_alerts'][$user_id])) {
+        foreach ($_SESSION['bx_store']['user_alerts'][$user_id] as &$alert) {
+            $alert['read'] = true;
+        }
+        unset($alert);
+    }
+    header('Location: notifikasi.php?ok=1');
+    exit();
+}
+
 // Ambil notifikasi nyata dari store
-$user_id = $user['id'];
 $raw_notifications = $_SESSION['bx_store']['user_alerts'][$user_id] ?? [];
 
 // Sort by time descending
@@ -54,7 +65,10 @@ foreach ($raw_notifications as $rn) {
         <main class="page-content">
             <div class="page-header">
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary);">Pusat Notifikasi</h1>
-                <button class="btn-mark-read" onclick="markAllRead()">Tandai Semua Sudah Dibaca</button>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="action" value="mark_all_read">
+                    <button type="submit" class="btn-mark-read">Tandai Semua Sudah Dibaca</button>
+                </form>
             </div>
 
             <!-- Filters -->
