@@ -26,6 +26,10 @@ $desc       = $hasil['desc'];
 $gejala_terdeteksi = $hasil['gejala_terdeteksi'];
 $rekomendasi       = $hasil['rekomendasi'];
 $tanggal_deteksi   = $hasil['tanggal'];
+$tracing           = $hasil['tracing'] ?? [];
+$bc_trace          = $hasil['bc_trace'] ?? [];
+
+
 
 ?>
 <!DOCTYPE html>
@@ -110,6 +114,12 @@ $tanggal_deteksi   = $hasil['tanggal'];
         </div>
 
         <div class="action-group">
+            <button type="button" onclick="openTracingModal()" class="btn-action" style="background:var(--color-primary); color:white; border:none; cursor:pointer; padding:0.8rem 1.5rem; border-radius:50px; font-weight:700; display:flex; align-items:center; gap:0.5rem; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Detail Kalkulasi
+            </button>
             <a href="laporan.php?tgl=<?= urlencode($tanggal_deteksi) ?>" class="btn-action btn-download" target="_blank">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
@@ -138,7 +148,11 @@ $tanggal_deteksi   = $hasil['tanggal'];
                     <div class="timeline-step">2</div>
                     <h4>Konseling</h4>
                     <p>Jadwalkan sesi pertama dengan psikolog untuk evaluasi lebih mendalam.</p>
-                    <button class="timeline-action-btn" onclick="alert('Fitur pencarian psikolog akan segera hadir!')">Cari Psikolog</button>
+                    <?php if ($level === 'TINGGI'): ?>
+                        <a href="mailto:hrd@burnoutxpert.com?subject=Permintaan Jadwal Konseling - <?= urlencode($nama) ?>&body=Halo Tim HRD,%0A%0ASaya <?= urlencode($nama) ?> ingin mengajukan jadwal konseling terkait hasil deteksi kesehatan mental saya.%0A%0ATerima kasih." class="timeline-action-btn" style="text-decoration:none; display:inline-block; text-align:center; background:var(--color-error); color:white; border:none;">Ajukan Konseling ke HRD</a>
+                    <?php else: ?>
+                        <button class="timeline-action-btn" onclick="alert('Fitur pencarian psikolog akan segera hadir!')">Cari Psikolog</button>
+                    <?php endif; ?>
                 </div>
                 <div class="timeline-item-wrap">
                     <div class="timeline-step">3</div>
@@ -151,7 +165,92 @@ $tanggal_deteksi   = $hasil['tanggal'];
     </main>
 </div>
 
+<!-- Modal Tracing -->
+<div class="modal-overlay" id="modalTracing">
+    <div class="modal-content" style="background:white; border-radius:16px; width:90%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div class="modal-header" style="padding:1.5rem; border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; background:var(--color-primary); color:white;">
+            <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Transparansi Perhitungan Pakar</h3>
+            <button type="button" onclick="closeTracingModal()" style="background:transparent; border:none; color:white; font-size:1.5rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:1.5rem; overflow-y:auto; background:#f8fafc;">
+
+            <?php if (!empty($bc_trace)): ?>
+            <!-- BC CHAIN: Alur Backward Chaining -->
+            <div style="background:white; padding:1.25rem; border-radius:12px; border:1px solid var(--color-gray-200); margin-bottom:1rem;">
+                <h4 style="margin:0 0 1rem 0; color:var(--color-primary); font-size:1rem;">🔄 Alur Backward Chaining</h4>
+                <div style="position:relative; padding-left: 1.5rem;">
+                    <div style="position:absolute; left:6px; top:0; bottom:0; width:2px; background:var(--color-gray-100);"></div>
+                    <?php foreach ($bc_trace as $idx => $trace): ?>
+                    <div style="position:relative; margin-bottom:1rem;">
+                        <div style="position:absolute; left:-1.5rem; top:4px; width:12px; height:12px; border-radius:50%; border:2px solid white; background:<?= $trace['confirmed'] ? '#10B981' : '#DC3545' ?>; box-shadow:0 0 0 2px <?= $trace['confirmed'] ? '#10B981' : '#DC354530' ?>;"></div>
+                        <div style="font-size:0.85rem;">
+                            <span style="font-weight:700; color:var(--color-primary);">Langkah <?= $idx + 1 ?>:</span>
+                            Uji hipotesis <strong><?= htmlspecialchars($trace['goal']) ?></strong> (<?= htmlspecialchars($trace['rule_id']) ?>)
+                        </div>
+                        <div style="font-size:0.8rem; margin-top:0.2rem; color:<?= $trace['confirmed'] ? '#10B981' : '#DC3545' ?>; font-weight:600;">
+                            <?= htmlspecialchars($trace['note']) ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($tracing)): ?>
+                <div style="background:white; padding:1.25rem; border-radius:12px; border:1px solid var(--color-gray-200); margin-bottom:1rem;">
+                    <h4 style="margin:0 0 0.75rem 0; color:var(--color-primary); font-size:1rem;">📐 Rule Dominan yang Terkonfirmasi</h4>
+                    <p style="margin:0; font-size:0.95rem;">Kode Rule: <strong style="color:var(--color-accent);"><?= htmlspecialchars($tracing['rule_id'] ?? '-') ?></strong></p>
+                    <p style="margin:0.25rem 0 0 0; font-size:0.95rem;">Bobot Kepastian Pakar (CF Pakar): <strong><?= number_format($tracing['cf_pakar'] ?? 0, 2) ?></strong></p>
+                </div>
+
+                <div style="background:white; padding:1.25rem; border-radius:12px; border:1px solid var(--color-gray-200); margin-bottom:1rem;">
+                    <h4 style="margin:0 0 0.75rem 0; color:var(--color-primary); font-size:1rem;">2. Rincian Gejala & Bobot Jawaban (CF User)</h4>
+                    <ul style="margin:0; padding-left:1.2rem; font-size:0.9rem; color:var(--color-gray-600); line-height:1.6;">
+                        <?php foreach ($tracing['details'] as $detail): ?>
+                            <li><?= htmlspecialchars($detail) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <div style="margin-top:1rem; padding-top:1rem; border-top:1px dashed var(--color-gray-200);">
+                        <p style="margin:0; font-size:0.95rem;">Rata-rata Bobot Gejala (Avg CF Gejala): <strong><?= number_format($tracing['avg_gejala_cf'] ?? 0, 2) ?></strong></p>
+                    </div>
+                </div>
+
+                <div style="background:var(--color-primary); color:white; padding:1.25rem; border-radius:12px;">
+                    <h4 style="margin:0 0 0.5rem 0; font-size:1rem; color:rgba(255,255,255,0.9);">3. Hasil Akhir (Final CF)</h4>
+                    <p style="margin:0; font-size:0.9rem; line-height:1.5;">Formula: Avg CF Gejala &times; CF Pakar</p>
+                    <p style="margin:0.5rem 0 0 0; font-size:1.1rem; font-weight:700;">
+                        <?= number_format($tracing['avg_gejala_cf'] ?? 0, 2) ?> &times; <?= number_format($tracing['cf_pakar'] ?? 0, 2) ?> = <?= number_format(($tracing['avg_gejala_cf'] ?? 0) * ($tracing['cf_pakar'] ?? 0), 2) ?>
+                    </p>
+                    <p style="margin:0.5rem 0 0 0; font-size:0.85rem; color:rgba(255,255,255,0.7);">*Nilai final ini kemudian dikonversi menjadi persentase (<?= $confidence ?>%).</p>
+                </div>
+            <?php else: ?>
+                <div style="text-align:center; padding:2rem; color:var(--color-gray-500);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:1rem; opacity:0.5;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p style="margin:0;">Sistem tidak menemukan gejala signifikan untuk dianalisis (CF &lt; 0.2).</p>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="modal-footer" style="padding:1rem 1.5rem; border-top:1px solid var(--color-gray-200); background:white; display:flex; justify-content:flex-end;">
+            <button type="button" onclick="closeTracingModal()" style="background:var(--color-gray-100); color:var(--color-gray-600); border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openTracingModal() {
+        const modal = document.getElementById('modalTracing');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
+    function closeTracingModal() {
+        const modal = document.getElementById('modalTracing');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
     // Animation for circular progress
     function animateProgress() {
         const target = <?= $confidence ?>;

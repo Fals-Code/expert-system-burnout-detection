@@ -14,16 +14,57 @@ if (!isset($_SESSION['mock_kb'])) {
     $_SESSION['mock_kb'] = include '../config/mock_db.php';
 }
 
-$kb_gejala = $_SESSION['mock_kb']['gejala'];
+require_once '../includes/security.php';
 
-// Daftar Pertanyaan Dinamis
+$kb_gejala  = $_SESSION['mock_kb']['gejala'];
+$kb_aturan  = $_SESSION['mock_kb']['aturan'];
+
+// ── BACKWARD CHAINING: Inisialisasi Engine ──
+// Reset jika user membuka halaman ini secara segar (bukan redirect dari proses_deteksi.php)
+$from_engine = isset($_SESSION['bc_engine']['pending_questions']);
+
+if (!$from_engine) {
+    // Sesi baru: inisialisasi dan tentukan pertanyaan untuk hipotesis pertama
+    $bc_goals = ['BURNOUT TINGGI', 'BURNOUT SEDANG', 'BURNOUT RENDAH'];
+    $first_goal_rules = array_filter($kb_aturan, fn($r) => $r['diagnosa'] === $bc_goals[0]);
+    $initial_gids = [];
+    foreach ($first_goal_rules as $rule) {
+        foreach ($rule['gejala'] as $gid) {
+            if (!in_array($gid, $initial_gids)) $initial_gids[] = $gid;
+        }
+    }
+    $_SESSION['bc_engine'] = [
+        'goal_index'         => 0,
+        'answers'            => [],
+        'bc_trace'           => [],
+        'current_hypothesis' => $bc_goals[0],
+        'current_goal_index' => 0,
+        'pending_questions'  => $initial_gids,
+    ];
+}
+
+// ── Hipotesis saat ini ──
+$bc_goals_all = ['BURNOUT TINGGI', 'BURNOUT SEDANG', 'BURNOUT RENDAH'];
+$goal_colors  = ['BURNOUT TINGGI' => '#DC3545', 'BURNOUT SEDANG' => '#F59E0B', 'BURNOUT RENDAH' => '#10B981'];
+$current_hypothesis  = $_SESSION['bc_engine']['current_hypothesis'];
+$current_goal_index  = $_SESSION['bc_engine']['current_goal_index'] ?? 0;
+$pending_gids        = $_SESSION['bc_engine']['pending_questions'];
+$hypo_color          = $goal_colors[$current_hypothesis] ?? 'var(--color-primary)';
+
+// ── Buat daftar pertanyaan hanya untuk pending symptoms ──
 $questions = [];
-foreach ($kb_gejala as $g) {
-    $questions[$g['id']] = "Seberapa sering Anda mengalami: " . $g['nama'] . "?";
+foreach ($pending_gids as $gid) {
+    foreach ($kb_gejala as $g) {
+        if ($g['id'] === $gid) {
+            $questions[$gid] = "Seberapa sering Anda mengalami: " . $g['nama'] . "?";
+            break;
+        }
+    }
 }
 
 $total_questions = count($questions);
-$total_steps = $total_questions + 1;
+$total_steps     = $total_questions + 1; // +1 for summary step
+$total_goals     = count($bc_goals_all);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -76,11 +117,27 @@ $total_steps = $total_questions + 1;
 
         <!-- Form Konsultasi -->
         <form id="burnoutForm" action="proses_deteksi.php" method="POST" onsubmit="return handleSubmit(event)" style="display:none">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <div class="question-card">
+                <!-- Backward Chaining: Fase / Hipotesis Indicator -->
+                <div style="background: linear-gradient(135deg, <?= $hypo_color ?>18, <?= $hypo_color ?>08); border: 1px solid <?= $hypo_color ?>40; border-radius: 12px; padding: 0.75rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap: 0.6rem;">
+                        <div style="width:8px; height:8px; border-radius:50%; background:<?= $hypo_color ?>; box-shadow: 0 0 6px <?= $hypo_color ?>;">
+                        </div>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 0.05em;">Menguji Hipotesis</span>
+                        <strong style="font-size: 0.85rem; color: <?= $hypo_color ?>"><?= $current_hypothesis ?></strong>
+                    </div>
+                    <div style="display: flex; gap: 0.35rem;">
+                        <?php foreach ($bc_goals_all as $i => $g): ?>
+                        <div style="width: 28px; height: 6px; border-radius: 999px; background: <?= $i <= $current_goal_index ? $goal_colors[$g] : 'var(--color-gray-200)' ?>;"></div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
                 <!-- Integrated Progress Header -->
                 <div class="progress-container">
                     <div class="progress-header">
-                        <span class="progress-title" id="progress-text">Langkah 1 dari <?= $total_questions ?></span>
+                        <span class="progress-title" id="progress-text">Gejala 1 dari <?= $total_questions ?></span>
                         <span class="progress-percentage" id="progress-percent">0%</span>
                     </div>
                     <div class="modern-progress-bar">
@@ -192,9 +249,17 @@ $total_steps = $total_questions + 1;
     let currentStep = 1;
     const totalSteps = <?= $total_steps ?>;
     const totalQuestions = <?= $total_questions ?>;
+    const bcPhase = <?= $current_goal_index ?>; // Which hypothesis phase we are in
     let answers = {};
     let isAnimating = false;
     let autoNextTimeout = null;
+
+    // Clear saved state on new BC phase to avoid stale answers carrying over
+    const savedPhase = localStorage.getItem('burnoutWizardPhase');
+    if (savedPhase != bcPhase) {
+        localStorage.removeItem('burnoutWizardState');
+        localStorage.setItem('burnoutWizardPhase', bcPhase);
+    }
 
     function saveState() {
         localStorage.setItem('burnoutWizardState', JSON.stringify({ currentStep, answers }));

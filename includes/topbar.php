@@ -165,3 +165,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<?php 
+// --- Proactive Alerts for HRD ---
+if ($current_role === 'hrd' && !empty($_SESSION['hrd_alerts'])) {
+    // Include toast library if not already included
+    if (!function_exists('showToast')) {
+        include_once __DIR__ . '/toast.php';
+    }
+    
+    echo "<script>";
+    foreach ($_SESSION['hrd_alerts'] as $index => $alert) {
+        if (!$alert['read']) {
+            $msg = addslashes($alert['message']);
+            echo "setTimeout(() => showToast('{$msg}', 'error'), " . ($index * 1000 + 500) . ");\n";
+            $_SESSION['hrd_alerts'][$index]['read'] = true;
+        }
+    }
+    echo "</script>";
+}
+?>
