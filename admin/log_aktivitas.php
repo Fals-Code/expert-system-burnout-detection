@@ -15,6 +15,10 @@ $initials    = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(ex
 
 // Tandai semua dibaca (POST action)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'clear_logs') {
+    require_once '../includes/security.php';
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        die("CSRF Validation Failed!");
+    }
     $_SESSION['bx_store']['logs'] = [];
     append_log($nama, 'CLEAR_LOGS', 'Admin', 'Log aktivitas dibersihkan oleh admin.');
     header('Location: log_aktivitas.php?ok=Log+berhasil+dibersihkan.');
@@ -45,6 +49,7 @@ $total = count($logs);
             </button>
             <?php if ($total > 0): ?>
             <form method="POST" style="display:inline;" onsubmit="return confirm('Hapus semua log aktivitas?')">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" value="clear_logs">
                 <button type="submit" style="background:none; border:none; color:#DC3545; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>

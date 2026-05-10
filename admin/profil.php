@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$page_title = "Profil Admin";
+$page_title  = "Profil Admin";
 ?>
 <!DOCTYPE html>
 <html lang="id">

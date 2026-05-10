@@ -9,59 +9,30 @@ $nama = $user['nama'];
 $active_menu = 'notifikasi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 
-// Mock Notifications Data
-$notifications = [
-    [
-        'id' => 1,
-        'category' => 'peringatan',
-        'title' => 'Peringatan Burnout',
-        'message' => 'Tingkat burnout Anda meningkat ke level TINGGI. Segera konsultasikan dengan HRD.',
-        'time' => '2025-04-12 09:00:00',
-        'is_read' => false,
-        'icon' => '🔥',
-        'color' => '#DC3545'
-    ],
-    [
-        'id' => 2,
-        'category' => 'pengingat',
-        'title' => 'Pengingat Deteksi',
-        'message' => 'Sudah 30 hari sejak deteksi terakhir Anda. Lakukan deteksi ulang untuk memantau kondisi Anda.',
-        'time' => '2025-04-01 08:00:00',
-        'is_read' => false,
-        'icon' => '📅',
-        'color' => '#FFC107'
-    ],
-    [
-        'id' => 3,
-        'category' => 'informasi',
-        'title' => 'Informasi Sistem',
-        'message' => 'Laporan bulanan burnout divisi IT telah tersedia. Klik untuk melihat.',
-        'time' => '2025-03-31 07:00:00',
-        'is_read' => false,
-        'icon' => '📄',
-        'color' => '#28A745'
-    ],
-    [
-        'id' => 4,
-        'category' => 'informasi',
-        'title' => 'Informasi Sistem',
-        'message' => 'Profil Anda berhasil diperbarui.',
-        'time' => '2025-03-15 14:30:00',
-        'is_read' => true,
-        'icon' => '✅',
-        'color' => '#28A745'
-    ],
-    [
-        'id' => 5,
-        'category' => 'informasi',
-        'title' => 'Informasi Sistem',
-        'message' => 'Selamat datang di BurnoutXpert! Mulai deteksi pertama Anda.',
-        'time' => '2025-01-01 08:00:00',
-        'is_read' => true,
-        'icon' => '👋',
-        'color' => '#28A745'
-    ]
-];
+// Ambil notifikasi nyata dari store
+$user_id = $user['id'];
+$raw_notifications = $_SESSION['bx_store']['user_alerts'][$user_id] ?? [];
+
+// Sort by time descending
+usort($raw_notifications, fn($a, $b) => strtotime($b['time']) <=> strtotime($a['time']));
+
+$notifications = [];
+foreach ($raw_notifications as $rn) {
+    $icon = '📄'; $color = '#28A745';
+    if ($rn['category'] === 'peringatan') { $icon = '🔥'; $color = '#DC3545'; }
+    elseif ($rn['category'] === 'pengingat') { $icon = '📅'; $color = '#FFC107'; }
+    
+    $notifications[] = [
+        'id'       => $rn['id'],
+        'category' => $rn['category'],
+        'title'    => $rn['title'],
+        'message'  => $rn['message'],
+        'time'     => $rn['time'],
+        'is_read'  => $rn['read'] ?? false,
+        'icon'     => $rn['icon'] ?? $icon,
+        'color'    => $rn['color'] ?? $color
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">

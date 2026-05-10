@@ -247,12 +247,15 @@ if ($from_engine && $total_questions === 0) {
         localStorage.setItem('burnoutWizardPhase', bcPhase);
     }
 
+    const userId = '<?= $user['id'] ?>';
+    const storageKey = `burnoutWizardState_${userId}`;
+
     function saveState() {
-        localStorage.setItem('burnoutWizardState', JSON.stringify({ currentStep, answers }));
+        localStorage.setItem(storageKey, JSON.stringify({ currentStep, answers }));
     }
 
     function loadState() {
-        const saved = localStorage.getItem('burnoutWizardState');
+        const saved = localStorage.getItem(storageKey);
         if (saved) {
             const data = JSON.parse(saved);
             answers = data.answers || {};
@@ -405,7 +408,7 @@ if ($from_engine && $total_questions === 0) {
         overlay.style.display = 'flex';
         
         // Clear saved state on submit
-        localStorage.removeItem('burnoutWizardState');
+        localStorage.removeItem(storageKey);
 
         // Simulate analysis for 2 seconds
         setTimeout(() => {

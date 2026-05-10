@@ -41,6 +41,7 @@ unset($_SESSION['feedback']);
         <div class="content-card">
             <h2 class="card-title">Informasi Pribadi</h2>
             <form method="POST" action="profil.php" class="profile-form">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" value="update_profile">
                 <div class="form-group">
                     <label class="form-label">Nama Lengkap</label>
@@ -69,6 +70,7 @@ unset($_SESSION['feedback']);
         <div class="content-card">
             <h2 class="card-title">Keamanan Akun</h2>
             <form method="POST" action="profil.php" class="profile-form">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" value="update_password">
                 <div class="form-group">
                     <label class="form-label">Password Saat Ini</label>

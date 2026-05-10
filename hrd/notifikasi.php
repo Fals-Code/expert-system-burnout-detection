@@ -15,6 +15,10 @@ $active_menu = 'notifikasi';
 
 // POST: tandai semua dibaca
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'mark_all_read') {
+    require_once '../includes/security.php';
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        die("CSRF Validation Failed!");
+    }
     foreach ($_SESSION['bx_store']['hrd_alerts'] as &$a) {
         $a['read'] = true;
     }
@@ -67,6 +71,7 @@ $all_notifs[] = [
                 <?= $unread ?> belum dibaca
             </span>
             <form method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" value="mark_all_read">
                 <button type="submit" style="background:none; border:none; color:var(--color-primary); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline; display:flex; align-items:center; gap:4px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>

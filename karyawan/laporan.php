@@ -16,23 +16,29 @@ $nama    = $user['nama'];
 // Prioritas 1: ?id= dari URL (buka laporan entri riwayat tertentu)
 // Prioritas 2: $_SESSION['hasil_deteksi'] (laporan terbaru langsung dari deteksi)
 $hasil = null;
-$report_id = $_GET['id'] ?? null;
+$report_id  = $_GET['id'] ?? null;
+$report_tgl = $_GET['tgl'] ?? null;
 
-if ($report_id) {
-    // Cari di riwayat user berdasarkan report_id
+if ($report_id || $report_tgl) {
+    // Cari di riwayat user berdasarkan report_id atau tgl
     $history = get_user_history($user_id);
     foreach ($history as $h) {
-        if (($h['id'] ?? '') === $report_id) {
+        if ($report_id && ($h['id'] ?? '') === $report_id) {
+            $hasil = $h;
+            break;
+        }
+        // Jika pakai tgl, bandingkan tanggal Y-m-d
+        if ($report_tgl && date('Y-m-d', strtotime($h['timestamp'] ?? '')) === $report_tgl) {
             $hasil = $h;
             break;
         }
     }
-    if (!$hasil) {
-        // Fallback: jika tidak ditemukan di history, cek session
+    if (!$hasil && $report_id === 'latest') {
+        // Fallback: jika tidak ditemukan di history tapi minta 'latest', cek session
         $hasil = $_SESSION['hasil_deteksi'] ?? null;
     }
 } else {
-    // Tidak ada ?id= → gunakan hasil deteksi terbaru dari session
+    // Tidak ada parameter → gunakan hasil deteksi terbaru dari session
     $hasil = $_SESSION['hasil_deteksi'] ?? null;
 }
 

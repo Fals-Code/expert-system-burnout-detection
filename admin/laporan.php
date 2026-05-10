@@ -8,22 +8,55 @@ $user = $_SESSION['user'];
 $nama = $user['nama'];
 $active_menu = 'laporan';
 
-// Mock Data Statistik Global
+// Ambil data nyata dari store
+$all_karyawan = get_all_karyawan();
+$total_pengguna = count($all_karyawan);
+$total_asesmen = 0;
+$kasus_tinggi = 0;
+$kasus_sedang = 0;
+$kasus_rendah = 0;
+
+$divisi_map = []; // Untuk distribusi per divisi
+
+foreach ($all_karyawan as $k) {
+    $history = get_user_history($k['id']);
+    $total_asesmen += count($history);
+    
+    // Inisialisasi divisi di map jika belum ada
+    $div = $k['divisi'] ?? 'Lainnya';
+    if (!isset($divisi_map[$div])) {
+        $divisi_map[$div] = ['total' => 0, 'tinggi' => 0];
+    }
+    
+    foreach ($history as $h) {
+        if ($h['level'] === 'TINGGI') {
+            $kasus_tinggi++;
+            $divisi_map[$div]['tinggi']++;
+        }
+        elseif ($h['level'] === 'SEDANG') $kasus_sedang++;
+        elseif ($h['level'] === 'RENDAH') $kasus_rendah++;
+        $divisi_map[$div]['total']++;
+    }
+}
+
 $stats = [
-    'total_asesmen' => 458,
-    'total_pengguna' => 124,
-    'kasus_tinggi' => 32,
-    'kasus_sedang' => 156,
-    'kasus_rendah' => 270,
+    'total_asesmen' => $total_asesmen,
+    'total_pengguna' => $total_pengguna,
+    'kasus_tinggi' => $kasus_tinggi,
+    'kasus_sedang' => $kasus_sedang,
+    'kasus_rendah' => $kasus_rendah,
 ];
 
-$distribusi_divisi = [
-    ['divisi' => 'IT', 'total' => 120, 'tinggi' => 15],
-    ['divisi' => 'Marketing', 'total' => 85, 'tinggi' => 8],
-    ['divisi' => 'Finance', 'total' => 60, 'tinggi' => 3],
-    ['divisi' => 'HR', 'total' => 45, 'tinggi' => 2],
-    ['divisi' => 'Operational', 'total' => 148, 'tinggi' => 4],
-];
+$distribusi_divisi = [];
+foreach ($divisi_map as $divName => $d) {
+    $distribusi_divisi[] = [
+        'divisi' => $divName,
+        'total'  => $d['total'],
+        'tinggi' => $d['tinggi']
+    ];
+}
+// Sort by high cases descending
+usort($distribusi_divisi, fn($a, $b) => $b['tinggi'] <=> $a['tinggi']);
 ?>
 <!DOCTYPE html>
 <html lang="id">

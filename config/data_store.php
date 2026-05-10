@@ -27,6 +27,35 @@ function bx_init_store(): void {
             ['id' => 'U010', 'nama' => 'Admin BurnoutXpert', 'email' => 'admin@burnout.com', 'password' => password_hash('admin', PASSWORD_DEFAULT), 'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
         ],
 
+        // Pengaturan Sistem
+        'settings' => [
+            'app_name'          => 'BurnoutXpert',
+            'threshold_high'    => 0.8,
+            'threshold_medium'  => 0.4,
+            'notif_enabled'     => true,
+            'dark_mode_default' => false,
+            'maintenance_mode'  => false
+        ],
+
+        // Notifikasi Karyawan (Indeks by UserID)
+        'user_alerts' => [
+            'U001' => [
+                [
+                    'id'       => 1,
+                    'time'     => '2026-01-01 08:00:00',
+                    'category' => 'informasi',
+                    'title'    => 'Selamat Datang',
+                    'message'  => 'Selamat datang di BurnoutXpert! Mulai deteksi pertama Anda sekarang.',
+                    'read'     => true,
+                    'icon'     => '👋',
+                    'color'    => '#28A745'
+                ]
+            ]
+        ],
+
+        // Notifikasi untuk HRD
+        'hrd_alerts' => [],
+
         // Riwayat deteksi: array berindeks user_id
         // Setiap entry berisi hasil deteksi lengkap
         'history' => [
@@ -189,6 +218,8 @@ function get_all_karyawan(): array {
  */
 function generate_report_id(string $timestamp): string {
     $date = date('Ymd', strtotime($timestamp));
-    $seq  = rand(100, 999);
-    return "BX-{$date}-{$seq}";
+    // Gunakan hash dari timestamp dan user_id agar ID konsisten jika di-generate ulang untuk data yang sama
+    $uid  = $_SESSION['user']['id'] ?? 'GUEST';
+    $hash = substr(md5($timestamp . $uid), 0, 4);
+    return "BX-{$date}-" . strtoupper($hash);
 }

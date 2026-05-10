@@ -9,14 +9,37 @@ $nama = $user['nama'];
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 $active_menu = 'laporan';
 
-// Mock Data Laporan per Divisi
-$laporan_divisi = [
-    ['divisi' => 'IT Engineering', 'total' => 25, 'tinggi' => 5, 'sedang' => 12, 'rendah' => 8],
-    ['divisi' => 'Marketing', 'total' => 18, 'tinggi' => 2, 'sedang' => 6, 'rendah' => 10],
-    ['divisi' => 'Finance', 'total' => 12, 'tinggi' => 1, 'sedang' => 4, 'rendah' => 7],
-    ['divisi' => 'Human Resources', 'total' => 10, 'tinggi' => 0, 'sedang' => 3, 'rendah' => 7],
-    ['divisi' => 'Operational', 'total' => 30, 'tinggi' => 4, 'sedang' => 9, 'rendah' => 17],
-];
+// Ambil data nyata dari store
+$all_karyawan = get_all_karyawan();
+$divisi_rekap = [];
+
+foreach ($all_karyawan as $k) {
+    $div = $k['divisi'] ?? 'Lainnya';
+    if (!isset($divisi_rekap[$div])) {
+        $divisi_rekap[$div] = ['total' => 0, 'tinggi' => 0, 'sedang' => 0, 'rendah' => 0];
+    }
+    
+    $history = get_user_history($k['id']);
+    foreach ($history as $h) {
+        $divisi_rekap[$div]['total']++;
+        if ($h['level'] === 'TINGGI') $divisi_rekap[$div]['tinggi']++;
+        elseif ($h['level'] === 'SEDANG') $divisi_rekap[$div]['sedang']++;
+        elseif ($h['level'] === 'RENDAH') $divisi_rekap[$div]['rendah']++;
+    }
+}
+
+$laporan_divisi = [];
+foreach ($divisi_rekap as $name => $vals) {
+    $laporan_divisi[] = [
+        'divisi' => $name,
+        'total'  => $vals['total'],
+        'tinggi' => $vals['tinggi'],
+        'sedang' => $vals['sedang'],
+        'rendah' => $vals['rendah']
+    ];
+}
+// Sort by total assessments descending
+usort($laporan_divisi, fn($a, $b) => $b['total'] <=> $a['total']);
 ?>
 <!DOCTYPE html>
 <html lang="id">

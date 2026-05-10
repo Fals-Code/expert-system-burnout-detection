@@ -19,9 +19,9 @@ if (isset($_SESSION['user'])) {
 
 // Akun demo (fallback jika tidak ada di store)
 $fallback_users = [
-    ['id' => 'U_DEMO_K', 'nama' => 'Ahmad Fauzi',   'email' => 'karyawan@burnoutxpert.com', 'password' => 'karyawan123', 'role' => 'karyawan', 'divisi' => 'Engineering',      'posisi' => 'Software Engineer'],
-    ['id' => 'U_DEMO_H', 'nama' => 'Siti Rahayu',   'email' => 'hrd@burnoutxpert.com',      'password' => 'hrd123',       'role' => 'hrd',      'divisi' => 'Human Resources', 'posisi' => 'HRD Manager'],
-    ['id' => 'U_DEMO_A', 'nama' => 'Budi Santoso',  'email' => 'admin@burnoutxpert.com',    'password' => 'admin123',     'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
+    ['id' => 'U_DEMO_K', 'nama' => 'Ahmad Fauzi',   'email' => 'karyawan@burnoutxpert.com', 'password' => password_hash('karyawan123', PASSWORD_DEFAULT), 'role' => 'karyawan', 'divisi' => 'Engineering',      'posisi' => 'Software Engineer'],
+    ['id' => 'U_DEMO_H', 'nama' => 'Siti Rahayu',   'email' => 'hrd@burnoutxpert.com',      'password' => password_hash('hrd123', PASSWORD_DEFAULT),       'role' => 'hrd',      'divisi' => 'Human Resources', 'posisi' => 'HRD Manager'],
+    ['id' => 'U_DEMO_A', 'nama' => 'Budi Santoso',  'email' => 'admin@burnoutxpert.com',    'password' => password_hash('admin123', PASSWORD_DEFAULT),     'role' => 'admin',    'divisi' => '-',               'posisi' => 'System Administrator'],
 ];
 
 $error   = '';
