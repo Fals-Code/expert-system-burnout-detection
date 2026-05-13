@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('divisi')->orderBy('id', 'desc')->get();
+        $users = User::with('divisi')->orderBy('id', 'desc')->paginate(10);
         $divisions = Divisi::orderBy('nama')->get();
         
         $stats = [

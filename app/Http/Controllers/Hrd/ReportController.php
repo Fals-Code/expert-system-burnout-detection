@@ -48,7 +48,7 @@ class ReportController extends Controller
             ->with(['divisi', 'konsultasi' => function($q) {
                 $q->latest()->with('diagnosa');
             }])
-            ->get();
+            ->paginate(10);
 
         return view('hrd.reports.employees', compact('employees'));
     }

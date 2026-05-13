@@ -68,4 +68,19 @@ class User extends Authenticatable
     {
         return $this->role === 'karyawan';
     }
+
+    public function konsultasi()
+    {
+        return $this->hasMany(Konsultasi::class);
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(AuditLog::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

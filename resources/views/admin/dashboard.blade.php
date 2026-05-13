@@ -29,27 +29,10 @@
     </div>
 
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-        <!-- Log Terbaru -->
+        <!-- Distribution Chart -->
         <div class="content-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 class="card-title" style="margin: 0;">📋 Log Aktivitas Terbaru</h2>
-                <a href="{{ route('admin.logs') }}" class="btn-nav" style="font-size: 0.75rem; padding: 0.25rem 0.75rem; text-decoration: none;">Lihat Semua</a>
-            </div>
-            <div class="log-list">
-                @forelse($logs as $l)
-                <div style="padding: 1rem; border-radius: 12px; background: #f8fafc; margin-bottom: 0.75rem; border-left: 3px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">{{ $l->user->nama ?? 'System' }}</div>
-                        <div style="font-size: 0.8rem; color: var(--color-gray-600);">{{ $l->desc }}</div>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-gray-400); text-align: right;">
-                        {{ $l->created_at->diffForHumans() }}
-                    </div>
-                </div>
-                @empty
-                <div style="text-align: center; padding: 3rem; color: var(--color-gray-400);">Belum ada aktivitas tercatat.</div>
-                @endforelse
-            </div>
+            <h2 class="card-title">🏢 Distribusi Pengguna per Divisi</h2>
+            <div id="divisionChart"></div>
         </div>
 
         <!-- System Info -->
@@ -81,7 +64,51 @@
             </div>
         </div>
     </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+        <!-- Log Terbaru -->
+        <div class="content-card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 class="card-title" style="margin: 0;">📋 Log Aktivitas Terbaru</h2>
+                <a href="{{ route('admin.logs') }}" class="btn-nav" style="font-size: 0.75rem; padding: 0.25rem 0.75rem; text-decoration: none;">Lihat Semua</a>
+            </div>
+            <div class="log-list">
+                @forelse($logs as $l)
+                <div style="padding: 1rem; border-radius: 12px; background: #f8fafc; margin-bottom: 0.75rem; border-left: 3px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">{{ $l->user->nama ?? 'System' }}</div>
+                        <div style="font-size: 0.8rem; color: var(--color-gray-600);">{{ $l->desc }}</div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--color-gray-400); text-align: right;">
+                        {{ $l->created_at->diffForHumans() }}
+                    </div>
+                </div>
+                @empty
+                <div style="text-align: center; padding: 3rem; color: var(--color-gray-400);">Belum ada aktivitas tercatat.</div>
+                @endforelse
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const options = {
+            series: [{
+                name: 'Total Pengguna',
+                data: {!! json_encode($divisi_stats->pluck('users_count')) !!}
+            }],
+            chart: { type: 'bar', height: 350, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 10, columnWidth: '50%' } },
+            xaxis: { categories: {!! json_encode($divisi_stats->pluck('nama')) !!} },
+            colors: ['#3b82f6'],
+            dataLabels: { enabled: false }
+        };
+        new ApexCharts(document.querySelector("#divisionChart"), options).render();
+    });
+</script>
+@endpush
 
 <style>
     .stat-card {

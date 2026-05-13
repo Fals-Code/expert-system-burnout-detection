@@ -18,8 +18,11 @@ class AdminController extends Controller
         $total_logs = AuditLog::count();
         
         $logs = AuditLog::with('user')->orderBy('created_at', 'desc')->take(5)->get();
+        
+        // Data Komposisi Divisi
+        $divisi_stats = \App\Models\Divisi::withCount('users')->get();
 
-        return view('admin.dashboard', compact('total_users', 'total_gejala', 'total_aturan', 'total_logs', 'logs'));
+        return view('admin.dashboard', compact('total_users', 'total_gejala', 'total_aturan', 'total_logs', 'logs', 'divisi_stats'));
     }
 
     public function logs()

@@ -6,8 +6,11 @@
     <h1 class="page-title">Monitoring Kesehatan Karyawan</h1>
 
     <div class="content-card">
-        <div class="card-header" style="margin-bottom: 1.5rem;">
-            <h2 class="card-title">Daftar Status Karyawan</h2>
+        <div class="card-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="card-title" style="margin: 0;">Daftar Status Karyawan</h2>
+            <button class="btn-cta" style="background: #10b981;" onclick="exportToExcel('employeesTable', 'Laporan-Karyawan.xlsx')">
+                📄 Ekspor Excel
+            </button>
         </div>
         
         <div class="table-container overflow-x-auto">
@@ -55,6 +58,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            {{ $employees->links() }}
         </div>
     </div>
 @endsection

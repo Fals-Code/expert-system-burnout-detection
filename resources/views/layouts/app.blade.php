@@ -45,6 +45,8 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.0/dist/umd/simple-datatables.js"></script>
     <!-- html2pdf.js for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     @stack('styles')
 
@@ -123,11 +125,22 @@
                 }
             });
 
-            const mainWrapper = document.querySelector('.main-wrapper');
             if (mainWrapper) {
                 mainWrapper.classList.add('page-fade-in');
             }
         });
+
+        // Global Excel Export Function
+        function exportToExcel(tableId, filename = 'Data-BurnoutXpert.xlsx') {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                Swal.fire('Error', 'Tabel tidak ditemukan!', 'error');
+                return;
+            }
+            
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, filename);
+        }
     </script>
     @stack('scripts')
 </body>

@@ -21,6 +21,13 @@ class HrdController extends Controller
         
         $history = Konsultasi::with(['user', 'diagnosa'])->orderBy('created_at', 'desc')->take(5)->get();
 
-        return view('hrd.dashboard', compact('total_konsultasi', 'total_karyawan', 'history', 'stats'));
+        // Data untuk Tren Bulanan (6 Bulan Terakhir)
+        $chart_trends = Konsultasi::selectRaw('MONTHNAME(created_at) as month, COUNT(*) as total')
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return view('hrd.dashboard', compact('total_konsultasi', 'total_karyawan', 'history', 'stats', 'chart_trends'));
     }
 }

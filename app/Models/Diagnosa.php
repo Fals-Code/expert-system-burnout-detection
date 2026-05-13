@@ -17,4 +17,9 @@ class Diagnosa extends Model
     {
         return $this->hasMany(Aturan::class);
     }
+
+    public function konsultasi(): HasMany
+    {
+        return $this->hasMany(Konsultasi::class);
+    }
 }

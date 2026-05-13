@@ -17,4 +17,9 @@ class Gejala extends Model
     {
         return $this->belongsToMany(Aturan::class, 'aturan_gejala', 'gejala_id', 'aturan_id');
     }
+
+    public function konsultasi(): BelongsToMany
+    {
+        return $this->belongsToMany(Konsultasi::class, 'konsultasi_gejala', 'gejala_id', 'konsultasi_id');
+    }
 }

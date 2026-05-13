@@ -28,6 +28,17 @@
         </div>
     </div>
 
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+        <div class="content-card">
+            <h2 class="card-title">📈 Tren Deteksi Bulanan</h2>
+            <div id="trendChart"></div>
+        </div>
+        <div class="content-card">
+            <h2 class="card-title">🎯 Distribusi Kondisi</h2>
+            <div id="distributionChart"></div>
+        </div>
+    </div>
+
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
         <div class="content-card">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -83,6 +94,38 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Line Chart: Trend
+        const trendOptions = {
+            series: [{
+                name: "Total Deteksi",
+                data: {!! json_encode($chart_trends->pluck('total')) !!}
+            }],
+            chart: { height: 280, type: 'area', toolbar: { show: false } },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            colors: ['#1E3A5F'],
+            xaxis: { categories: {!! json_encode($chart_trends->pluck('month')) !!} },
+            fill: { gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } }
+        };
+        new ApexCharts(document.querySelector("#trendChart"), trendOptions).render();
+
+        // Pie Chart: Distribution
+        const distOptions = {
+            series: [{{ $stats['tinggi'] }}, {{ $stats['sedang'] }}, {{ $stats['rendah'] }}],
+            labels: ['Burnout Tinggi', 'Burnout Sedang', 'Normal'],
+            chart: { type: 'donut', height: 280 },
+            colors: ['#ef4444', '#f59e0b', '#10b981'],
+            legend: { position: 'bottom' },
+            plotOptions: { pie: { donut: { size: '70%' } } }
+        };
+        new ApexCharts(document.querySelector("#distributionChart"), distOptions).render();
+    });
+</script>
+@endpush
 
 <style>
     .stat-card {

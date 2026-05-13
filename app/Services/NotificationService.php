@@ -35,6 +35,13 @@ class NotificationService
                     'message' => "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") baru saja terdeteksi dengan tingkat burnout BERAT. Segera lakukan tindak lanjut.",
                     'is_read' => false,
                 ]);
+
+                // Kirim Email (Asumsi HRD memiliki email yang valid)
+                try {
+                    \Illuminate\Support\Facades\Mail::to($hrd->email)->send(new \App\Mail\BurnoutAlert($konsultasi));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Gagal kirim email ke {$hrd->email}: " . $e->getMessage());
+                }
             }
         }
     }
