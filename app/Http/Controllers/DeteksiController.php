@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Gejala;
-use App\Models\Aturan;
 use App\Models\Diagnosa;
 use App\Services\ExpertSystemService;
 use App\Services\NotificationService;
@@ -20,236 +19,119 @@ class DeteksiController extends Controller
         $this->expertSystem = $expertSystem;
     }
 
+    /**
+     * Tampilkan halaman deteksi (Wizard)
+     */
     public function index()
     {
-        $user = Auth::user();
-        
-        // Reset jika tidak ada state pending
-        if (!Session::has('bc_engine.pending_questions')) {
-            $this->initializeEngine();
+        // Jika belum ada session deteksi, inisialisasi
+        if (!Session::has('deteksi_answers')) {
+            Session::put('deteksi_answers', []);
         }
 
-        $engine = Session::get('bc_engine');
-        $pendingGids = $engine['pending_questions'];
-        
-        $gejala = Gejala::whereIn('kode', $pendingGids)->get();
-        
-        // Map questions
-        $questions = [];
-        foreach ($gejala as $g) {
-            $questions[$g->kode] = "Seberapa sering Anda mengalami: " . $g->nama . "?";
+        $answers = Session::get('deteksi_answers');
+        $answeredCodes = array_keys($answers);
+
+        // Ambil gejala berikutnya berdasarkan logika Backward Chaining
+        $nextCodes = $this->expertSystem->getNextSymptoms($answeredCodes);
+
+        // Jika tidak ada lagi gejala yang perlu ditanyakan, proses hasil
+        if (empty($nextCodes) && !empty($answeredCodes)) {
+            return $this->processResult();
         }
 
-        $data = [
+        $questions = Gejala::whereIn('kode', $nextCodes)->get();
+
+        // Jika benar-benar kosong (baru mulai), ambil beberapa gejala pertama
+        if ($questions->isEmpty()) {
+            $questions = Gejala::take(5)->get();
+        }
+
+        return view('karyawan.deteksi_wizard', [
             'questions' => $questions,
-            'total_questions' => count($questions),
-            'current_hypothesis' => $engine['current_hypothesis'],
-            'current_goal_index' => $engine['current_goal_index'],
-        ];
-
-        return view('karyawan.deteksi', $data);
-    }
-
-    public function process(Request $request)
-    {
-        $engine = Session::get('bc_engine');
-        $answers = $engine['answers'];
-
-        // Simpan jawaban baru
-        foreach ($request->all() as $key => $val) {
-            if (preg_match('/^G\d{3}$/', $key) && in_array($val, ['Sering', 'Kadang', 'Tidak Pernah'])) {
-                $answers[$key] = $val;
-            }
-        }
-
-        $engine['answers'] = $answers;
-        Session::put('bc_engine', $engine);
-
-        return $this->runEngine();
-    }
-
-    protected function initializeEngine()
-    {
-        $bc_goals = ['BERAT', 'SEDANG', 'RINGAN']; // Tingkat diagnosa
-        
-        // Ambil aturan untuk goal pertama (BERAT)
-        $initialRules = Aturan::whereHas('diagnosa', function($q) {
-            $q->where('tingkat', 'BERAT');
-        })->with('gejala')->get();
-
-        $initialGids = [];
-        foreach ($initialRules as $rule) {
-            foreach ($rule->gejala as $g) {
-                if (!in_array($g->kode, $initialGids)) $initialGids[] = $g->kode;
-            }
-        }
-
-        Session::put('bc_engine', [
-            'goal_index' => 0,
-            'answers' => [],
-            'bc_trace' => [],
-            'current_hypothesis' => 'Fase 1',
-            'current_goal_index' => 0,
-            'pending_questions' => $initialGids,
+            'progress' => count($answeredCodes),
+            'total_gejala' => Gejala::count(),
+            'options' => [
+                'Sangat Sering' => 'Pasti Ya / Sangat Sering',
+                'Sering' => 'Ya / Sering',
+                'Kadang' => 'Mungkin / Kadang-kadang',
+                'Jarang' => 'Ragu-ragu / Jarang',
+                'Sangat Jarang' => 'Sedikit / Sangat Jarang',
+                'Tidak' => 'Tidak Pernah'
+            ]
         ]);
     }
 
-    protected function runEngine()
+    /**
+     * Simpan jawaban sementara dan lanjut ke langkah berikutnya
+     */
+    public function next(Request $request)
     {
-        $engine = Session::get('bc_engine');
-        $bc_goals = ['BERAT', 'SEDANG', 'RINGAN'];
-        $cf_threshold = 0.25;
-
-        while ($engine['goal_index'] < count($bc_goals)) {
-            $currentGoal = $bc_goals[$engine['goal_index']];
-
-            $goalRules = Aturan::whereHas('diagnosa', function($q) use ($currentGoal) {
-                $q->where('tingkat', $currentGoal);
-            })->with('gejala')->get();
-
-            if ($goalRules->isEmpty()) {
-                $engine['goal_index']++;
-                continue;
+        $answers = Session::get('deteksi_answers', []);
+        
+        foreach ($request->except('_token') as $kode => $value) {
+            if (str_starts_with($kode, 'G')) {
+                $answers[$kode] = $value;
             }
-
-            $answeredCodes = array_keys($engine['answers']);
-            $needed = $this->expertSystem->getNeededSymptoms($goalRules->all(), $answeredCodes);
-
-            if (!empty($needed)) {
-                $engine['pending_questions'] = $needed;
-                $engine['current_hypothesis'] = "Fase " . ($engine['goal_index'] + 1);
-                $engine['current_goal_index'] = $engine['goal_index'];
-                Session::put('bc_engine', $engine);
-                return redirect()->route('karyawan.deteksi');
-            }
-
-            // Semua gejala untuk goal ini sudah dijawab, evaluasi!
-            [$highestCf, $bestRule, $tracing] = $this->expertSystem->evaluateHypothesis($goalRules, $engine['answers']);
-
-            $engine['bc_trace'][] = [
-                'goal' => $currentGoal,
-                'cf_final' => $highestCf,
-                'confirmed' => $highestCf >= $cf_threshold
-            ];
-
-            if ($highestCf >= $cf_threshold) {
-                try {
-                    // Konfirmasi!
-                    $diagnosa = $bestRule->diagnosa;
-                    
-                    // Simpan ke DB
-                    $gejalaCodesUsed = [];
-                    foreach ($bestRule->gejala as $g) {
-                        if (($engine['answers'][$g->kode] ?? 'Tidak Pernah') !== 'Tidak Pernah') {
-                            $gejalaCodesUsed[] = $g->kode;
-                        }
-                    }
-
-                    $konsultasi = $this->expertSystem->saveResult(Auth::id(), $diagnosa->id, $highestCf, $gejalaCodesUsed);
-
-                    // ── Kirim notifikasi otomatis pasca deteksi ──
-                    NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $diagnosa);
-
-                    // Simpan hasil ke session untuk tampilan hasil
-                    Session::put('hasil_deteksi', [
-                        'id' => $konsultasi->id,
-                        'diagnosa' => $diagnosa,
-                        'cf_final' => $highestCf,
-                        'tracing' => $tracing,
-                        'gejala_terdeteksi' => $gejalaCodesUsed,
-                        'bc_trace' => $engine['bc_trace']
-                    ]);
-
-                    Session::forget('bc_engine');
-                    return redirect()->route('karyawan.hasil');
-                } catch (\Exception $e) {
-                    return redirect()->route('karyawan.dashboard')->with('error', 'Terjadi kesalahan sistem saat memproses hasil Anda: ' . $e->getMessage());
-                }
-            }
-
-            $engine['goal_index']++;
         }
 
-        // Tidak ada yang cocok
-        Session::forget('bc_engine');
-        return redirect()->route('karyawan.hasil')->with('no_burnout', true);
+        Session::put('deteksi_answers', $answers);
+
+        return redirect()->route('karyawan.deteksi');
     }
 
+    /**
+     * Hitung hasil akhir deteksi
+     */
+    protected function processResult()
+    {
+        $answers = Session::get('deteksi_answers', []);
+        
+        // Jalankan Engine Sistem Pakar
+        $result = $this->expertSystem->solve($answers);
+        
+        // Simpan ke Database
+        $konsultasi = $this->expertSystem->saveResult(Auth::id(), $result, $answers);
+
+        // Notifikasi
+        NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $result['diagnosa']);
+
+        // Simpan ke Session untuk tampilan hasil
+        Session::put('last_result_id', $konsultasi->id);
+        Session::forget('deteksi_answers');
+
+        return redirect()->route('karyawan.hasil');
+    }
+
+    /**
+     * Tampilkan halaman hasil deteksi
+     */
     public function showResult(Request $request)
     {
-        $hasil = null;
+        $id = $request->id ?? Session::get('last_result_id');
         
-        if ($request->has('id')) {
-            $konsultasi = \App\Models\Konsultasi::with(['diagnosa', 'gejala'])->find($request->id);
-            if ($konsultasi && $konsultasi->user_id === Auth::id()) {
-                $hasil = [
-                    'id' => $konsultasi->id,
-                    'diagnosa' => $konsultasi->diagnosa,
-                    'cf_final' => $konsultasi->cf_final,
-                    'tracing' => [
-                        'rule_id' => 'Historical Record',
-                        'details' => ['Perhitungan dilakukan pada ' . $konsultasi->created_at->format('d/m/Y H:i')],
-                        'cf_final' => $konsultasi->cf_final
-                    ],
-                    'gejala_terdeteksi' => $konsultasi->gejala->pluck('kode')->toArray(),
-                    'bc_trace' => []
-                ];
-            }
+        if (!$id) return redirect()->route('karyawan.dashboard');
+
+        $konsultasi = \App\Models\Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+
+        if (!$konsultasi || ($konsultasi->user_id !== Auth::id() && !Auth::user()->isHrd())) {
+            return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
 
-        if (!$hasil) {
-            if (!Session::has('hasil_deteksi')) {
-                if (Session::has('no_burnout')) {
-                    return view('karyawan.hasil', ['no_burnout' => true]);
-                }
-                return redirect()->route('karyawan.deteksi');
-            }
-            $hasil = Session::get('hasil_deteksi');
-        }
-
-        $diagnosa = $hasil['diagnosa'];
-        $data = [
-            'level' => $diagnosa->tingkat,
-            'label' => $diagnosa->nama,
-            'confidence' => min(99, max(10, intval($hasil['cf_final'] * 100))),
-            'color' => $diagnosa->color,
-            'bg_light' => $diagnosa->bg_light,
-            'desc' => $diagnosa->deskripsi,
-            'gejala_terdeteksi' => Gejala::whereIn('kode', $hasil['gejala_terdeteksi'])->pluck('nama')->toArray(),
-            'rekomendasi' => $this->getRecommendations($diagnosa->tingkat),
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'tracing' => $hasil['tracing'],
-            'bc_trace' => $hasil['bc_trace'],
-        ];
-
-        return view('karyawan.hasil', $data);
+        return view('karyawan.hasil_v2', [
+            'konsultasi' => $konsultasi,
+            'confidence' => number_format($konsultasi->cf_final * 100, 1),
+            'tracing' => $konsultasi->tracing, // JSON Tracing
+        ]);
     }
 
-    protected function getRecommendations($tingkat)
-    {
-        $rekomendasi_map = [
-            'BERAT' => [
-                ['icon' => '🧘', 'judul' => 'Konseling Psikolog', 'isi' => 'Sangat disarankan untuk segera berkonsultasi dengan psikolog klinis profesional.'],
-                ['icon' => '✈️', 'judul' => 'Ambil Cuti Terencana', 'isi' => 'Istirahat total sangat diperlukan untuk memulihkan kondisi fisik dan mental.'],
-            ],
-            'SEDANG' => [
-                ['icon' => '⚖️', 'judul' => 'Manajemen Waktu', 'isi' => 'Prioritaskan tugas penting dan delegasikan tugas jika memungkinkan. Atur jadwal istirahat rutin.'],
-                ['icon' => '🌿', 'judul' => 'Relaksasi Rutin', 'isi' => 'Lakukan meditasi atau hobi yang menenangkan setiap akhir pekan.'],
-            ],
-            'RINGAN' => [
-                ['icon' => '😴', 'judul' => 'Jaga Kualitas Tidur', 'isi' => 'Pastikan tidur 7-9 jam setiap malam dan kurangi paparan layar sebelum tidur.'],
-                ['icon' => '🏃', 'judul' => 'Aktivitas Fisik', 'isi' => 'Olahraga ringan 15-30 menit dapat membantu mengurangi stres ringan.'],
-            ],
-        ];
-        return $rekomendasi_map[$tingkat] ?? [];
-    }
     /**
-     * Reset the ongoing detection session and return to dashboard.
+     * Reset sesi deteksi
      */
     public function reset()
     {
-        Session::forget('bc_engine');
-        Session::forget('hasil_deteksi');
+        Session::forget('deteksi_answers');
+        Session::forget('last_result_id');
         return redirect()->route('karyawan.dashboard')->with('info', 'Sesi deteksi telah direset.');
     }
 }

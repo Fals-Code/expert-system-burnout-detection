@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreGejalaRequest;
+use App\Http\Requests\StoreDiagnosaRequest;
+use App\Http\Requests\StoreAturanRequest;
 use App\Models\Gejala;
 use App\Models\Aturan;
 use App\Models\Diagnosa;
@@ -23,31 +25,18 @@ class KnowledgeController extends Controller
     }
 
     // --- GEJALA ---
-    public function storeGejala(Request $request)
+    public function storeGejala(StoreGejalaRequest $request)
     {
-        $validated = $request->validate([
-            'kode' => 'required|unique:gejala,kode',
-            'nama' => 'required',
-            'kategori' => 'required|in:fisik,emosional,perilaku,kognitif',
-            'bobot' => 'required|numeric|min:0|max:1',
-        ]);
-
-        Gejala::create($validated);
-        $this->log('CREATE_GEJALA', $validated['kode'], "Menambahkan gejala baru: " . $validated['nama']);
+        $gejala = Gejala::create($request->validated());
+        $this->log('CREATE_GEJALA', $gejala->kode, "Menambahkan gejala baru: " . $gejala->nama);
 
         return redirect()->back()->with('success', 'Gejala berhasil ditambahkan.');
     }
 
-    public function updateGejala(Request $request, Gejala $gejala)
+    public function updateGejala(StoreGejalaRequest $request, Gejala $gejala)
     {
-        $validated = $request->validate([
-            'nama' => 'required',
-            'kategori' => 'required|in:fisik,emosional,perilaku,kognitif',
-            'bobot' => 'required|numeric|min:0|max:1',
-        ]);
-
-        $gejala->update($validated);
-        $this->log('UPDATE_GEJALA', $gejala->kode, "Memperbarui gejala: " . $validated['nama']);
+        $gejala->update($request->validated());
+        $this->log('UPDATE_GEJALA', $gejala->kode, "Memperbarui gejala: " . $gejala->nama);
 
         return redirect()->back()->with('success', 'Gejala berhasil diperbarui.');
     }
@@ -62,18 +51,12 @@ class KnowledgeController extends Controller
     }
 
     // --- ATURAN ---
-    public function storeAturan(Request $request)
+    public function storeAturan(StoreAturanRequest $request)
     {
-        $request->validate([
-            'diagnosa_id' => 'required|exists:diagnosa,id',
-            'cf_pakar' => 'required|numeric|min:0|max:1',
-            'gejala_ids' => 'required|array',
-        ]);
-
         try {
             DB::transaction(function() use ($request) {
                 $count = Aturan::count() + 1;
-                $kode = 'R' . str_pad($count, 3, '0', STR_PAD_LEFT);
+                $kode = $request->kode ?? 'R' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
                 $aturan = Aturan::create([
                     'kode' => $kode,
@@ -81,7 +64,15 @@ class KnowledgeController extends Controller
                     'cf_pakar' => $request->cf_pakar,
                 ]);
 
-                $aturan->gejala()->attach($request->gejala_ids);
+                // Attach gejala dengan bobot_pakar masing-masing
+                $syncData = [];
+                foreach ($request->gejala_ids as $index => $gejalaId) {
+                    $syncData[$gejalaId] = [
+                        'bobot_pakar' => $request->bobot_pakar[$gejalaId] ?? 0.5
+                    ];
+                }
+                
+                $aturan->gejala()->attach($syncData);
                 $this->log('CREATE_ATURAN', $kode, "Menambahkan aturan baru");
             });
 
@@ -91,14 +82,8 @@ class KnowledgeController extends Controller
         }
     }
 
-    public function updateAturan(Request $request, Aturan $aturan)
+    public function updateAturan(StoreAturanRequest $request, Aturan $aturan)
     {
-        $request->validate([
-            'diagnosa_id' => 'required|exists:diagnosa,id',
-            'cf_pakar' => 'required|numeric|min:0|max:1',
-            'gejala_ids' => 'required|array',
-        ]);
-
         try {
             DB::transaction(function() use ($request, $aturan) {
                 $aturan->update([
@@ -106,7 +91,14 @@ class KnowledgeController extends Controller
                     'cf_pakar' => $request->cf_pakar,
                 ]);
 
-                $aturan->gejala()->sync($request->gejala_ids);
+                $syncData = [];
+                foreach ($request->gejala_ids as $index => $gejalaId) {
+                    $syncData[$gejalaId] = [
+                        'bobot_pakar' => $request->bobot_pakar[$gejalaId] ?? 0.5
+                    ];
+                }
+
+                $aturan->gejala()->sync($syncData);
                 $this->log('UPDATE_ATURAN', $aturan->kode, "Memperbarui aturan");
             });
 
@@ -126,37 +118,18 @@ class KnowledgeController extends Controller
     }
 
     // --- DIAGNOSA ---
-    public function storeDiagnosa(Request $request)
+    public function storeDiagnosa(StoreDiagnosaRequest $request)
     {
-        $validated = $request->validate([
-            'kode' => 'required|unique:diagnosa,kode',
-            'nama' => 'required',
-            'tingkat' => 'required|in:RINGAN,SEDANG,BERAT',
-            'deskripsi' => 'nullable',
-            'saran' => 'nullable',
-            'color' => 'required',
-            'bg_light' => 'required',
-        ]);
-
-        Diagnosa::create($validated);
-        $this->log('CREATE_DIAGNOSA', $validated['kode'], "Menambahkan diagnosa baru: " . $validated['nama']);
+        $diagnosa = Diagnosa::create($request->validated());
+        $this->log('CREATE_DIAGNOSA', $diagnosa->kode, "Menambahkan diagnosa baru: " . $diagnosa->nama);
 
         return redirect()->back()->with('success', 'Diagnosa berhasil ditambahkan.');
     }
 
-    public function updateDiagnosa(Request $request, Diagnosa $diagnosa)
+    public function updateDiagnosa(StoreDiagnosaRequest $request, Diagnosa $diagnosa)
     {
-        $validated = $request->validate([
-            'nama' => 'required',
-            'tingkat' => 'required|in:RINGAN,SEDANG,BERAT',
-            'deskripsi' => 'nullable',
-            'saran' => 'nullable',
-            'color' => 'required',
-            'bg_light' => 'required',
-        ]);
-
-        $diagnosa->update($validated);
-        $this->log('UPDATE_DIAGNOSA', $diagnosa->kode, "Memperbarui diagnosa: " . $validated['nama']);
+        $diagnosa->update($request->validated());
+        $this->log('UPDATE_DIAGNOSA', $diagnosa->kode, "Memperbarui diagnosa: " . $diagnosa->nama);
 
         return redirect()->back()->with('success', 'Diagnosa berhasil diperbarui.');
     }

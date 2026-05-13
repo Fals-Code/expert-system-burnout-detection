@@ -1,58 +1,83 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🧠 BurnoutXpert: Enterprise Expert System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Framework-Laravel%2011-red.svg)](https://laravel.com)
+[![Expert System](https://img.shields.io/badge/Method-Backward%20Chaining-blue.svg)]()
+[![Certainty Factor](https://img.shields.io/badge/Logic-Certainty%20Factor-green.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 
-## About Laravel
+**BurnoutXpert** adalah sistem pakar berbasis web profesional yang dirancang untuk mendeteksi tingkat burnout pada karyawan menggunakan metode **Backward Chaining** dan logika **Certainty Factor**. Aplikasi ini menggunakan standar **Maslach Burnout Inventory (MBI)** untuk memberikan diagnosis yang akurat dan berbasis data medis psikologi.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Core Expert System Engine
+- **Backward Chaining**: Mesin inferensi goal-driven yang efisien untuk membuktikan tingkat burnout.
+- **Certainty Factor (CF)**: Menangani ketidakpastian jawaban pengguna dengan algoritma CF standar.
+- **Explanation Facility**: Transparansi penuh. Pengguna dapat melihat *tracing* atau langkah-langkah bagaimana sistem mencapai kesimpulan tersebut.
 
-## Learning Laravel
+### 2. User & HRD Experience
+- **Interactive Wizard**: Proses deteksi step-by-step yang mulus menggunakan Alpine.js.
+- **Enterprise Dashboard**: Visualisasi data analitik (ApexCharts) untuk tren burnout per divisi.
+- **Automated Reporting**: Ekspor hasil deteksi ke format PDF dan Excel (SheetJS).
+- **Notification System**: Peringatan otomatis ke tim HRD jika terdeteksi karyawan dengan burnout tingkat tinggi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 3. Management Portal
+- **Knowledge Base Management**: CRUD Gejala, Aturan, dan Diagnosa dengan validasi ketat.
+- **Audit Logs**: Mencatat setiap aktivitas krusial pada sistem untuk keamanan data.
+- **User Management**: Pengaturan hak akses (Admin, HRD, Karyawan).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🛠️ Tech Stack
+- **Backend**: Laravel 11 (PHP 8.2+)
+- **Database**: MySQL / PostgreSQL
+- **Frontend**: Blade, CSS Vanilla (Premium Design), Alpine.js
+- **Charts**: ApexCharts
+- **Export**: SheetJS (XLSX), HTML2PDF
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 📦 Cara Instalasi
 
-```bash
-composer require laravel/boost --dev
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/Fals-Code/expert-system-burnout-detection.git
+   cd expert-system-burnout-detection
+   ```
 
-php artisan boost:install
-```
+2. **Install Dependencies**
+   ```bash
+   composer install
+   npm install && npm run dev
+   ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+3. **Environment Setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Contributing
+4. **Database Configuration**
+   Sesuaikan `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` di file `.env`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5. **Run Migrations & Seeders**
+   ```bash
+   php artisan migrate --seed
+   ```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📋 Basis Pengetahuan (MBI Standard)
+Sistem ini memetakan gejala ke dalam 3 dimensi utama:
+1. **Emotional Exhaustion** (Kelelahan Emosional)
+2. **Depersonalization** (Sinisme/Depersonalisasi)
+3. **Reduced Personal Accomplishment** (Penurunan Pencapaian Diri)
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 👨‍💻 Kontributor
+- **Fals-Code** - *Project Lead & Architect*
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).

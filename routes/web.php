@@ -28,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function () {
     Route::get('/dashboard', [KaryawanController::class, 'index'])->name('karyawan.dashboard');
     Route::get('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'index'])->name('karyawan.deteksi');
-    Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'process'])->name('karyawan.deteksi.proses');
+    Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'next'])->name('karyawan.deteksi.proses');
     Route::get('/hasil', [\App\Http\Controllers\DeteksiController::class, 'showResult'])->name('karyawan.hasil');
     Route::get('/history', [KaryawanController::class, 'history'])->name('karyawan.history');
     Route::get('/deteksi/reset', [\App\Http\Controllers\DeteksiController::class, 'reset'])->name('karyawan.deteksi.reset');
