@@ -6,7 +6,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 }
 $user = $_SESSION['user'];
 $nama = $user['nama'];
+$initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
 $active_menu = 'laporan';
+
+require_once '../config/data_store.php';
+bx_init_store();
 
 // Ambil data nyata dari store
 $all_karyawan = get_all_karyawan();

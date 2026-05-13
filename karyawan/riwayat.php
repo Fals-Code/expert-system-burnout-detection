@@ -77,7 +77,9 @@ foreach ($chart_entries as $h) {
         <?php if (empty($history)): ?>
             <!-- Empty State -->
             <div class="empty-state">
-                <div class="empty-state__icon">🧘‍♂️</div>
+                <div style="display:flex; justify-content:center; margin-bottom: 1rem;">
+                    <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_ttvtey45.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></lottie-player>
+                </div>
                 <h2 class="empty-state__title">Belum Ada Riwayat Deteksi</h2>
                 <p class="empty-state__desc">
                     Sepertinya Anda belum melakukan pengecekan kesehatan mental. Mulailah sekarang untuk memantau kondisi Anda.

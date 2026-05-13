@@ -37,12 +37,12 @@ $greet = ($hour < 11) ? 'Selamat Pagi' : (($hour < 15) ? 'Selamat Siang' : (($ho
     <?php include '../includes/topbar.php'; ?>
 
     <main class="page-content">
-        <div class="welcome-banner">
+        <div class="welcome-banner" data-intro="Selamat datang di Dashboard Karyawan! Di sini Anda dapat melihat ringkasan aktivitas dan kondisi kesehatan mental Anda." data-step="1">
             <div class="welcome-content">
                 <h1 class="welcome-title"><?= $greet ?>, <?= htmlspecialchars($nama) ?>! 👋</h1>
                 <p class="welcome-subtitle">Bagaimana perasaan Anda hari ini? Lakukan deteksi rutin untuk menjaga keseimbangan kesehatan mental Anda.</p>
                 <div style="margin-top: 1.5rem;">
-                    <a href="deteksi.php" class="btn-cta">Mulai Deteksi Sekarang</a>
+                    <a href="deteksi.php" class="btn-cta" data-intro="Klik tombol ini kapan saja Anda merasa lelah secara fisik maupun emosional untuk memulai tes." data-step="2">Mulai Deteksi Sekarang</a>
                 </div>
             </div>
             <div class="welcome-illustration">
@@ -57,7 +57,7 @@ $greet = ($hour < 11) ? 'Selamat Pagi' : (($hour < 15) ? 'Selamat Siang' : (($ho
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
             <!-- Stat 1: Total Deteksi -->
-            <div class="content-card stat-card">
+            <div class="content-card stat-card" data-intro="Pantau seberapa sering Anda melakukan deteksi di sini." data-step="3">
                 <div class="stat-icon" style="background: var(--color-primary-50); color: var(--color-primary);">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
                 </div>
@@ -81,7 +81,7 @@ $greet = ($hour < 11) ? 'Selamat Pagi' : (($hour < 15) ? 'Selamat Siang' : (($ho
             </div>
 
             <!-- Stat 3: Status Terakhir -->
-            <div class="content-card stat-card">
+            <div class="content-card stat-card" data-intro="Status terakhir Anda akan selalu tampil di sini. Jaga agar tetap pada kondisi Normal!" data-step="4">
                 <div class="stat-icon" style="background: <?= $last_result['bg_light'] ?? '#F8FAFB' ?>; color: <?= $last_result['color'] ?? 'var(--color-gray-400)' ?>;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 </div>
@@ -122,5 +122,26 @@ $greet = ($hour < 11) ? 'Selamat Pagi' : (($hour < 15) ? 'Selamat Siang' : (($ho
     </main>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!localStorage.getItem('tour_completed_karyawan')) {
+        // Beri sedikit jeda agar transisi halaman selesai
+        setTimeout(() => {
+            introJs().setOptions({
+                nextLabel: 'Lanjut',
+                prevLabel: 'Kembali',
+                doneLabel: 'Mengerti',
+                showStepNumbers: true,
+                showBullets: true,
+                overlayOpacity: 0.6
+            }).start().oncomplete(function() {
+                localStorage.setItem('tour_completed_karyawan', 'true');
+            }).onexit(function() {
+                localStorage.setItem('tour_completed_karyawan', 'true');
+            });
+        }, 500);
+    }
+});
+</script>
 </body>
 </html>

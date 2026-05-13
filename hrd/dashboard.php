@@ -127,7 +127,9 @@ $trend_sedang = array_column($trend_data, 'SEDANG');
                 <div class="urgent-list">
                     <?php if (empty($urgent_cases)): ?>
                     <div style="text-align: center; padding: 2rem; color: var(--color-gray-400);">
-                        <div style="font-size: 2rem;">✅</div>
+                        <div style="display:flex; justify-content:center; margin-bottom: 0.5rem;">
+                            <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_touohxv0.json" background="transparent" speed="1" style="width: 100px; height: 100px;" autoplay></lottie-player>
+                        </div>
                         <p>Tidak ada kasus burnout tinggi saat ini.</p>
                     </div>
                     <?php else: ?>

@@ -147,6 +147,15 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+.page-fade-out {
+    animation: fadeOutPage 0.25s ease-in forwards;
+}
+
+@keyframes fadeOutPage {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
 /* ── Skeleton Loaders ─────────────────────────────────────── */
 .skeleton {
     background: var(--color-gray-100);

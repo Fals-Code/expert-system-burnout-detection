@@ -28,6 +28,12 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERV
 <link rel="stylesheet" href="<?= $base_path ?>assets/css/log-aktivitas.css">
 <!-- ApexCharts CDN -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<!-- Lottie Web Player -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<!-- Intro.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+
 <?php include $base_path . 'includes/favicon.php'; ?>
 <script>
     // Immediate Theme Application (Prevent FOUC)
@@ -56,6 +62,51 @@ $base_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERV
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');
     }
+
+    // Page Transition Interceptor
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('a[href]');
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                const target = this.getAttribute('target');
+                
+                // Skip if it's external, a hash link, javascript, or open in new tab
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || target === '_blank') {
+                    return;
+                }
+
+                // Skip if it is a download link or has default prevented
+                if (this.hasAttribute('download') || e.defaultPrevented) return;
+                
+                // Only intercept internal navigation
+                const isInternal = href.startsWith('/') || href.startsWith('./') || href.startsWith('../') || !href.includes('://');
+                
+                if (isInternal) {
+                    e.preventDefault();
+                    const mainWrapper = document.querySelector('.main-wrapper');
+                    if (mainWrapper) {
+                        mainWrapper.classList.remove('page-fade-in');
+                        mainWrapper.classList.add('page-fade-out');
+                    }
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 250);
+                }
+            });
+        });
+
+        // Ensure browser back/forward buttons work correctly by handling pageshow event
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                const mainWrapper = document.querySelector('.main-wrapper');
+                if (mainWrapper) {
+                    mainWrapper.classList.remove('page-fade-out');
+                    mainWrapper.classList.add('page-fade-in');
+                }
+            }
+        });
+    });
 </script>
 
 <style>

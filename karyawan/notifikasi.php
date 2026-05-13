@@ -5,9 +5,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'karyawan') {
     exit();
 }
 $user = $_SESSION['user'];
+$user_id = $user['id'] ?? 'U_DEMO_K';
 $nama = $user['nama'];
 $active_menu = 'notifikasi';
 $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $nama), 0, 2)));
+
+require_once '../config/data_store.php';
+bx_init_store();
 
 // POST: tandai semua dibaca
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'mark_all_read') {
