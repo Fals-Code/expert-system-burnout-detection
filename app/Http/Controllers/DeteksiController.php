@@ -20,6 +20,14 @@ class DeteksiController extends Controller
     }
 
     /**
+     * Halaman intro deteksi
+     */
+    public function intro()
+    {
+        return view('karyawan.deteksi.index');
+    }
+
+    /**
      * Tampilkan halaman deteksi (Wizard)
      */
     public function index()
@@ -47,8 +55,9 @@ class DeteksiController extends Controller
             $questions = Gejala::take(5)->get();
         }
 
-        return view('karyawan.deteksi_wizard', [
+        return view('karyawan.deteksi.form', [
             'questions' => $questions,
+            'question_codes' => $questions->pluck('kode')->toArray(),
             'progress' => count($answeredCodes),
             'total_gejala' => Gejala::count(),
             'options' => [
@@ -118,7 +127,7 @@ class DeteksiController extends Controller
             return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
 
-        return view('karyawan.hasil_v2', [
+        return view('karyawan.deteksi.hasil', [
             'konsultasi' => $konsultasi,
             'confidence' => number_format($konsultasi->cf_final * 100, 1),
             'tracing' => $konsultasi->tracing, // JSON Tracing

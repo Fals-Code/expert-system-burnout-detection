@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
 // Karyawan Routes
 Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function () {
     Route::get('/dashboard', [KaryawanController::class, 'index'])->name('karyawan.dashboard');
+    Route::get('/deteksi/intro', [\App\Http\Controllers\DeteksiController::class, 'intro'])->name('karyawan.deteksi.intro');
     Route::get('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'index'])->name('karyawan.deteksi');
     Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'next'])->name('karyawan.deteksi.proses');
     Route::get('/hasil', [\App\Http\Controllers\DeteksiController::class, 'showResult'])->name('karyawan.hasil');
