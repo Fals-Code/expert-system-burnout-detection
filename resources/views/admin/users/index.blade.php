@@ -23,6 +23,17 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="alert" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 10px; color: #991b1b;">
+            <div style="font-weight: 700; margin-bottom: 0.5rem;">⚠️ Periksa kembali data Anda:</div>
+            <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem; line-height: 2;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
         <div class="content-card stat-card" style="text-align: center; border-bottom: 4px solid #3b82f6;">
             <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;">👤</div>

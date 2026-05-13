@@ -7,6 +7,7 @@ use App\Models\Gejala;
 use App\Models\Aturan;
 use App\Models\Diagnosa;
 use App\Services\ExpertSystemService;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -145,6 +146,9 @@ class DeteksiController extends Controller
 
                 $konsultasi = $this->expertSystem->saveResult(Auth::id(), $diagnosa->id, $highestCf, $gejalaCodesUsed);
 
+                // ── Kirim notifikasi otomatis pasca deteksi ──
+                NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $diagnosa);
+
                 // Simpan hasil ke session untuk tampilan hasil
                 Session::put('hasil_deteksi', [
                     'id' => $konsultasi->id,
@@ -234,5 +238,14 @@ class DeteksiController extends Controller
             ],
         ];
         return $rekomendasi_map[$tingkat] ?? [];
+    }
+    /**
+     * Reset the ongoing detection session and return to dashboard.
+     */
+    public function reset()
+    {
+        Session::forget('bc_engine');
+        Session::forget('hasil_deteksi');
+        return redirect()->route('karyawan.dashboard')->with('info', 'Sesi deteksi telah direset.');
     }
 }

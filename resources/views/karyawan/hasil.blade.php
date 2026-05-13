@@ -3,7 +3,7 @@
 @section('title', 'Hasil Diagnosis – BurnoutXpert')
 
 @section('content')
-    <main class="result-container">
+    <main class="result-container" id="report-content">
         @if(isset($no_burnout))
             <div class="result-header" style="text-align: center; margin-bottom: 3rem;">
                 <div class="header-icon">✅</div>
@@ -78,6 +78,12 @@
             </div>
 
             <div class="action-group">
+                <button type="button" id="pdfBtn" onclick="generatePDF()" class="btn-action" style="background:#10b981; color:white; border:none; cursor:pointer; padding:0.8rem 1.5rem; border-radius:50px; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Unduh Laporan PDF
+                </button>
                 <button type="button" onclick="openTracingModal()" class="btn-action" style="background:var(--color-primary); color:white; border:none; cursor:pointer; padding:0.8rem 1.5rem; border-radius:50px; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -131,6 +137,31 @@
 
 @push('scripts')
 <script>
+    @if(!isset($no_burnout))
+    function generatePDF() {
+        const btn = document.getElementById('pdfBtn');
+        btn.innerHTML = '⏳ Memproses...';
+        btn.disabled = true;
+
+        // Hide interactive elements before print
+        document.querySelectorAll('.action-group, #modalTracing').forEach(el => el.style.display = 'none');
+
+        const element = document.getElementById('report-content');
+        const opt = {
+            margin: 0.5,
+            filename: 'Laporan_BurnoutXpert_{{ now()->format("Ymd") }}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            document.querySelectorAll('.action-group, #modalTracing').forEach(el => el.style.display = '');
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Unduh Laporan PDF';
+            btn.disabled = false;
+        });
+    }
+    @endif
     function openTracingModal() {
         document.getElementById('modalTracing').classList.add('active');
     }

@@ -22,7 +22,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($employees as $e)
+                    @forelse($employees as $e)
                     @php $latest = $e->konsultasi->first(); @endphp
                     <tr>
                         <td>
@@ -44,7 +44,15 @@
                             <a href="{{ route('hrd.employees.history', $e->id) }}" class="btn-icon" title="Lihat Detail Riwayat">👁️</a>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 3rem;">
+                            <div style="font-size: 3rem; margin-bottom: 0.75rem;">👥</div>
+                            <div style="font-weight: 700; color: #64748b;">Belum ada karyawan terdaftar</div>
+                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.25rem;">Tambahkan karyawan melalui modul Admin terlebih dahulu.</div>
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

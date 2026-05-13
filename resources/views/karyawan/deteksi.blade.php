@@ -3,6 +3,11 @@
 @section('title', 'Deteksi Burnout – BurnoutXpert')
 
 @section('content')
+    @if(session('info'))
+        <div class="alert" style="margin-bottom: 1rem; padding: 1rem 1.25rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 10px; color: #1e40af; font-weight: 600;">
+            ℹ️ {{ session('info') }}
+        </div>
+    @endif
     <main class="wizard-container">
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loadingOverlay" style="display: none;">
@@ -117,6 +122,11 @@
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </button>
+                </div>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ route('karyawan.deteksi.reset') }}" onclick="return confirm('Batalkan deteksi yang sedang berlangsung? Semua jawaban akan hilang.')" style="font-size: 0.8rem; color: var(--color-gray-400); text-decoration: none;">
+                        ✕ Batalkan Deteksi
+                    </a>
                 </div>
             </div>
         </form>

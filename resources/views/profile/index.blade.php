@@ -11,6 +11,17 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="alert" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 10px; color: #991b1b;">
+            <div style="font-weight: 700; margin-bottom: 0.5rem;">⚠️ Terdapat kesalahan pada data yang diisi:</div>
+            <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem; line-height: 2;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
         <!-- Ringkasan Akun -->
         <div class="content-card" style="text-align: center; padding: 2rem;">

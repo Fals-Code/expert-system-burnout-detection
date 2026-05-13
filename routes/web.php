@@ -31,6 +31,7 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function
     Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'process'])->name('karyawan.deteksi.proses');
     Route::get('/hasil', [\App\Http\Controllers\DeteksiController::class, 'showResult'])->name('karyawan.hasil');
     Route::get('/history', [KaryawanController::class, 'history'])->name('karyawan.history');
+    Route::get('/deteksi/reset', [\App\Http\Controllers\DeteksiController::class, 'reset'])->name('karyawan.deteksi.reset');
 });
 
 // Admin Routes
