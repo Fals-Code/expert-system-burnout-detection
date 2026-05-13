@@ -26,4 +26,15 @@ class KaryawanController extends Controller
 
         return view('karyawan.dashboard', compact('greet', 'total_deteksi', 'last_result'));
     }
+
+    public function history()
+    {
+        $user = Auth::user();
+        $history = Konsultasi::with(['diagnosa', 'gejala'])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('karyawan.history', compact('history'));
+    }
 }

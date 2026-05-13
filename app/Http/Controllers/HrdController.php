@@ -13,8 +13,14 @@ class HrdController extends Controller
         $total_konsultasi = Konsultasi::count();
         $total_karyawan = User::where('role', 'karyawan')->count();
         
+        $stats = [
+            'tinggi' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'BERAT'))->count(),
+            'sedang' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'SEDANG'))->count(),
+            'rendah' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'RINGAN'))->count(),
+        ];
+        
         $history = Konsultasi::with(['user', 'diagnosa'])->orderBy('created_at', 'desc')->take(5)->get();
 
-        return view('hrd.dashboard', compact('total_konsultasi', 'total_karyawan', 'history'));
+        return view('hrd.dashboard', compact('total_konsultasi', 'total_karyawan', 'history', 'stats'));
     }
 }

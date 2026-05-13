@@ -8,7 +8,7 @@
             <h1 class="welcome-title">{{ $greet }}, {{ Auth::user()->nama }}! 👋</h1>
             <p class="welcome-subtitle">Bagaimana perasaan Anda hari ini? Lakukan deteksi rutin untuk menjaga keseimbangan kesehatan mental Anda.</p>
             <div style="margin-top: 1.5rem;">
-                <a href="#" class="btn-cta" data-intro="Klik tombol ini kapan saja Anda merasa lelah secara fisik maupun emosional untuk memulai tes." data-step="2">Mulai Deteksi Sekarang</a>
+                <a href="{{ route('karyawan.deteksi') }}" class="btn-cta" data-intro="Klik tombol ini kapan saja Anda merasa lelah secara fisik maupun emosional untuk memulai tes." data-step="2">Mulai Deteksi Sekarang</a>
             </div>
         </div>
         <div class="welcome-illustration">
