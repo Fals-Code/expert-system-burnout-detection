@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'BurnoutXpert')</title>
+    <meta name="description" content="BurnoutXpert - Sistem Pakar Deteksi Burnout Karyawan menggunakan metode Backward Chaining dan Certainty Factor.">
+    <meta name="keywords" content="burnout, deteksi burnout, kesehatan mental, sistem pakar, backward chaining, certainty factor">
+    <meta name="author" content="BurnoutXpert Team">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <title>@yield('title', 'BurnoutXpert – Deteksi Kesehatan Mental Karyawan')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

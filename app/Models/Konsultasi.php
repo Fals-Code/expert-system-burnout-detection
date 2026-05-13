@@ -18,11 +18,11 @@ class Konsultasi extends Model
 
     public function diagnosa(): BelongsTo
     {
-        return $this->belongsTo(Diagnosa::class);
+        return $this->belongsTo(Diagnosa::class)->withTrashed();
     }
 
     public function gejala(): BelongsToMany
     {
-        return $this->belongsToMany(Gejala::class, 'konsultasi_gejala', 'konsultasi_id', 'gejala_id');
+        return $this->belongsToMany(Gejala::class, 'konsultasi_gejala', 'konsultasi_id', 'gejala_id')->withTrashed();
     }
 }

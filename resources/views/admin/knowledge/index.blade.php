@@ -42,8 +42,8 @@
                 + Tambah Gejala
             </button>
         </div>
-        <div class="table-container">
-            <table class="data-table">
+        <div class="table-container overflow-x-auto">
+            <table class="data-table" id="gejalaTable">
                 <thead>
                     <tr>
                         <th>Kode</th>
@@ -96,8 +96,8 @@
                 + Tambah Aturan
             </button>
         </div>
-        <div class="table-container">
-            <table class="data-table">
+        <div class="table-container overflow-x-auto">
+            <table class="data-table" id="aturanTable">
                 <thead>
                     <tr>
                         <th>Kode</th>
@@ -149,8 +149,8 @@
                 + Tambah Diagnosa
             </button>
         </div>
-        <div class="table-container">
-            <table class="data-table">
+        <div class="table-container overflow-x-auto">
+            <table class="data-table" id="diagnosaTable">
                 <thead>
                     <tr>
                         <th>Kode</th>
@@ -429,6 +429,20 @@
         document.getElementById('diagnosaBg').value = data.bg_light;
         openModal('diagnosaModal');
     }
+
+    // Initialize DataTables
+    document.addEventListener('DOMContentLoaded', function() {
+        const labels = {
+            placeholder: "Cari data...",
+            perPage: "{select} data per halaman",
+            noRows: "Data tidak ditemukan",
+            info: "Menampilkan {start} sampai {end} dari {rows} data",
+        };
+
+        new simpleDatatables.DataTable("#gejalaTable", { searchable: true, labels });
+        new simpleDatatables.DataTable("#aturanTable", { searchable: true, labels });
+        new simpleDatatables.DataTable("#diagnosaTable", { searchable: true, labels });
+    });
 </script>
 @endpush
 

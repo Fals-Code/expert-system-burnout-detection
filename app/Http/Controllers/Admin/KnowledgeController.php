@@ -70,21 +70,25 @@ class KnowledgeController extends Controller
             'gejala_ids' => 'required|array',
         ]);
 
-        DB::transaction(function() use ($request) {
-            $count = Aturan::count() + 1;
-            $kode = 'R' . str_pad($count, 3, '0', STR_PAD_LEFT);
+        try {
+            DB::transaction(function() use ($request) {
+                $count = Aturan::count() + 1;
+                $kode = 'R' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-            $aturan = Aturan::create([
-                'kode' => $kode,
-                'diagnosa_id' => $request->diagnosa_id,
-                'cf_pakar' => $request->cf_pakar,
-            ]);
+                $aturan = Aturan::create([
+                    'kode' => $kode,
+                    'diagnosa_id' => $request->diagnosa_id,
+                    'cf_pakar' => $request->cf_pakar,
+                ]);
 
-            $aturan->gejala()->attach($request->gejala_ids);
-            $this->log('CREATE_ATURAN', $kode, "Menambahkan aturan baru");
-        });
+                $aturan->gejala()->attach($request->gejala_ids);
+                $this->log('CREATE_ATURAN', $kode, "Menambahkan aturan baru");
+            });
 
-        return redirect()->back()->with('success', 'Aturan berhasil ditambahkan.');
+            return redirect()->back()->with('success', 'Aturan berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menambahkan aturan: ' . $e->getMessage());
+        }
     }
 
     public function updateAturan(Request $request, Aturan $aturan)
@@ -95,17 +99,21 @@ class KnowledgeController extends Controller
             'gejala_ids' => 'required|array',
         ]);
 
-        DB::transaction(function() use ($request, $aturan) {
-            $aturan->update([
-                'diagnosa_id' => $request->diagnosa_id,
-                'cf_pakar' => $request->cf_pakar,
-            ]);
+        try {
+            DB::transaction(function() use ($request, $aturan) {
+                $aturan->update([
+                    'diagnosa_id' => $request->diagnosa_id,
+                    'cf_pakar' => $request->cf_pakar,
+                ]);
 
-            $aturan->gejala()->sync($request->gejala_ids);
-            $this->log('UPDATE_ATURAN', $aturan->kode, "Memperbarui aturan");
-        });
+                $aturan->gejala()->sync($request->gejala_ids);
+                $this->log('UPDATE_ATURAN', $aturan->kode, "Memperbarui aturan");
+            });
 
-        return redirect()->back()->with('success', 'Aturan berhasil diperbarui.');
+            return redirect()->back()->with('success', 'Aturan berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui aturan: ' . $e->getMessage());
+        }
     }
 
     public function destroyAturan(Aturan $aturan)

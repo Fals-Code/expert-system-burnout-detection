@@ -53,8 +53,8 @@
     </div>
 
     <div class="content-card">
-        <div class="table-container">
-            <table class="data-table">
+        <div class="table-container overflow-x-auto">
+            <table class="data-table" id="usersTable">
                 <thead>
                     <tr>
                         <th>Pengguna</th>
@@ -207,6 +207,21 @@
         document.getElementById('pwHint').style.display = 'block';
         openModal('userModal');
     }
+
+    // Initialize DataTable
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataTable = new simpleDatatables.DataTable("#usersTable", {
+            searchable: true,
+            fixedHeight: false,
+            perPage: 10,
+            labels: {
+                placeholder: "Cari pengguna...",
+                perPage: "{select} data per halaman",
+                noRows: "Data tidak ditemukan",
+                info: "Menampilkan {start} sampai {end} dari {rows} data",
+            }
+        });
+    });
 </script>
 @endpush
 

@@ -10,8 +10,8 @@
             <h2 class="card-title">Daftar Status Karyawan</h2>
         </div>
         
-        <div class="table-container">
-            <table class="data-table">
+        <div class="table-container overflow-x-auto">
+            <table class="data-table" id="employeesTable">
                 <thead>
                     <tr>
                         <th>Karyawan</th>
@@ -58,3 +58,19 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new simpleDatatables.DataTable("#employeesTable", {
+            searchable: true,
+            labels: {
+                placeholder: "Cari karyawan...",
+                perPage: "{select} data per halaman",
+                noRows: "Data tidak ditemukan",
+                info: "Menampilkan {start} sampai {end} dari {rows} data",
+            }
+        });
+    });
+</script>
+@endpush

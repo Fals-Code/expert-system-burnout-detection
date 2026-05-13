@@ -55,11 +55,12 @@
     --font-size-xs:         0.75rem;    /* 12px */
     --font-size-sm:         0.875rem;   /* 14px */
     --font-size-base:       1rem;       /* 16px */
-    --font-size-lg:         1.125rem;   /* 18px */
-    --font-size-xl:         1.25rem;    /* 20px */
-    --font-size-2xl:        1.5rem;     /* 24px */
-    --font-size-3xl:        1.875rem;   /* 30px */
-    --font-size-4xl:        2.25rem;    /* 36px */
+    --font-size-lg:         1.25rem;    /* 20px - Upgraded */
+    --font-size-xl:         1.5rem;     /* 24px - Upgraded */
+    --font-size-2xl:        2rem;       /* 32px - Upgraded */
+    --font-size-3xl:        2.5rem;     /* 40px - Upgraded */
+    --font-size-4xl:        3rem;       /* 48px - Upgraded */
+
 
     /* Spacing */
     --space-1:   0.25rem;
@@ -739,31 +740,48 @@ main, .page-content {
 
 /* ── Global Page Title & CTA Button ─────────────────────────── */
 .page-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
     font-weight: 800;
     color: var(--color-primary);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-4);
+    letter-spacing: -0.02em;
+}
+
+.card-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-gray-800);
+    margin-bottom: var(--space-6);
 }
 
 .btn-cta {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    justify-content: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.75rem;
     background: var(--color-accent);
     color: #fff;
     font-weight: 700;
-    font-size: 0.9rem;
-    border-radius: 12px;
+    font-size: 0.95rem;
+    border-radius: 14px;
     text-decoration: none;
     border: none;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all var(--transition-base);
     box-shadow: var(--shadow-accent);
     white-space: nowrap;
     flex-shrink: 0;
 }
-.btn-cta:hover { background: var(--color-accent-dark); transform: translateY(-2px); color: #fff; }
+.btn-cta:hover { 
+    background: var(--color-accent-dark); 
+    transform: translateY(-3px) scale(1.02); 
+    color: #fff; 
+    box-shadow: 0 12px 28px rgba(244,132,95,0.4);
+}
+.btn-cta:active {
+    transform: translateY(-1px);
+}
 
 /* ── Generic Card (shared across pages) ─────────────────────── */
 .card {
@@ -1226,4 +1244,40 @@ main, .page-content {
     0% { transform: scale(1); }
     50% { transform: scale(1.02); }
     100% { transform: scale(1); }
+}
+
+/* ── Responsive Stat Grid ────────────────────────────────── */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-8) var(--space-4);
+    }
+    .welcome-illustration {
+        display: none;
+    }
+}
+
+/* ── Hover Micro-animations ──────────────────────────────── */
+.content-card {
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ── Accessibility: Focus State ─────────────────────────── */
+button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
 }

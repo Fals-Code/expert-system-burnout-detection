@@ -133,34 +133,38 @@ class DeteksiController extends Controller
             ];
 
             if ($highestCf >= $cf_threshold) {
-                // Konfirmasi!
-                $diagnosa = $bestRule->diagnosa;
-                
-                // Simpan ke DB
-                $gejalaCodesUsed = [];
-                foreach ($bestRule->gejala as $g) {
-                    if (($engine['answers'][$g->kode] ?? 'Tidak Pernah') !== 'Tidak Pernah') {
-                        $gejalaCodesUsed[] = $g->kode;
+                try {
+                    // Konfirmasi!
+                    $diagnosa = $bestRule->diagnosa;
+                    
+                    // Simpan ke DB
+                    $gejalaCodesUsed = [];
+                    foreach ($bestRule->gejala as $g) {
+                        if (($engine['answers'][$g->kode] ?? 'Tidak Pernah') !== 'Tidak Pernah') {
+                            $gejalaCodesUsed[] = $g->kode;
+                        }
                     }
+
+                    $konsultasi = $this->expertSystem->saveResult(Auth::id(), $diagnosa->id, $highestCf, $gejalaCodesUsed);
+
+                    // ── Kirim notifikasi otomatis pasca deteksi ──
+                    NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $diagnosa);
+
+                    // Simpan hasil ke session untuk tampilan hasil
+                    Session::put('hasil_deteksi', [
+                        'id' => $konsultasi->id,
+                        'diagnosa' => $diagnosa,
+                        'cf_final' => $highestCf,
+                        'tracing' => $tracing,
+                        'gejala_terdeteksi' => $gejalaCodesUsed,
+                        'bc_trace' => $engine['bc_trace']
+                    ]);
+
+                    Session::forget('bc_engine');
+                    return redirect()->route('karyawan.hasil');
+                } catch (\Exception $e) {
+                    return redirect()->route('karyawan.dashboard')->with('error', 'Terjadi kesalahan sistem saat memproses hasil Anda: ' . $e->getMessage());
                 }
-
-                $konsultasi = $this->expertSystem->saveResult(Auth::id(), $diagnosa->id, $highestCf, $gejalaCodesUsed);
-
-                // ── Kirim notifikasi otomatis pasca deteksi ──
-                NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $diagnosa);
-
-                // Simpan hasil ke session untuk tampilan hasil
-                Session::put('hasil_deteksi', [
-                    'id' => $konsultasi->id,
-                    'diagnosa' => $diagnosa,
-                    'cf_final' => $highestCf,
-                    'tracing' => $tracing,
-                    'gejala_terdeteksi' => $gejalaCodesUsed,
-                    'bc_trace' => $engine['bc_trace']
-                ]);
-
-                Session::forget('bc_engine');
-                return redirect()->route('karyawan.hasil');
             }
 
             $engine['goal_index']++;
