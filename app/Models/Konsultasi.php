@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class Konsultasi extends Model
+{
+    protected $table = 'konsultasi';
+    protected $fillable = ['user_id', 'diagnosa_id', 'cf_final'];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function diagnosa(): BelongsTo
+    {
+        return $this->belongsTo(Diagnosa::class);
+    }
+
+    public function gejala(): BelongsToMany
+    {
+        return $this->belongsToMany(Gejala::class, 'konsultasi_gejala', 'konsultasi_id', 'gejala_id');
+    }
+}

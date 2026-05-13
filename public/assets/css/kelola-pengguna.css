@@ -1,0 +1,12 @@
+/* ── KELOLA PENGGUNA STYLES ── */
+.role-badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; }
+.role-admin { background: #EBF2FA; color: #1E3A5F; }
+.role-hrd { background: #E8F5E9; color: #2E7D32; }
+.role-karyawan { background: #FFF3E0; color: #EF6C00; }
+
+[data-theme='dark'] .role-admin { background: rgba(30, 58, 95, 0.3); color: #82b1ff; }
+[data-theme='dark'] .role-hrd { background: rgba(46, 125, 50, 0.3); color: #81C784; }
+[data-theme='dark'] .role-karyawan { background: rgba(239, 108, 0, 0.3); color: #FFB74D; }
+
+.btn-submit { width: 100%; background: var(--color-primary); color: #fff; padding: 0.75rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; margin-top: 1rem; transition: 0.2s; }
+.btn-submit:hover { background: var(--color-primary-dark); }

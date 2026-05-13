@@ -1,0 +1,123 @@
+/* ── REPORT & HISTORY STYLES ── */
+
+/* ── Timeline (Riwayat) ── */
+.timeline { position: relative; padding-left: 2rem; }
+.timeline::before { content: ''; position: absolute; left: 0.35rem; top: 0; bottom: 0; width: 2px; background: var(--color-gray-100); }
+.timeline-item { position: relative; margin-bottom: 2rem; }
+.timeline-dot { position: absolute; left: -1.95rem; top: 0.25rem; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--color-gray-100); z-index: 2; }
+.timeline-content { display: flex; justify-content: space-between; align-items: center; }
+.timeline-date { font-size: 0.8rem; font-weight: 700; color: var(--color-gray-400); margin-bottom: 0.25rem; }
+.timeline-level { font-size: 1rem; font-weight: 800; color: var(--color-primary); }
+
+.btn-report { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary); text-decoration: underline; }
+
+/* ── Trend Chart (SVG) ── */
+.chart-container { height: 220px; width: 100%; margin-top: 1rem; position: relative; }
+.chart-svg { width: 100%; height: 100%; overflow: visible; }
+.chart-line { 
+    fill: none; stroke: var(--color-primary); stroke-width: 4; 
+    stroke-linecap: round; stroke-linejoin: round; 
+    stroke-dasharray: 1000; stroke-dashoffset: 1000;
+    animation: drawLine 2s ease-out forwards;
+}
+.chart-area { fill: url(#chartGradient); opacity: 0; animation: fadeIn 1s ease-out 1.5s forwards; }
+.chart-point { fill: #fff; stroke: var(--color-primary); stroke-width: 3; opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+.chart-label { font-size: 10px; fill: var(--color-gray-400); font-weight: 700; }
+
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Print / Paper Report ── */
+.report-body { font-family: 'Inter', sans-serif; background: #525659; padding: 40px 0; color: #1A2B40; min-height: 100vh; }
+.report-paper {
+    background: #fff; width: 210mm; min-height: 297mm; padding: 25mm;
+    margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.report-header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--color-primary); padding-bottom: 1.5rem; margin-bottom: 2.5rem;
+}
+.brand-kop { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); }
+.brand-kop span { color: var(--color-accent); }
+.report-type { text-align: right; }
+.report-type h1 { font-size: 1rem; font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.2rem;}
+.report-type p { font-size: 0.75rem; color: var(--color-gray-500); font-weight: 600; margin: 0; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+.info-item { margin-bottom: 1rem; }
+.info-label { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; margin-bottom: 0.25rem; }
+.info-value { font-size: 1rem; font-weight: 600; color: var(--color-primary); }
+
+.result-box {
+    border-radius: 12px;
+    padding: 2rem; margin-bottom: 3rem; text-align: center;
+}
+.result-level { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; line-height: 1; }
+.result-conf { font-size: 0.9rem; font-weight: 700; color: var(--color-gray-500); }
+
+.section-title { font-size: 1.1rem; font-weight: 800; color: var(--color-primary); border-bottom: 1px solid var(--color-gray-100); padding-bottom: 0.5rem; margin-bottom: 1.25rem; text-transform: uppercase; }
+.content-para { font-size: 1rem; line-height: 1.7; color: #4A5E75; margin-bottom: 2rem; }
+
+.rec-list { list-style: none; padding: 0; margin: 0; }
+.rec-item { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
+.rec-bullet { width: 24px; height: 24px; background: var(--color-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+.rec-text h3 { font-size: 0.95rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.25rem; }
+.rec-text p { font-size: 0.85rem; color: var(--color-gray-500); line-height: 1.5; margin: 0; }
+
+.report-footer { margin-top: 5rem; display: flex; justify-content: space-between; align-items: flex-end; }
+.signature { text-align: center; width: 200px; }
+.signature-line { border-top: 2px solid var(--color-primary); margin-top: 4rem; padding-top: 0.5rem; font-weight: 700; color: var(--color-primary); font-size: 0.9rem; }
+
+.controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 1rem; z-index: 200; }
+.btn-print { background: var(--color-accent); color: #fff; padding: 0.8rem 1.5rem; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.2s; display: flex; align-items: center; gap: 0.6rem; text-decoration: none; font-size: 0.9rem; }
+.btn-print:hover { transform: scale(1.05); background: var(--color-accent-dark); }
+.btn-back { background: #fff; color: var(--color-primary); padding: 0.8rem 1.5rem; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.2s; display: flex; align-items: center; gap: 0.6rem; text-decoration: none; font-size: 0.9rem; }
+
+@media print {
+    body.report-body { background: #fff; padding: 0; }
+    .report-paper { box-shadow: none; width: 100%; margin: 0; padding: 0; }
+    .controls { display: none; }
+    
+    /* Elegant Print Enhancements */
+    @page { size: A4; margin: 20mm; }
+    
+    /* Ensure elements don't split across pages */
+    .result-box, .info-grid, .report-footer { page-break-inside: avoid; }
+    .rec-item { page-break-inside: avoid; }
+    
+    /* Optional Watermark */
+    .report-paper::after {
+        content: "CONFIDENTIAL";
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 8rem;
+        color: rgba(0, 0, 0, 0.03);
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    /* Print typography optimizations */
+    .content-para, .rec-text p { color: #000; }
+    .brand-kop { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 768px) {
+    .timeline { padding-left: 1.5rem; }
+    .timeline-content { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .timeline-content > div:last-child { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-gray-50); padding-top: 0.5rem; }
+    .report-paper { width: 100%; padding: 1.5rem; }
+    .info-grid { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+/* ── Admin & HRD Global Report Stats ── */
+.grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.mini-card { background: var(--color-bg-card); padding: 1.5rem; border-radius: 16px; text-align: center; border: 1px solid var(--color-gray-100); box-shadow: var(--shadow-sm); transition: 0.3s; }
+.mini-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.mini-val { display: block; font-size: 1.75rem; font-weight: 800; color: var(--color-primary); }
+.mini-lbl { font-size: 0.75rem; font-weight: 700; color: var(--color-gray-400); text-transform: uppercase; }
+
+.badge-count { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 800; font-size: 0.75rem; }
