@@ -46,7 +46,7 @@
 
                 <div style="margin-bottom: 0.75rem;">
                     <div style="font-size: 0.75rem; color: var(--color-gray-400);">Bergabung Sejak</div>
-                    <div style="font-weight: 600;">{{ $user->created_at->translatedFormat('d M Y') }}</div>
+                    <div style="font-weight: 600;">{{ $user->created_at ? $user->created_at->translatedFormat('d M Y') : 'Tidak diketahui' }}</div>
                 </div>
             </div>
         </div>
