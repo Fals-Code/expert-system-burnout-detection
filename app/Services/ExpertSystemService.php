@@ -18,12 +18,13 @@ class ExpertSystemService
     public function getCfUser($answer): float
     {
         return match ($answer) {
-            'Sangat Sering', 'Pasti Ya' => 1.0,
-            'Sering', 'Hampir Pasti'      => 0.8,
-            'Kadang', 'Mungkin'           => 0.6,
-            'Jarang', 'Ragu-ragu'         => 0.4,
-            'Sangat Jarang', 'Sedikit'    => 0.2,
-            default                      => 0.0,
+            'Sangat Sering', 'Pasti Ya', 'Ya' => 1.0,
+            'Sering', 'Hampir Pasti'          => 0.8,
+            'Kadang', 'Mungkin'               => 0.6,
+            'Jarang', 'Ragu-ragu'             => 0.4,
+            'Sangat Jarang', 'Sedikit'        => 0.2,
+            'Tidak', 'Tidak Pernah'           => 0.0,
+            default                           => 0.0,
         };
     }
 

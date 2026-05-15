@@ -69,11 +69,7 @@ class DeteksiController extends Controller
             'progress' => count($answeredCodes),
             'total_gejala' => Gejala::count(),
             'options' => [
-                'Sangat Sering' => 'Pasti Ya / Sangat Sering',
-                'Sering' => 'Ya / Sering',
-                'Kadang' => 'Mungkin / Kadang-kadang',
-                'Jarang' => 'Ragu-ragu / Jarang',
-                'Sangat Jarang' => 'Sedikit / Sangat Jarang',
+                'Ya' => 'Ya, Sering Merasakan',
                 'Tidak' => 'Tidak Pernah'
             ]
         ]);

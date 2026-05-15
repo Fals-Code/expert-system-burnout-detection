@@ -42,18 +42,34 @@
                 @foreach ($questions as $index => $q)
                 <div class="step {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index + 1 }}" style="{{ $index === 0 ? '' : 'display:none' }}">
                     <h2 class="question-text" style="font-size: 1.5rem; line-height: 1.4; margin-bottom: 2.5rem;">Seberapa sering Anda mengalami: {{ $q->nama }}?</h2>
-                    <div class="options-group options-group--3">
-                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Sering', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
-                            <input type="radio" name="{{ $q->kode }}" value="Sering" style="display:none">
-                            <span style="font-weight: 700; font-size: 1.1rem;">Sering Merasakan</span>
+                    <style>
+                        .option-btn-yes:hover { border-color: #16a34a !important; background: #f0fdf4 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(22, 163, 74, 0.15); }
+                        .option-btn-yes.selected { border-color: #16a34a !important; background: #f0fdf4 !important; box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2); }
+                        
+                        .option-btn-no:hover { border-color: #dc2626 !important; background: #fef2f2 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(220, 38, 38, 0.15); }
+                        .option-btn-no.selected { border-color: #dc2626 !important; background: #fef2f2 !important; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2); }
+                        
+                        @media (max-width: 600px) {
+                            .options-group--2 { grid-template-columns: 1fr !important; }
+                        }
+                    </style>
+                    <div class="options-group options-group--2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <label class="option-btn option-btn-yes" onclick="selectOption({{ $index + 1 }}, 'Ya', '{{ $q->kode }}')" style="padding: 2.5rem 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-radius: 16px; border: 2px solid var(--color-gray-200); cursor: pointer; transition: 0.3s; background: white;">
+                            <input type="radio" name="{{ $q->kode }}" value="Ya" style="display:none">
+                            <div class="icon-circle" style="width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <span style="font-weight: 800; font-size: 1.4rem; color: #16a34a; margin-bottom: 0.5rem;">Ya</span>
+                            <span style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 500;">Saya Sering Merasakannya</span>
                         </label>
-                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Kadang', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
-                            <input type="radio" name="{{ $q->kode }}" value="Kadang" style="display:none">
-                            <span style="font-weight: 700; font-size: 1.1rem;">Kadang-kadang</span>
-                        </label>
-                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Tidak Pernah', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
-                            <input type="radio" name="{{ $q->kode }}" value="Tidak Pernah" style="display:none">
-                            <span style="font-weight: 700; font-size: 1.1rem;">Tidak Pernah</span>
+
+                        <label class="option-btn option-btn-no" onclick="selectOption({{ $index + 1 }}, 'Tidak', '{{ $q->kode }}')" style="padding: 2.5rem 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-radius: 16px; border: 2px solid var(--color-gray-200); cursor: pointer; transition: 0.3s; background: white;">
+                            <input type="radio" name="{{ $q->kode }}" value="Tidak" style="display:none">
+                            <div class="icon-circle" style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </div>
+                            <span style="font-weight: 800; font-size: 1.4rem; color: #dc2626; margin-bottom: 0.5rem;">Tidak</span>
+                            <span style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 500;">Saya Tidak Pernah Merasakannya</span>
                         </label>
                     </div>
                 </div>

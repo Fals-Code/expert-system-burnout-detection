@@ -3,6 +3,17 @@
 @section('title', 'Hasil Diagnosis – BurnoutXpert')
 
 @section('content')
+<style>
+    @media (max-width: 768px) {
+        #confidenceCounter { font-size: 3.5rem !important; }
+        .main-result-card { padding: 2rem 1rem !important; border-radius: 16px !important; }
+        .level-label { font-size: 1.2rem !important; padding: 0.5rem 1.5rem !important; }
+        .pill-group > div { flex-direction: column; align-items: flex-start !important; gap: 0.5rem; }
+        .rec-card { flex-direction: column !important; }
+        .action-group { flex-direction: column; }
+        .action-group .btn-action { width: 100%; justify-content: center; }
+    }
+</style>
 <div class="main-wrapper" style="margin-left: 0; padding: 0;">
     <main class="result-container">
         <div class="result-header">
@@ -13,37 +24,45 @@
             </div>
         </div>
 
-        <div class="main-result-card">
-            <div class="result-info">
-                <h2>Tingkat Burnout</h2>
-                <div class="level-label" style="color: {{ $konsultasi->diagnosa->color }};">{{ $konsultasi->diagnosa->nama }}</div>
-                <p class="condition-desc">{{ $konsultasi->diagnosa->deskripsi }}</p>
+        <div class="main-result-card" style="background: linear-gradient(135deg, {{ $konsultasi->diagnosa->bg_light }} 0%, #ffffff 100%); border: 1px solid {{ $konsultasi->diagnosa->color }}40; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.05); padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; text-align: center; border-radius: 24px; margin-bottom: 2.5rem;">
+            <!-- Decorative blur -->
+            <div style="position: absolute; width: 300px; height: 300px; background: {{ $konsultasi->diagnosa->color }}20; filter: blur(80px); border-radius: 50%; top: -100px; left: -100px; pointer-events: none;"></div>
+            <div style="position: absolute; width: 200px; height: 200px; background: {{ $konsultasi->diagnosa->color }}15; filter: blur(60px); border-radius: 50%; bottom: -50px; right: -50px; pointer-events: none;"></div>
+            
+            <h2 style="font-size: 1.2rem; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; font-weight: 700; z-index: 1;">Tingkat Burnout</h2>
+            
+            <div class="level-label" style="background: {{ $konsultasi->diagnosa->color }}; color: white; padding: 0.75rem 2.5rem; border-radius: 50px; font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; box-shadow: 0 10px 20px {{ $konsultasi->diagnosa->color }}40; margin-bottom: 1.5rem; z-index: 1;">
+                {{ strtoupper($konsultasi->diagnosa->nama) }}
             </div>
-            <div class="circular-progress">
-                <svg viewBox="0 0 180 180">
-                    <circle class="bg" cx="90" cy="90" r="80"></circle>
-                    <circle class="fg" id="progressCircle" cx="90" cy="90" r="80" style="stroke: {{ $konsultasi->diagnosa->color }};"></circle>
-                </svg>
-                <div class="progress-val">
-                    <span class="percent" id="confidenceCounter">0%</span>
-                    <span class="txt tooltip-trigger">
-                        Akurasi Analisis
-                        <span class="tooltip-box">Persentase ini menunjukkan seberapa kuat sistem mengidentifikasi pola burnout dari jawaban Anda.</span>
-                    </span>
-                </div>
+            
+            <div style="font-size: 5rem; font-weight: 900; color: {{ $konsultasi->diagnosa->color }}; line-height: 1; margin-bottom: 0.5rem; text-shadow: 2px 4px 10px rgba(0,0,0,0.1); z-index: 1;" id="confidenceCounter">
+                {{ $confidence }}%
             </div>
+            <div style="font-size: 1rem; color: var(--color-gray-600); font-weight: 600; margin-bottom: 2.5rem; z-index: 1; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                Akurasi Analisis Sistem Pakar
+            </div>
+            
+            <p class="condition-desc" style="max-width: 650px; font-size: 1.1rem; line-height: 1.8; color: var(--color-gray-700); background: rgba(255,255,255,0.7); padding: 1.5rem 2rem; border-radius: 16px; backdrop-filter: blur(10px); z-index: 1; margin: 0; box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 4px 15px rgba(0,0,0,0.03);">
+                {{ $konsultasi->diagnosa->deskripsi }}
+            </p>
         </div>
 
         <!-- Gejala yang Teridentifikasi -->
         <div class="symptoms-section">
             <h2 class="section-title">🔍 Gejala yang Teridentifikasi</h2>
-            <div class="pill-group">
+            <div class="pill-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
                 @if ($konsultasi->gejala->isEmpty())
-                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala spesifik yang terdeteksi.</p>
+                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala signifikan yang dilaporkan (Semua jawaban bernilai Tidak).</p>
                 @else
                     @foreach ($konsultasi->gejala as $g)
-                        <div class="pill" style="background: {{ $konsultasi->diagnosa->bg_light }}; color: {{ $konsultasi->diagnosa->color }};">
-                            <span class="pill-dot"></span> {{ $g->nama }}
+                        <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                            <div style="font-weight: 500; color: var(--color-gray-700); font-size: 0.95rem;">
+                                {{ $g->nama }}
+                            </div>
+                            <div style="padding: 0.35rem 1rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; background: #dcfce7; color: #16a34a;">
+                                Ya
+                            </div>
                         </div>
                     @endforeach
                 @endif
@@ -51,26 +70,25 @@
         </div>
 
         <h2 class="section-title">✨ Rekomendasi Penanganan</h2>
-        <div class="recommendation-list">
+        <div class="recommendation-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
             @php
                 $saran = explode("\n", $konsultasi->diagnosa->saran);
                 $icons = ['🧘', '✈️', '⚖️', '😴', '🍎'];
             @endphp
             @foreach ($saran as $index => $rec)
                 @if (trim($rec))
-                <div class="accordion-item {{ $index === 0 ? 'active' : '' }}">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-left">
-                            <span class="priority-badge">Prioritas {{ $index + 1 }}</span>
-                            <div class="rec-icon" style="margin-bottom:0;">{{ $icons[$index % count($icons)] }}</div>
-                            <h3>{{ Str::before($rec, ':') }}</h3>
+                <div class="rec-card" style="background: white; border: 1px solid var(--color-gray-200); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="rec-icon" style="width: 48px; height: 48px; border-radius: 12px; background: {{ $konsultasi->diagnosa->bg_light }}; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            {{ $icons[$index % count($icons)] }}
                         </div>
-                        <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">Prioritas {{ $index + 1 }}</div>
+                            <h3 style="margin: 0; font-size: 1.1rem; color: var(--color-gray-800); line-height: 1.4;">{{ Str::before($rec, ':') }}</h3>
+                        </div>
                     </div>
-                    <div class="accordion-content">
-                        <div class="accordion-content-inner">
-                            {{ Str::after($rec, ':') }}
-                        </div>
+                    <div style="color: var(--color-gray-600); font-size: 0.95rem; line-height: 1.6; padding-left: 0.5rem; border-left: 3px solid {{ $konsultasi->diagnosa->color }}40;">
+                        {{ Str::after($rec, ':') }}
                     </div>
                 </div>
                 @endif
@@ -204,17 +222,14 @@
         }
     }
 
-    // Animation for circular progress
+    // Animation for confidence counter
     function animateProgress() {
         const target = {{ $confidence }};
-        const circle = document.getElementById('progressCircle');
         const counter = document.getElementById('confidenceCounter');
-        if (!circle || !counter) return;
+        if (!counter) return;
 
         const duration = 2000;
         const startTime = performance.now();
-        
-        const circumference = 502; // 2 * pi * 80
 
         function update(now) {
             const elapsed = now - startTime;
@@ -226,28 +241,15 @@
             const currentValue = Math.floor(easedProgress * target);
             counter.innerText = currentValue + '%';
             
-            const offset = circumference * (1 - (easedProgress * target / 100));
-            circle.style.strokeDashoffset = offset;
-            
             if (progress < 1) {
                 requestAnimationFrame(update);
             }
         }
         
-        circle.style.strokeDasharray = circumference;
         requestAnimationFrame(update);
     }
 
-    function toggleAccordion(header) {
-        const item = header.parentElement;
-        const wasActive = item.classList.contains('active');
-        
-        document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
-        
-        if (!wasActive) {
-            item.classList.add('active');
-        }
-    }
+
 
     window.addEventListener('load', animateProgress);
 </script>

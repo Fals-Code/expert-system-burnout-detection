@@ -17,11 +17,13 @@
             </svg>
         </button>
         <div class="topbar__title-group">
-            <h1 class="topbar__title">{{ $page_title }}</h1>
+            @php $segments = request()->segments(); @endphp
+            <h1 class="topbar__title" style="text-transform: capitalize;">{{ end($segments) ?: $page_title }}</h1>
             <nav class="topbar__breadcrumb">
-                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">BurnoutXpert</a> › 
-                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">{{ $folder }}</a> › 
-                <span style="color: var(--color-primary); font-weight: 600;">{{ $page_title }}</span>
+                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">BurnoutXpert</a>
+                @foreach(request()->segments() as $segment)
+                    › <span style="{{ $loop->last ? 'color: var(--color-primary); font-weight: 600;' : 'color: inherit; text-decoration: none;' }} text-transform: capitalize;">{{ str_replace('-', ' ', $segment) }}</span>
+                @endforeach
             </nav>
         </div>
     </div>
@@ -50,19 +52,37 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
-                <div class="notif-badge" style="display: none;">0</div>
+                @php
+                    $unreadCount = $user->unreadNotifications ? $user->unreadNotifications->count() : 0;
+                @endphp
+                @if($unreadCount > 0)
+                    <div class="notif-badge">{{ $unreadCount }}</div>
+                @else
+                    <div class="notif-badge" style="display: none;">0</div>
+                @endif
             </div>
 
             <div class="notif-dropdown" id="globalBellDropdown">
                 <div class="dropdown-header">
                     <h3>Notifikasi Terbaru</h3>
-                    <span>0 Baru</span>
+                    <span>{{ $user->unreadNotifications ? $user->unreadNotifications->count() : 0 }} Baru</span>
                 </div>
                 <div class="dropdown-list">
-                    <div style="padding: 2rem; text-align: center; color: var(--color-gray-400);">Belum ada notifikasi.</div>
+                    @if($user->unreadNotifications && $user->unreadNotifications->count() > 0)
+                        @foreach($user->unreadNotifications->take(5) as $notif)
+                            <a href="#" class="dropdown-item" style="padding: 1rem;">
+                                <div class="dropdown-item__body">
+                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">{{ $notif->message ?? 'Notifikasi Baru' }}</div>
+                                    <div class="dropdown-item__text" style="font-size: 0.8rem; color: var(--color-gray-500);">{{ $notif->created_at->diffForHumans() }}</div>
+                                </div>
+                            </a>
+                        @endforeach
+                    @else
+                        <div style="padding: 2rem; text-align: center; color: var(--color-gray-400);">Belum ada notifikasi.</div>
+                    @endif
                 </div>
                 <div class="dropdown-footer">
-                    <a href="#">Lihat Semua Notifikasi</a>
+                    <a href="{{ route('notifications') }}">Lihat Semua Notifikasi</a>
                 </div>
             </div>
         </div>
@@ -81,24 +101,24 @@
                     <h3>Menu Pengguna</h3>
                 </div>
                 <div class="dropdown-list">
-                    <a href="{{ route('profile') }}" class="dropdown-item">
-                        <div class="dropdown-item__icon" style="background: var(--color-primary-50); color: var(--color-primary);">
+                    <a href="{{ route('profile') }}" class="dropdown-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;">
+                        <div class="dropdown-item__icon" style="background: var(--color-primary-50); color: var(--color-primary); flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         </div>
-                        <div class="dropdown-item__body">
-                            <div class="dropdown-item__title center">Profil Saya</div>
+                        <div class="dropdown-item__body" style="flex: 1;">
+                            <div class="dropdown-item__title" style="margin: 0; font-weight: 600;">Profil Saya</div>
                         </div>
                     </a>
                     
                     <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
                         @csrf
                     </form>
-                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="border-top: 1px solid var(--color-gray-50);">
-                        <div class="dropdown-item__icon" style="background: var(--color-error-bg); color: var(--color-error);">
+                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="border-top: 1px solid var(--color-gray-50); display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;">
+                        <div class="dropdown-item__icon" style="background: var(--color-error-bg); color: var(--color-error); flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                         </div>
-                        <div class="dropdown-item__body">
-                            <div class="dropdown-item__title center" style="color: var(--color-error);">Keluar</div>
+                        <div class="dropdown-item__body" style="flex: 1;">
+                            <div class="dropdown-item__title" style="margin: 0; font-weight: 600; color: var(--color-error);">Keluar</div>
                         </div>
                     </a>
                 </div>

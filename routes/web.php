@@ -28,13 +28,13 @@ Route::middleware(['auth'])->group(function () {
 // Karyawan Routes
 Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function () {
     Route::get('/dashboard', [KaryawanController::class, 'index'])->name('karyawan.dashboard');
-    Route::get('/deteksi/intro', [\App\Http\Controllers\DeteksiController::class, 'intro'])->name('karyawan.deteksi.intro');
-    Route::get('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'index'])->name('karyawan.deteksi');
-    Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'next'])->name('karyawan.deteksi.next');
-    Route::get('/hasil', [\App\Http\Controllers\DeteksiController::class, 'showResult'])->name('karyawan.hasil');
-    Route::get('/hasil/download/{id}', [\App\Http\Controllers\DeteksiController::class, 'downloadReport'])->name('karyawan.laporan.download');
+    Route::get('/deteksi/intro', [DeteksiController::class, 'intro'])->name('karyawan.deteksi.intro');
+    Route::get('/deteksi', [DeteksiController::class, 'index'])->name('karyawan.deteksi');
+    Route::post('/deteksi', [DeteksiController::class, 'next'])->name('karyawan.deteksi.next');
+    Route::get('/hasil', [DeteksiController::class, 'showResult'])->name('karyawan.hasil');
+    Route::get('/hasil/download/{id}', [DeteksiController::class, 'downloadReport'])->name('karyawan.laporan.download');
     Route::get('/history', [KaryawanController::class, 'history'])->name('karyawan.history');
-    Route::get('/deteksi/reset', [\App\Http\Controllers\DeteksiController::class, 'reset'])->name('karyawan.deteksi.reset');
+    Route::get('/deteksi/reset', [DeteksiController::class, 'reset'])->name('karyawan.deteksi.reset');
 });
 
 // Admin Routes
