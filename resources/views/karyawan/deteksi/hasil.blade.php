@@ -161,10 +161,10 @@
                     <h4 style="margin:0 0 0.5rem 0; font-size:1rem; color:rgba(255,255,255,0.9);">3. Hasil Akhir (Final CF)</h4>
                     <p style="margin:0; font-size:0.9rem; line-height:1.5;">Metode: {{ $tracing['method'] ?? 'Backward Chaining + Certainty Factor' }}</p>
                     
-                    @if(isset($tracing['avg_gejala_cf']) && isset($tracing['cf_pakar_rule']))
+                    @if(isset($tracing['cf_combine_gejala']) && isset($tracing['cf_pakar_rule']))
                     <div style="background: rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 8px; margin: 0.75rem 0; font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
-                        <div style="color: rgba(255,255,255,0.8);">Rumus: CF_final = avg(CF_user × bobot) × CF_pakar</div>
-                        <div>CF_final = {{ number_format($tracing['avg_gejala_cf'], 4) }} × {{ number_format($tracing['cf_pakar_rule'], 2) }} = <strong>{{ number_format($konsultasi->cf_final, 4) }}</strong></div>
+                        <div style="color: rgba(255,255,255,0.8);">Rumus: CF_final = CF_combine_gejala × CF_pakar</div>
+                        <div>CF_final = {{ number_format($tracing['cf_combine_gejala'], 4) }} × {{ number_format($tracing['cf_pakar_rule'], 2) }} = <strong>{{ number_format($konsultasi->cf_final, 4) }}</strong></div>
                     </div>
                     @else
                     <p style="margin:0.5rem 0 0 0; font-size:1.1rem; font-weight:700;">

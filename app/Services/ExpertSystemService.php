@@ -47,7 +47,7 @@ class ExpertSystemService
             $best_tracing = [];
 
             foreach ($rules as $rule) {
-                $sum_cf_weighted = 0.0;
+                $cf_rule_current = 0.0;
                 $rule_trace = [];
                 $gejala_count = $rule->gejala->count();
 
@@ -59,7 +59,11 @@ class ExpertSystemService
                     $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
                     
                     $cf_weighted = $cf_user * $bobot_pakar;
-                    $sum_cf_weighted += $cf_weighted;
+                    
+                    // CF Combine
+                    if ($cf_weighted > 0) {
+                        $cf_rule_current = $cf_rule_current + ($cf_weighted * (1 - $cf_rule_current));
+                    }
 
                     $rule_trace[] = [
                         'gejala' => $gejala->nama,
@@ -71,17 +75,16 @@ class ExpertSystemService
                     ];
                 }
 
-                $avg_cf = $sum_cf_weighted / $gejala_count;
-                $cf_final_rule = $avg_cf * $rule->cf_pakar;
+                $cf_final_rule = $cf_rule_current * $rule->cf_pakar;
 
                 if ($cf_final_rule > $highest_cf_for_diag) {
                     $highest_cf_for_diag = $cf_final_rule;
                     $best_tracing = [
                         'rule_kode' => $rule->kode,
                         'cf_pakar_rule' => $rule->cf_pakar,
-                        'avg_gejala_cf' => $avg_cf,
+                        'cf_combine_gejala' => $cf_rule_current,
                         'gejala_details' => $rule_trace,
-                        'method' => 'Backward Chaining (Average CF)'
+                        'method' => 'Backward Chaining (CF Combine)'
                     ];
                 }
             }
@@ -111,7 +114,7 @@ class ExpertSystemService
     public function getNextSymptoms(array $answeredCodes): array
     {
         // Cari hipotesis yang belum terbukti
-        $diagnosas = Diagnosa::orderBy('tingkat', 'desc')->get();
+        $diagnosas = Diagnosa::orderBy('id', 'asc')->get();
         foreach ($diagnosas as $diagnosa) {
             $needed = Aturan::where('diagnosa_id', $diagnosa->id)
                 ->with('gejala')

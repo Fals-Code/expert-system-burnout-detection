@@ -19,7 +19,9 @@
         <div class="topbar__title-group">
             <h1 class="topbar__title">{{ $page_title }}</h1>
             <nav class="topbar__breadcrumb">
-                BurnoutXpert › {{ $folder }} › {{ $page_title }}
+                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">BurnoutXpert</a> › 
+                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">{{ $folder }}</a> › 
+                <span style="color: var(--color-primary); font-weight: 600;">{{ $page_title }}</span>
             </nav>
         </div>
     </div>

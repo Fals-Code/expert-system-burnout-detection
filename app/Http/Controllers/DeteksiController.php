@@ -37,8 +37,16 @@ class DeteksiController extends Controller
             Session::put('deteksi_answers', []);
         }
 
-        $answers = Session::get('deteksi_answers');
+        $answers = Session::get('deteksi_answers', []);
         $answeredCodes = array_keys($answers);
+
+        // TRUE BACKWARD CHAINING: Cek apakah hipotesis sudah terbukti sebelum lanjut tanya
+        if (!empty($answers)) {
+            $currentResult = $this->expertSystem->solve($answers);
+            if ($currentResult['cf'] >= 0.25 && $currentResult['cf'] > 0) {
+                return $this->processResult(); 
+            }
+        }
 
         // Ambil gejala berikutnya berdasarkan logika Backward Chaining
         $nextCodes = $this->expertSystem->getNextSymptoms($answeredCodes);
