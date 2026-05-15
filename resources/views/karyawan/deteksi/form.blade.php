@@ -1,318 +1,282 @@
 @extends('layouts.app')
 
-@section('title', 'Evaluasi Gejala – BurnoutXpert')
+@section('title', 'Deteksi Burnout – BurnoutXpert')
 
 @section('content')
-<div class="container-wizard" x-data="deteksiWizard()">
-    <!-- Header Progress -->
-    <div class="wizard-header">
-        <div class="header-text">
-            <h1 class="page-title">Sesi Diagnosis</h1>
-            <p>Jawablah dengan sejujur mungkin sesuai kondisi Anda.</p>
-        </div>
-        <div class="progress-section">
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" :style="'width: ' + progressPercent + '%'"></div>
-            </div>
-            <div class="progress-labels">
-                <span>Progress: <strong x-text="progressPercent + '%'"></strong></span>
-                <span><strong x-text="answeredCount"></strong> / {{ $total_gejala }} Gejala</span>
+<div class="main-wrapper" style="margin-left: 0; padding: 0;">
+    <main class="wizard-container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="spinner-container">
+                    <div class="spinner-pulse"></div>
+                    <span class="spinner-icon">⚙️</span>
+                </div>
+                <p class="loading-text">Menganalisis Jawaban Anda...</p>
+                <p style="font-size: 0.875rem; color: var(--color-gray-400); margin-top: 0.5rem;">Sistem pakar sedang memproses data klinis...</p>
             </div>
         </div>
-    </div>
 
-    <!-- Wizard Card -->
-    <div class="content-card wizard-card">
-        <form action="{{ route('karyawan.deteksi.proses') }}" method="POST" id="diagnosisForm">
+        <!-- Form Konsultasi -->
+        <form id="burnoutForm" action="{{ route('karyawan.deteksi.next') }}" method="POST" onsubmit="return handleSubmit(event)">
             @csrf
-            
-            <div class="question-container">
-                @foreach($questions as $index => $q)
-                <div class="question-slide" 
-                     x-show="currentStep === {{ $index }}" 
-                     x-transition:enter="slide-in-right"
-                     x-transition:leave="slide-out-left">
-                    
-                    <div class="q-meta">
-                        <span class="q-badge">{{ strtoupper($q->kategori) }}</span>
-                        <span class="q-code">ID: {{ $q->kode }}</span>
+            <div class="question-card">
+                <!-- Backward Chaining: Simple Phase Label -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <span style="display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 1px solid var(--color-gray-200); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.15em;">
+                        {{ session('bc_engine.current_hypothesis', 'Fase 1') }}
+                    </span>
+                </div>
+
+                <!-- Integrated Progress Header -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-title" id="progress-text">Gejala 1 dari {{ count($questions) }}</span>
+                        <span class="progress-percentage" id="progress-percent">0%</span>
                     </div>
-                    
-                    <h2 class="q-text">Seberapa sering Anda merasa: <br> <span class="highlight">"{{ $q->nama }}"</span>?</h2>
-                    
-                    <div class="options-container">
-                        @foreach($options as $val => $label)
-                        <label class="option-item" :class="{'selected': answers['{{ $q->kode }}'] === '{{ $val }}'}">
-                            <input type="radio" name="{{ $q->kode }}" value="{{ $val }}" 
-                                   x-model="answers['{{ $q->kode }}']" required>
-                            <div class="option-content">
-                                <div class="radio-circle"></div>
-                                <span class="option-text">{{ $label }}</span>
-                            </div>
+                    <div class="modern-progress-bar">
+                        <div class="modern-progress-fill" id="progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                @foreach ($questions as $index => $q)
+                <div class="step {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index + 1 }}" style="{{ $index === 0 ? '' : 'display:none' }}">
+                    <h2 class="question-text" style="font-size: 1.5rem; line-height: 1.4; margin-bottom: 2.5rem;">Seberapa sering Anda mengalami: {{ $q->nama }}?</h2>
+                    <div class="options-group options-group--3">
+                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Sering', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
+                            <input type="radio" name="{{ $q->kode }}" value="Sering" style="display:none">
+                            <span style="font-weight: 700; font-size: 1.1rem;">Sering Merasakan</span>
                         </label>
-                        @endforeach
+                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Kadang', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
+                            <input type="radio" name="{{ $q->kode }}" value="Kadang" style="display:none">
+                            <span style="font-weight: 700; font-size: 1.1rem;">Kadang-kadang</span>
+                        </label>
+                        <label class="option-btn" onclick="selectOption({{ $index + 1 }}, 'Tidak Pernah', '{{ $q->kode }}')" style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; text-align: center; min-height: 80px;">
+                            <input type="radio" name="{{ $q->kode }}" value="Tidak Pernah" style="display:none">
+                            <span style="font-weight: 700; font-size: 1.1rem;">Tidak Pernah</span>
+                        </label>
                     </div>
                 </div>
                 @endforeach
+
+                <!-- Summary Step -->
+                <div class="step" data-step="{{ count($questions) + 1 }}" style="display:none">
+                    <div class="confetti-decoration">
+                        <div class="confetti-piece" style="left: 10%; animation: confettiDrop 4s linear infinite; background: #FFD700;"></div>
+                        <div class="confetti-piece" style="left: 30%; animation: confettiDrop 5s linear infinite; background: var(--color-accent); animation-delay: 1s;"></div>
+                        <div class="confetti-piece" style="left: 50%; animation: confettiDrop 3s linear infinite; background: #4FACFE; animation-delay: 2s;"></div>
+                        <div class="confetti-piece" style="left: 70%; animation: confettiDrop 6s linear infinite; background: #F4845F; animation-delay: 0.5s;"></div>
+                        <div class="confetti-piece" style="left: 90%; animation: confettiDrop 4.5s linear infinite; background: #10B981; animation-delay: 1.5s;"></div>
+                    </div>
+                    <div class="finish-screen">
+                        <div class="finish-icon-wrapper">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring" style="animation-delay: 0.5s"></div>
+                            <svg class="finish-svg" width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9882C18.7182 19.7217 16.9033 20.9982 14.8354 21.6263C12.7674 22.2544 10.5573 22.2019 8.52419 21.4768C6.49106 20.7517 4.7502 19.3957 3.56066 17.6078C2.37111 15.8199 1.79619 13.6931 1.92131 11.5401C2.04642 9.38716 2.8647 7.33045 4.25206 5.67389C5.63942 4.01733 7.51862 2.85198 9.60803 2.3508C11.6974 1.84961 13.882 2.03961 15.84 2.89" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 4L12 14.01L9 11.01" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h2 class="question-text">Analisis Selesai</h2>
+                        <p class="finish-subtitle">
+                            Terima kasih telah menjawab semua pertanyaan. Sistem siap menganalisis tingkat burnout Anda berdasarkan gejala yang dilaporkan.
+                        </p>
+                        <div class="finish-info-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <p>Data Anda bersifat rahasia & aman.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Footer Navigation -->
-            <div class="wizard-footer">
-                <div class="nav-left">
-                    <button type="button" class="btn-secondary" @click="prevStep" x-show="currentStep > 0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        Sebelumnya
-                    </button>
-                </div>
-                
-                <div class="nav-right">
-                    <template x-if="currentStep < {{ count($questions) - 1 }}">
-                        <button type="button" class="btn-primary" @click="nextStep" :disabled="!isCurrentStepAnswered()">
-                            Lanjut
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </button>
-                    </template>
-                    
-                    <template x-if="currentStep === {{ count($questions) - 1 }}">
-                        <button type="submit" class="btn-primary btn-finish" :disabled="!isCurrentStepAnswered() || isSubmitting">
-                            <span x-show="!isSubmitting">Selesaikan Langkah Ini</span>
-                            <span x-show="isSubmitting">Memproses... ⏳</span>
-                        </button>
-                    </template>
-                </div>
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Sebelumnya
+                </button>
+                <button type="button" class="btn-nav btn-next" id="nextBtn" onclick="changeStep(1)" disabled>
+                    Lanjutkan
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+                <button type="submit" class="btn-nav btn-result" id="submitBtn" style="display:none">
+                    Lihat Hasil Analisis
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
             </div>
         </form>
-    </div>
+    </main>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-function deteksiWizard() {
-    return {
-        currentStep: 0,
-        totalSteps: {{ count($questions) }},
-        progressPercent: Math.round(({{ $progress }} / {{ $total_gejala }}) * 100),
-        answeredCount: {{ $progress }},
-        answers: {},
-        isSubmitting: false,
-        
-        isCurrentStepAnswered() {
-            const currentCodes = {!! json_encode($question_codes) !!};
-            const currentCode = currentCodes[this.currentStep];
-            return this.answers[currentCode] !== undefined;
-        },
+    let currentStep = 1;
+    const totalQuestions = {{ count($questions) }};
+    const totalSteps = totalQuestions + 1;
+    let answers = {};
+    let isAnimating = false;
+    let autoNextTimeout = null;
 
-        nextStep() {
-            if (this.isCurrentStepAnswered()) {
-                if (this.currentStep < this.totalSteps - 1) {
-                    this.currentStep++;
+    const storageKey = `burnoutWizardState_{{ auth()->id() }}`;
+
+    function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify({ currentStep, answers }));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const data = JSON.parse(saved);
+            answers = data.answers || {};
+            
+            for (const [step, val] of Object.entries(answers)) {
+                const stepEl = document.querySelector(`.step[data-step="${step}"]`);
+                if (stepEl) {
+                    const btns = stepEl.querySelectorAll('.option-btn');
+                    btns.forEach(btn => {
+                        if (btn.innerText.trim().includes(val)) btn.classList.add('selected');
+                    });
+                    const radio = stepEl.querySelector(`input[value="${val}"]`);
+                    if (radio) radio.checked = true;
                 }
             }
-        },
 
-        prevStep() {
-            if (this.currentStep > 0) {
-                this.currentStep--;
+            if (data.currentStep > 1 && data.currentStep <= totalSteps) {
+                currentStep = data.currentStep;
+                updateUI(true);
             }
-        },
-
-        submitForm() {
-            this.isSubmitting = true;
-            document.getElementById('diagnosisForm').submit();
         }
     }
-}
+
+    function selectOption(step, val, gid) {
+        if (isAnimating) return;
+        const stepEl = document.querySelector(`.step[data-step="${step}"]`);
+        const btns = stepEl.querySelectorAll('.option-btn');
+        btns.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.innerText.trim().includes(val)) btn.classList.add('selected');
+        });
+
+        answers[step] = val;
+        const radio = stepEl.querySelector(`input[value="${val}"]`);
+        if (radio) radio.checked = true;
+        
+        saveState();
+        checkNav();
+
+        if (step <= totalQuestions) {
+            if (autoNextTimeout) clearTimeout(autoNextTimeout);
+            autoNextTimeout = setTimeout(() => {
+                if (currentStep === step && !isAnimating) changeStep(1);
+            }, 500);
+        }
+    }
+
+    function changeStep(n) {
+        if (isAnimating) return;
+        const steps = document.querySelectorAll('.step');
+        const prevStepIdx = currentStep - 1;
+        const nextStepIdx = currentStep + n - 1;
+
+        if (nextStepIdx < 0 || nextStepIdx >= totalSteps) return;
+
+        if (autoNextTimeout) clearTimeout(autoNextTimeout);
+        isAnimating = true;
+
+        steps[prevStepIdx].classList.remove('active', 'slide-in-right', 'slide-in-left');
+        steps[prevStepIdx].classList.add(n > 0 ? 'slide-out-left' : 'slide-out-right');
+
+        setTimeout(() => {
+            steps[prevStepIdx].style.display = 'none';
+            steps[prevStepIdx].classList.remove('slide-out-left', 'slide-out-right');
+            
+            steps[nextStepIdx].style.display = 'block';
+            steps[nextStepIdx].classList.add('active', n > 0 ? 'slide-in-right' : 'slide-in-left');
+            
+            currentStep += n;
+            saveState();
+            updateUI();
+
+            const wizardContainer = document.querySelector('.wizard-container');
+            if (wizardContainer) {
+                wizardContainer.classList.remove('haptic-pulse');
+                void wizardContainer.offsetWidth;
+                wizardContainer.classList.add('haptic-pulse');
+            }
+            
+            setTimeout(() => { isAnimating = false; }, 300);
+        }, 300);
+    }
+
+    function updateUI(immediate = false) {
+        const percent = Math.round((currentStep / totalSteps) * 100);
+        document.getElementById('progress-bar').style.width = percent + '%';
+        
+        const percentEl = document.getElementById('progress-percent');
+        if (percentEl) percentEl.innerText = percent + '%';
+        
+        if (currentStep <= totalQuestions) {
+            document.getElementById('progress-text').innerText = `Gejala ${currentStep} dari ${totalQuestions}`;
+        } else {
+            document.getElementById('progress-text').innerText = `Analisis Selesai`;
+        }
+        
+        document.getElementById('prevBtn').disabled = (currentStep === 1);
+        
+        if (currentStep === totalSteps) {
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'flex';
+        } else {
+            document.getElementById('nextBtn').style.display = 'flex';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+
+        if (immediate) {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            steps[currentStep - 1].classList.add('active');
+            steps[currentStep - 1].style.display = 'block';
+        }
+        
+        checkNav();
+    }
+
+    function checkNav() {
+        if (currentStep > totalQuestions) {
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('submitBtn').disabled = false;
+            return;
+        }
+        const hasAnswer = !!answers[currentStep];
+        document.getElementById('nextBtn').disabled = !hasAnswer;
+        document.getElementById('submitBtn').disabled = !hasAnswer;
+    }
+
+    function handleSubmit(e) {
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        localStorage.removeItem(storageKey);
+        return true;
+    }
+
+    window.addEventListener('load', () => {
+        loadState();
+        updateUI();
+    });
 </script>
 @endpush
 
-@push('styles')
-<style>
-    .container-wizard {
-        max-width: 850px;
-        margin: 2rem auto;
-    }
-    .wizard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2.5rem;
-    }
-    .progress-section {
-        flex: 0 0 300px;
-    }
-    .progress-bar-container {
-        height: 10px;
-        background: #e2e8f0;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-bottom: 0.5rem;
-    }
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .progress-labels {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        color: var(--color-gray-500);
-    }
-    .wizard-card {
-        padding: 3rem;
-        min-height: 550px;
-        display: flex;
-        flex-direction: column;
-        border-radius: 24px;
-    }
-    .q-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-    .q-badge {
-        background: var(--color-primary-light);
-        color: var(--color-primary);
-        padding: 0.4rem 1rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-    }
-    .q-code {
-        color: var(--color-gray-400);
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-    .q-text {
-        font-size: 1.8rem;
-        line-height: 1.4;
-        color: var(--color-gray-800);
-        margin-bottom: 3rem;
-    }
-    .q-text .highlight {
-        color: var(--color-primary);
-        display: block;
-        margin-top: 0.5rem;
-    }
-    .options-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .option-item {
-        border: 2px solid #f1f5f9;
-        padding: 1.25rem 1.5rem;
-        border-radius: 16px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-    .option-item:hover {
-        border-color: var(--color-primary-light);
-        background: #f8fafc;
-    }
-    .option-item.selected {
-        border-color: var(--color-primary);
-        background: #f0f7ff;
-        box-shadow: 0 4px 15px rgba(30, 58, 95, 0.08);
-    }
-    .option-item input {
-        position: absolute;
-        opacity: 0;
-    }
-    .option-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    .radio-circle {
-        width: 22px;
-        height: 22px;
-        border: 2px solid #cbd5e1;
-        border-radius: 50%;
-        position: relative;
-        transition: all 0.2s ease;
-    }
-    .option-item.selected .radio-circle {
-        border-color: var(--color-primary);
-        background: var(--color-primary);
-    }
-    .option-item.selected .radio-circle::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 8px;
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-    }
-    .option-text {
-        font-weight: 600;
-        font-size: 1.05rem;
-        color: var(--color-gray-700);
-    }
-    .wizard-footer {
-        margin-top: auto;
-        padding-top: 3rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .btn-primary {
-        background: var(--color-primary);
-        color: white;
-        padding: 0.8rem 2rem;
-        border-radius: 12px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .btn-primary:hover:not(:disabled) {
-        background: #2a4a7a;
-        transform: translateX(3px);
-    }
-    .btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    .btn-secondary {
-        background: transparent;
-        color: var(--color-gray-500);
-        padding: 0.8rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        border: 1px solid #e2e8f0;
-        cursor: pointer;
-    }
-    .btn-secondary:hover {
-        background: #f8fafc;
-        color: var(--color-gray-800);
-    }
-
-    /* Animations */
-    .slide-in-right { animation: slideInRight 0.4s ease-out; }
-    @keyframes slideInRight {
-        from { transform: translateX(30px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-
-    @media (max-width: 768px) {
-        .wizard-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-        .progress-section { flex: 0 0 auto; width: 100%; }
-        .q-text { font-size: 1.4rem; }
-        .wizard-card { padding: 1.5rem; min-height: auto; }
-    }
-</style>
-@endpush

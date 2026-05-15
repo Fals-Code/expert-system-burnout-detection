@@ -7,6 +7,7 @@ use App\Models\Gejala;
 use App\Models\Diagnosa;
 use App\Models\Konsultasi;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class ExpertSystemService
 {
@@ -27,79 +28,79 @@ class ExpertSystemService
     }
 
     /**
-     * Backward Chaining Engine
+     * Backward Chaining Engine (Native Logic Sync)
      * Mencoba membuktikan setiap hipotesis (Diagnosa) secara berurutan.
+     * Menggunakan formula: avg(CF_user * bobot_gejala) * CF_pakar_rule
      * 
      * @param array $answers ['G01' => 'Sering', ...]
      * @return array [hasil_diagnosa, cf_final, tracing]
      */
     public function solve(array $answers): array
     {
-        $diagnosas = Diagnosa::orderBy('tingkat', 'desc')->get(); // Mulai dari yang terberat (Sangat Tinggi)
-        $results = [];
+        $diagnosas = Diagnosa::orderBy('id', 'asc')->get(); // Urutan sesuai DB (Tinggi, Sedang, Rendah)
+        $threshold = 0.25;
+        $final_result = null;
 
         foreach ($diagnosas as $diagnosa) {
             $rules = Aturan::where('diagnosa_id', $diagnosa->id)->with('gejala')->get();
-            $cf_diagnosa = 0.0;
-            $tracing_diagnosa = [];
+            $highest_cf_for_diag = -1.0;
+            $best_tracing = [];
 
             foreach ($rules as $rule) {
-                $cf_rule_current = 0.0;
+                $sum_cf_weighted = 0.0;
                 $rule_trace = [];
+                $gejala_count = $rule->gejala->count();
+
+                if ($gejala_count === 0) continue;
 
                 foreach ($rule->gejala as $gejala) {
-                    $user_answer = $answers[$gejala->kode] ?? 'Tidak';
+                    $user_answer = $answers[$gejala->kode] ?? 'Tidak Pernah';
                     $cf_user = $this->getCfUser($user_answer);
-                    
-                    // Ambil bobot pakar dari pivot (aturan_gejala)
                     $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
                     
-                    // CF[H,E] = CF[E] * CF[Pakar]
-                    $cf_gejala = $cf_user * $bobot_pakar;
-                    
-                    if ($cf_gejala > 0) {
-                        // CF Combine: CF_old + CF_new * (1 - CF_old)
-                        $cf_rule_current = $cf_rule_current + ($cf_gejala * (1 - $cf_rule_current));
-                        $rule_trace[] = [
-                            'gejala' => $gejala->nama,
-                            'kode' => $gejala->kode,
-                            'user_ans' => $user_answer,
-                            'cf_user' => $cf_user,
-                            'bobot' => $bobot_pakar,
-                            'cf_sub' => $cf_gejala
-                        ];
-                    }
+                    $cf_weighted = $cf_user * $bobot_pakar;
+                    $sum_cf_weighted += $cf_weighted;
+
+                    $rule_trace[] = [
+                        'gejala' => $gejala->nama,
+                        'kode' => $gejala->kode,
+                        'user_ans' => $user_answer,
+                        'cf_user' => $cf_user,
+                        'bobot' => $bobot_pakar,
+                        'cf_sub' => $cf_weighted
+                    ];
                 }
 
-                // Final CF for this rule = CF_gejala_combine * CF_rule_pakar
-                $cf_rule_final = $cf_rule_current * $rule->cf_pakar;
+                $avg_cf = $sum_cf_weighted / $gejala_count;
+                $cf_final_rule = $avg_cf * $rule->cf_pakar;
 
-                if ($cf_rule_final > $cf_diagnosa) {
-                    $cf_diagnosa = $cf_rule_final;
-                    $tracing_diagnosa = [
+                if ($cf_final_rule > $highest_cf_for_diag) {
+                    $highest_cf_for_diag = $cf_final_rule;
+                    $best_tracing = [
                         'rule_kode' => $rule->kode,
                         'cf_pakar_rule' => $rule->cf_pakar,
-                        'gejala_details' => $rule_trace
+                        'avg_gejala_cf' => $avg_cf,
+                        'gejala_details' => $rule_trace,
+                        'method' => 'Backward Chaining (Average CF)'
                     ];
                 }
             }
 
-            if ($cf_diagnosa > 0) {
-                $results[] = [
+            // Jika hipotesis ini terbukti (di atas threshold)
+            if ($highest_cf_for_diag >= $threshold) {
+                $final_result = [
                     'diagnosa' => $diagnosa,
-                    'cf' => $cf_diagnosa,
-                    'tracing' => $tracing_diagnosa
+                    'cf' => $highest_cf_for_diag,
+                    'tracing' => $best_tracing
                 ];
+                break; // Backward Chaining berhenti saat hipotesis terbukti
             }
         }
 
-        // Urutkan berdasarkan CF tertinggi
-        usort($results, fn($a, $b) => $b['cf'] <=> $a['cf']);
-
-        return $results[0] ?? [
+        return $final_result ?? [
             'diagnosa' => Diagnosa::where('tingkat', 'RENDAH')->first(),
             'cf' => 0.0,
-            'tracing' => ['message' => 'Tidak ada gejala yang signifikan terdeteksi.']
+            'tracing' => ['message' => 'Tidak ada hipotesis yang mencapai ambang batas keyakinan (0.25).']
         ];
     }
 
@@ -110,7 +111,7 @@ class ExpertSystemService
     public function getNextSymptoms(array $answeredCodes): array
     {
         // Cari hipotesis yang belum terbukti
-        $diagnosas = Diagnosa::all();
+        $diagnosas = Diagnosa::orderBy('tingkat', 'desc')->get();
         foreach ($diagnosas as $diagnosa) {
             $needed = Aturan::where('diagnosa_id', $diagnosa->id)
                 ->with('gejala')
@@ -122,7 +123,11 @@ class ExpertSystemService
                 ->unique()
                 ->toArray();
             
-            if (!empty($needed)) return array_slice($needed, 0, 3); // Tanya 3 gejala sekaligus
+            if (!empty($needed)) {
+                // Update session hypothesis label for UI
+                Session::put('bc_engine.current_hypothesis', 'Evaluasi Fase: ' . $diagnosa->nama);
+                return $needed; 
+            }
         }
         
         return [];

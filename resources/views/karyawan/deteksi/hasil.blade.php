@@ -1,217 +1,246 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Analisis Kesehatan Mental – BurnoutXpert')
+@section('title', 'Hasil Diagnosis – BurnoutXpert')
 
 @section('content')
-<div class="container-result" x-data="{ showTracing: false }">
-    <!-- Header Section -->
-    <div class="result-header-premium">
-        <div class="header-main">
-            <h1 class="page-title">Laporan Analisis Selesai</h1>
-            <p>Berdasarkan evaluasi sistem pakar terhadap gejala yang Anda laporkan.</p>
+<div class="main-wrapper" style="margin-left: 0; padding: 0;">
+    <main class="result-container">
+        <div class="result-header">
+            <div class="header-icon">🔥</div>
+            <div class="header-text">
+                <h1>Hasil Deteksi Burnout Anda</h1>
+                <p>Berdasarkan analisis sistem pakar terhadap gejala yang Anda laporkan.</p>
+            </div>
         </div>
-        <div class="header-actions">
-            <button @click="window.print()" class="btn-outline">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                Cetak Laporan
+
+        <div class="main-result-card">
+            <div class="result-info">
+                <h2>Tingkat Burnout</h2>
+                <div class="level-label" style="color: {{ $konsultasi->diagnosa->color }};">{{ $konsultasi->diagnosa->nama }}</div>
+                <p class="condition-desc">{{ $konsultasi->diagnosa->deskripsi }}</p>
+            </div>
+            <div class="circular-progress">
+                <svg viewBox="0 0 180 180">
+                    <circle class="bg" cx="90" cy="90" r="80"></circle>
+                    <circle class="fg" id="progressCircle" cx="90" cy="90" r="80" style="stroke: {{ $konsultasi->diagnosa->color }};"></circle>
+                </svg>
+                <div class="progress-val">
+                    <span class="percent" id="confidenceCounter">0%</span>
+                    <span class="txt tooltip-trigger">
+                        Akurasi Analisis
+                        <span class="tooltip-box">Persentase ini menunjukkan seberapa kuat sistem mengidentifikasi pola burnout dari jawaban Anda.</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gejala yang Teridentifikasi -->
+        <div class="symptoms-section">
+            <h2 class="section-title">🔍 Gejala yang Teridentifikasi</h2>
+            <div class="pill-group">
+                @if ($konsultasi->gejala->isEmpty())
+                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala spesifik yang terdeteksi.</p>
+                @else
+                    @foreach ($konsultasi->gejala as $g)
+                        <div class="pill" style="background: {{ $konsultasi->diagnosa->bg_light }}; color: {{ $konsultasi->diagnosa->color }};">
+                            <span class="pill-dot"></span> {{ $g->nama }}
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+
+        <h2 class="section-title">✨ Rekomendasi Penanganan</h2>
+        <div class="recommendation-list">
+            @php
+                $saran = explode("\n", $konsultasi->diagnosa->saran);
+                $icons = ['🧘', '✈️', '⚖️', '😴', '🍎'];
+            @endphp
+            @foreach ($saran as $index => $rec)
+                @if (trim($rec))
+                <div class="accordion-item {{ $index === 0 ? 'active' : '' }}">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <div class="accordion-left">
+                            <span class="priority-badge">Prioritas {{ $index + 1 }}</span>
+                            <div class="rec-icon" style="margin-bottom:0;">{{ $icons[$index % count($icons)] }}</div>
+                            <h3>{{ Str::before($rec, ':') }}</h3>
+                        </div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            {{ Str::after($rec, ':') }}
+                        </div>
+                    </div>
+                </div>
+                @endif
+            @endforeach
+        </div>
+
+        <div class="action-group">
+            <button type="button" onclick="openTracingModal()" class="btn-action" style="background:var(--color-primary); color:white; border:none; cursor:pointer; padding:0.8rem 1.5rem; border-radius:50px; font-weight:700; display:flex; align-items:center; gap:0.5rem; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Detail Kalkulasi
             </button>
-            <a href="{{ route('karyawan.dashboard') }}" class="btn-cta">Ke Dashboard</a>
-        </div>
-    </div>
-
-    <div class="result-layout">
-        <!-- Main Analysis Card -->
-        <div class="analysis-card content-card">
-            <div class="status-badge" style="background: {{ $konsultasi->diagnosa->bg_light }}; color: {{ $konsultasi->diagnosa->color }}">
-                Tingkat: {{ $konsultasi->diagnosa->tingkat }}
-            </div>
-            
-            <div class="diagnosis-info">
-                <h2 class="diagnosis-name">{{ $konsultasi->diagnosa->nama }}</h2>
-                <div class="meter-wrapper">
-                    <div class="meter-gauge">
-                        <div class="meter-fill" style="width: {{ $confidence }}%; background: {{ $konsultasi->diagnosa->color }}"></div>
-                    </div>
-                    <div class="meter-labels">
-                        <span>Akurasi Analisis</span>
-                        <span class="confidence-val">{{ $confidence }}%</span>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="divider">
-
-            <div class="description-section">
-                <h3>Apa Artinya Ini?</h3>
-                <p>{{ $konsultasi->diagnosa->deskripsi }}</p>
-            </div>
-
-            <div class="recommendations-section">
-                <h3>💡 Rekomendasi Langkah Selanjutnya</h3>
-                <div class="advice-card">
-                    {{ $konsultasi->diagnosa->saran }}
-                </div>
-            </div>
-
-            <div class="action-footer">
-                <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-text">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                    Diagnosis Ulang
-                </a>
-                <button @click="showTracing = true" class="btn-text">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    Detail Logika Pakar
-                </button>
-            </div>
+            <a href="{{ route('karyawan.laporan.download', ['id' => $konsultasi->id]) }}" class="btn-action btn-download" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Unduh PDF
+            </a>
+            <a href="{{ route('karyawan.dashboard') }}" class="btn-action btn-back">
+                Dashboard
+            </a>
         </div>
 
-        <!-- Sidebar / Summary Info -->
-        <div class="sidebar-info">
-            <div class="summary-card content-card">
-                <h3>📊 Ringkasan Sesi</h3>
-                <ul class="summary-list">
-                    <li>
-                        <span>Waktu Selesai</span>
-                        <strong>{{ $konsultasi->created_at->format('H:i, d M Y') }}</strong>
-                    </li>
-                    <li>
-                        <span>Gejala Terdeteksi</span>
-                        <strong>{{ count($konsultasi->gejala) }} Gejala</strong>
-                    </li>
-                    <li>
-                        <span>Metode Analisis</span>
-                        <strong>Backward Chaining</strong>
-                    </li>
-                </ul>
+        <!-- Langkah Selanjutnya Timeline -->
+        <div class="next-steps-timeline">
+            <div class="timeline-header">
+                <h2>Langkah Selanjutnya</h2>
+                <p>Ikuti panduan ini untuk memulai proses pemulihan Anda</p>
             </div>
-
-            <div class="help-card content-card">
-                <div class="help-icon">🆘</div>
-                <h4>Butuh Bantuan Lebih?</h4>
-                <p>Jika Anda merasa membutuhkan bantuan segera, jangan ragu untuk menghubungi departemen HRD atau konselor profesional.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tracing Modal (Explanation Facility) -->
-    <template x-if="showTracing">
-        <div class="modal-overlay active" @click.self="showTracing = false">
-            <div class="modal-container-lg slide-up">
-                <div class="modal-header">
-                    <h3>Explanation Facility (Transparansi Logika)</h3>
-                    <button @click="showTracing = false" class="btn-close-modal">&times;</button>
+            <div class="timeline-grid">
+                <div class="timeline-item-wrap">
+                    <div class="timeline-step">1</div>
+                    <h4>Simpan Laporan</h4>
+                    <p>Unduh hasil deteksi ini untuk referensi pribadi atau diskusi medis.</p>
+                    <a href="{{ route('karyawan.laporan.download', ['id' => $konsultasi->id]) }}" class="timeline-action-btn" target="_blank">Download Laporan</a>
                 </div>
-                <div class="modal-body">
-                    <div class="logic-intro">
-                        Sistem menggunakan data Anda untuk membuktikan hipotesis <strong>{{ $konsultasi->diagnosa->nama }}</strong> melalui aturan pakar.
-                    </div>
-
-                    @if($tracing && isset($tracing['gejala_details']))
-                    <div class="table-responsive">
-                        <table class="tracing-table">
-                            <thead>
-                                <tr>
-                                    <th>Gejala</th>
-                                    <th>Jawaban</th>
-                                    <th>CF Pakar</th>
-                                    <th>Hasil Sub-CF</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($tracing['gejala_details'] as $detail)
-                                <tr>
-                                    <td>{{ $detail['gejala'] }}</td>
-                                    <td><span class="ans-pill">{{ $detail['user_ans'] }}</span></td>
-                                    <td>{{ $detail['bobot'] }}</td>
-                                    <td class="text-success">+{{ number_format($detail['cf_sub'], 3) }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="logic-footer">
-                        <div class="logic-row">
-                            <span>Total Certainty Factor (Combined)</span>
-                            <span class="logic-val">{{ number_format($konsultasi->cf_final, 4) }}</span>
-                        </div>
-                        <div class="logic-row highlight">
-                            <span>Akurasi Final</span>
-                            <span class="logic-val">{{ $confidence }}%</span>
-                        </div>
-                    </div>
+                <div class="timeline-item-wrap">
+                    <div class="timeline-step">2</div>
+                    <h4>Konseling</h4>
+                    <p>Jadwalkan sesi pertama dengan psikolog untuk evaluasi lebih mendalam.</p>
+                    @if ($konsultasi->diagnosa->tingkat === 'TINGGI' || $konsultasi->diagnosa->tingkat === 'SANGAT TINGGI')
+                        <a href="mailto:hrd@burnoutxpert.com?subject=Permintaan Jadwal Konseling - {{ urlencode(auth()->user()->name) }}&body=Halo Tim HRD,%0A%0ASaya {{ urlencode(auth()->user()->name) }} ingin mengajukan jadwal konseling terkait hasil deteksi kesehatan mental saya.%0A%0ATerima kasih." class="timeline-action-btn" style="text-decoration:none; display:inline-block; text-align:center; background:var(--color-error); color:white; border:none;">Ajukan Konseling ke HRD</a>
                     @else
-                    <p class="text-center p-4 text-muted">Detail kalkulasi tidak tersedia untuk sesi ini.</p>
+                        <button class="timeline-action-btn" onclick="alert('Fitur pencarian psikolog akan segera hadir!')">Cari Psikolog</button>
                     @endif
                 </div>
+                <div class="timeline-item-wrap">
+                    <div class="timeline-step">3</div>
+                    <h4>Follow-up</h4>
+                    <p>Lakukan pemeriksaan rutin setiap 30 hari untuk memantau progres Anda.</p>
+                    <button class="timeline-action-btn" onclick="alert('Pengingat telah diset untuk 30 hari ke depan.')">Set Pengingat</button>
+                </div>
             </div>
         </div>
-    </template>
+    </main>
+</div>
+
+<!-- Modal Tracing -->
+<div class="modal-overlay" id="modalTracing">
+    <div class="modal-content" style="background:white; border-radius:16px; width:90%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div class="modal-header" style="padding:1.5rem; border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; background:var(--color-primary); color:white;">
+            <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Transparansi Perhitungan Pakar</h3>
+            <button type="button" onclick="closeTracingModal()" style="background:transparent; border:none; color:white; font-size:1.5rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:1.5rem; overflow-y:auto; background:#f8fafc;">
+            @if ($tracing)
+                @if (isset($tracing['rule_kode']))
+                <div style="background:white; padding:1.25rem; border-radius:12px; border:1px solid var(--color-gray-200); margin-bottom:1rem;">
+                    <h4 style="margin:0 0 0.75rem 0; color:var(--color-primary); font-size:1rem;">📐 Rule Dominan yang Terkonfirmasi</h4>
+                    <p style="margin:0; font-size:0.95rem;">Kode Rule: <strong style="color:var(--color-accent);">{{ $tracing['rule_kode'] ?? '-' }}</strong></p>
+                    <p style="margin:0.25rem 0 0 0; font-size:0.95rem;">Bobot Kepastian Pakar (CF Pakar): <strong>{{ number_format($tracing['cf_pakar_rule'] ?? 0, 2) }}</strong></p>
+                </div>
+                @endif
+
+                @if (isset($tracing['gejala_details']))
+                <div style="background:white; padding:1.25rem; border-radius:12px; border:1px solid var(--color-gray-200); margin-bottom:1rem;">
+                    <h4 style="margin:0 0 0.75rem 0; color:var(--color-primary); font-size:1rem;">2. Rincian Gejala & Bobot Jawaban (CF User)</h4>
+                    <ul style="margin:0; padding-left:1.2rem; font-size:0.9rem; color:var(--color-gray-600); line-height:1.6;">
+                        @foreach ($tracing['gejala_details'] as $detail)
+                            <li>{{ $detail['gejala'] }} ({{ $detail['kode'] }}): CF_user={{ number_format($detail['cf_user'], 2) }} × bobot={{ number_format($detail['bobot'], 2) }} = {{ number_format($detail['cf_sub'], 4) }} [{{ $detail['user_ans'] }}]</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                <div style="background:var(--color-primary); color:white; padding:1.25rem; border-radius:12px;">
+                    <h4 style="margin:0 0 0.5rem 0; font-size:1rem; color:rgba(255,255,255,0.9);">3. Hasil Akhir (Final CF)</h4>
+                    <p style="margin:0; font-size:0.9rem; line-height:1.5;">Metode: {{ $tracing['method'] ?? 'Backward Chaining + Certainty Factor' }}</p>
+                    <p style="margin:0.5rem 0 0 0; font-size:1.1rem; font-weight:700;">
+                        CF Final: {{ number_format($konsultasi->cf_final, 4) }}
+                    </p>
+                    <p style="margin:0.5rem 0 0 0; font-size:0.85rem; color:rgba(255,255,255,0.7);">*Nilai final ini kemudian dikonversi menjadi persentase ({{ $confidence }}%).</p>
+                </div>
+            @else
+                <div style="text-align:center; padding:2rem; color:var(--color-gray-500);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:1rem; opacity:0.5;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p style="margin:0;">Detail kalkulasi tidak tersedia untuk sesi ini.</p>
+                </div>
+            @endif
+        </div>
+        <div class="modal-footer" style="padding:1rem 1.5rem; border-top:1px solid var(--color-gray-200); background:white; display:flex; justify-content:flex-end;">
+            <button type="button" onclick="closeTracingModal()" style="background:var(--color-gray-100); color:var(--color-gray-600); border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;">Tutup</button>
+        </div>
+    </div>
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .container-result { max-width: 1100px; margin: 2rem auto; }
-    .result-header-premium { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
-    .result-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem; }
-
-    .analysis-card { padding: 3.5rem; position: relative; }
-    .status-badge { display: inline-block; padding: 0.5rem 1.2rem; border-radius: 50px; font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 1.5rem; }
-    .diagnosis-name { font-size: 2.5rem; font-weight: 800; color: var(--color-gray-800); margin-bottom: 2rem; line-height: 1.1; }
-
-    .meter-gauge { height: 14px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-bottom: 0.75rem; }
-    .meter-fill { height: 100%; transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .meter-labels { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--color-gray-500); }
-    .confidence-val { font-weight: 800; color: var(--color-gray-800); }
-
-    .divider { margin: 2.5rem 0; border: none; border-top: 1px solid #f1f5f9; }
-
-    .description-section h3, .recommendations-section h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--color-primary); }
-    .description-section p { font-size: 1.1rem; line-height: 1.7; color: var(--color-gray-700); margin-bottom: 2.5rem; }
-
-    .advice-card { background: #f0fdf4; border-left: 5px solid #10b981; padding: 1.5rem; border-radius: 12px; color: #065f46; line-height: 1.6; font-size: 1.05rem; }
-
-    .action-footer { margin-top: 3.5rem; display: flex; gap: 2rem; border-top: 1px solid #f1f5f9; pt: 2rem; }
-    .btn-text { background: none; border: none; padding: 0; color: var(--color-gray-500); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; transition: color 0.2s; text-decoration: none; }
-    .btn-text:hover { color: var(--color-primary); }
-
-    .sidebar-info { display: flex; flex-direction: column; gap: 2rem; }
-    .summary-list { list-style: none; padding: 0; margin-top: 1.5rem; }
-    .summary-list li { display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; }
-    .summary-list li span { color: var(--color-gray-500); }
-    .summary-list li strong { color: var(--color-gray-800); }
-
-    .help-card { background: #fffbeb; border: 1px solid #fef3c7; }
-    .help-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .help-card h4 { font-weight: 700; margin-bottom: 0.8rem; color: #92400e; }
-    .help-card p { font-size: 0.85rem; color: #b45309; line-height: 1.5; }
-
-    /* Modal Styles */
-    .modal-container-lg { max-width: 850px; width: 95%; background: white; border-radius: 28px; padding: 3rem; position: relative; max-height: 90vh; overflow-y: auto; }
-    .logic-intro { background: #eff6ff; padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5; color: #1e40af; border-left: 5px solid #3b82f6; }
-    .tracing-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
-    .tracing-table th { text-align: left; padding: 1rem; font-size: 0.8rem; color: var(--color-gray-400); text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
-    .tracing-table td { padding: 1rem; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; }
-    .ans-pill { background: #f1f5f9; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
-    .logic-footer { background: #f8fafc; padding: 1.5rem; border-radius: 16px; }
-    .logic-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; }
-    .logic-row.highlight { margin-top: 1rem; padding-top: 1rem; border-top: 2px dashed #e2e8f0; font-size: 1.2rem; font-weight: 800; color: var(--color-primary); }
-
-    @media (max-width: 900px) {
-        .result-layout { grid-template-columns: 1fr; }
-        .analysis-card { padding: 2rem; }
-        .diagnosis-name { font-size: 1.8rem; }
-        .result-header-premium { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-        .header-actions { width: 100%; display: flex; gap: 1rem; }
-        .header-actions button, .header-actions a { flex: 1; justify-content: center; }
+@push('scripts')
+<script>
+    function openTracingModal() {
+        const modal = document.getElementById('modalTracing');
+        if (modal) {
+            modal.classList.add('active');
+        }
     }
 
-    @media print {
-        .header-actions, .action-footer, .sidebar-info, .btn-close-modal { display: none !important; }
-        .analysis-card { box-shadow: none !important; border: none !important; padding: 0 !important; }
-        .container-result { margin: 0 !important; max-width: 100% !important; }
-        .result-layout { display: block !important; }
+    function closeTracingModal() {
+        const modal = document.getElementById('modalTracing');
+        if (modal) {
+            modal.classList.remove('active');
+        }
     }
-</style>
+
+    // Animation for circular progress
+    function animateProgress() {
+        const target = {{ $confidence }};
+        const circle = document.getElementById('progressCircle');
+        const counter = document.getElementById('confidenceCounter');
+        if (!circle || !counter) return;
+
+        const duration = 2000;
+        const startTime = performance.now();
+        
+        const circumference = 502; // 2 * pi * 80
+
+        function update(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Ease out expo
+            const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            
+            const currentValue = Math.floor(easedProgress * target);
+            counter.innerText = currentValue + '%';
+            
+            const offset = circumference * (1 - (easedProgress * target / 100));
+            circle.style.strokeDashoffset = offset;
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+        
+        circle.style.strokeDasharray = circumference;
+        requestAnimationFrame(update);
+    }
+
+    function toggleAccordion(header) {
+        const item = header.parentElement;
+        const wasActive = item.classList.contains('active');
+        
+        document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+        
+        if (!wasActive) {
+            item.classList.add('active');
+        }
+    }
+
+    window.addEventListener('load', animateProgress);
+</script>
 @endpush
+

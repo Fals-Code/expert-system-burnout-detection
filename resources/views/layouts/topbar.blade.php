@@ -65,13 +65,41 @@
             </div>
         </div>
 
-        <div class="topbar__user">
+        <div class="topbar__user" id="userMenuBtn" style="cursor: pointer;">
             <div class="topbar__user-info">
                 <span class="topbar__user-name">{{ $user->nama }}</span>
                 <span class="topbar__user-role">{{ $display_role }}</span>
             </div>
             <div class="topbar__avatar">
                 {{ $initials }}
+            </div>
+
+            <div class="user-dropdown" id="userMenuDropdown">
+                <div class="dropdown-header">
+                    <h3>Menu Pengguna</h3>
+                </div>
+                <div class="dropdown-list">
+                    <a href="{{ route('profile') }}" class="dropdown-item">
+                        <div class="dropdown-item__icon" style="background: var(--color-primary-50); color: var(--color-primary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <div class="dropdown-item__body">
+                            <div class="dropdown-item__title center">Profil Saya</div>
+                        </div>
+                    </a>
+                    
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
+                        @csrf
+                    </form>
+                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="border-top: 1px solid var(--color-gray-50);">
+                        <div class="dropdown-item__icon" style="background: var(--color-error-bg); color: var(--color-error);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </div>
+                        <div class="dropdown-item__body">
+                            <div class="dropdown-item__title center" style="color: var(--color-error);">Keluar</div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -81,6 +109,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const bellBtn = document.getElementById('globalBellBtn');
     const bellDropdown = document.getElementById('globalBellDropdown');
+    const userBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userMenuDropdown');
     const themeBtn = document.getElementById('themeToggleBtn');
     const sunIcon = themeBtn.querySelector('.sun-icon');
     const moonIcon = themeBtn.querySelector('.moon-icon');
@@ -118,17 +148,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Toggle Dropdowns
     if (bellBtn && bellDropdown) {
         bellBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            userDropdown.classList.remove('show');
             bellDropdown.classList.toggle('show');
         });
+    }
 
-        document.addEventListener('click', function(e) {
-            if (!bellDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
-                bellDropdown.classList.remove('show');
-            }
+    if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            bellDropdown.classList.remove('show');
+            userDropdown.classList.toggle('show');
         });
     }
+
+    document.addEventListener('click', function(e) {
+        if (bellDropdown && !bellDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+            bellDropdown.classList.remove('show');
+        }
+        if (userDropdown && !userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+            userDropdown.classList.remove('show');
+        }
+    });
 });
 </script>

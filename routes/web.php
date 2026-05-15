@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HrdController;
+use App\Http\Controllers\DeteksiController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -29,8 +30,9 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function
     Route::get('/dashboard', [KaryawanController::class, 'index'])->name('karyawan.dashboard');
     Route::get('/deteksi/intro', [\App\Http\Controllers\DeteksiController::class, 'intro'])->name('karyawan.deteksi.intro');
     Route::get('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'index'])->name('karyawan.deteksi');
-    Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'next'])->name('karyawan.deteksi.proses');
+    Route::post('/deteksi', [\App\Http\Controllers\DeteksiController::class, 'next'])->name('karyawan.deteksi.next');
     Route::get('/hasil', [\App\Http\Controllers\DeteksiController::class, 'showResult'])->name('karyawan.hasil');
+    Route::get('/hasil/download/{id}', [\App\Http\Controllers\DeteksiController::class, 'downloadReport'])->name('karyawan.laporan.download');
     Route::get('/history', [KaryawanController::class, 'history'])->name('karyawan.history');
     Route::get('/deteksi/reset', [\App\Http\Controllers\DeteksiController::class, 'reset'])->name('karyawan.deteksi.reset');
 });

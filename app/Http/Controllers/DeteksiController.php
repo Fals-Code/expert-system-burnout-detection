@@ -143,4 +143,22 @@ class DeteksiController extends Controller
         Session::forget('last_result_id');
         return redirect()->route('karyawan.dashboard')->with('info', 'Sesi deteksi telah direset.');
     }
+
+    /**
+     * Download laporan deteksi (PDF Mock/Print View)
+     */
+    public function downloadReport($id)
+    {
+        $konsultasi = \App\Models\Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+
+        if (!$konsultasi || ($konsultasi->user_id !== Auth::id() && !Auth::user()->isHrd())) {
+            return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
+        }
+
+        return view('karyawan.deteksi.report', [
+            'konsultasi' => $konsultasi,
+            'confidence' => number_format($konsultasi->cf_final * 100, 1),
+            'tracing' => $konsultasi->tracing,
+        ]);
+    }
 }
