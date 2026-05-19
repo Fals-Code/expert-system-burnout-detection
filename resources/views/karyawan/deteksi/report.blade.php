@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Burnout – {{ $konsultasi->user->name }}</title>
+    <title>Laporan Burnout – {{ $konsultasi->user->nama }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/report.css') }}">
+    <style>
+        :root {
+            --color-primary: #1A2B40;
+            --color-accent: #3b82f6;
+            --color-gray-100: #f1f5f9;
+            --color-gray-200: #e2e8f0;
+            --color-gray-400: #94a3b8;
+            --color-gray-500: #64748b;
+        }
+    </style>
 </head>
 <body class="report-body">
 
@@ -28,21 +38,39 @@
     <script>
         function generatePDF() {
             const element = document.querySelector('.report-paper');
+            
+            // Simpan style lama
+            const originalShadow = element.style.boxShadow;
+            element.style.boxShadow = 'none';
+
             const opt = {
-                margin:       0.5,
-                filename:     'Laporan_Burnout_{{ $konsultasi->id }}.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                margin:       0,
+                filename:     'Laporan_Burnout_{{ str_replace(' ', '_', $konsultasi->user->nama) }}_{{ $konsultasi->created_at->format('Ymd') }}.pdf',
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
             const btn = document.querySelector('.btn-print');
-            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; margin-right: 6px;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></svg> Sedang Memproses...';
+            const btnHTML = btn.innerHTML;
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; margin-right: 6px;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></svg> Memproses...';
             btn.disabled = true;
 
             html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = '<svg class="btn-pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Unduh Laporan (PDF)';
+                btn.innerHTML = btnHTML;
                 btn.disabled = false;
+                element.style.boxShadow = originalShadow;
+            }).catch(err => {
+                console.error(err);
+                btn.innerHTML = btnHTML;
+                btn.disabled = false;
+                element.style.boxShadow = originalShadow;
             });
         }
     </script>
@@ -61,7 +89,7 @@
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Nama Karyawan</div>
-                <div class="info-value">{{ $konsultasi->user->name }}</div>
+                <div class="info-value">{{ $konsultasi->user->nama }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Deteksi</div>
@@ -70,7 +98,7 @@
             <div class="info-item">
                 <div class="info-label">Divisi / Posisi</div>
                 <div class="info-value">
-                    {{ $konsultasi->user->divisi ?? '-' }}
+                    {{ $konsultasi->user->divisi?->nama ?? '-' }}
                     {{ isset($konsultasi->user->posisi) ? ' / ' . $konsultasi->user->posisi : '' }}
                 </div>
             </div>
@@ -90,6 +118,39 @@
         <!-- Deskripsi -->
         <h2 class="section-title">Analisis Kondisi</h2>
         <p class="content-para">{{ $konsultasi->diagnosa->deskripsi }}</p>
+
+        <!-- Penjelasan Pakar & MBI Analysis -->
+        @if(isset($explanation))
+        <h2 class="section-title">Penjelasan Sistem Pakar & Analisis MBI</h2>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 0.9em; line-height: 1.6; color: #334155;">
+            <strong>Ringkasan Pakar:</strong> 
+            @php
+                $parsedSummaryReport = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary']);
+                $parsedSummaryReport = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummaryReport);
+            @endphp
+            {!! $parsedSummaryReport !!}
+        </div>
+        
+        @if(isset($explanation['mbi_analysis']))
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: #fff8f8; border: 1px solid #fee2e2; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                <div style="font-size: 0.7rem; font-weight: 700; color: #b91c1c; letter-spacing: 0.5px;">KELELAHAN EMOSIONAL (EE)</div>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #b91c1c; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['ee_score'] }}%</div>
+                <span style="font-size: 0.7rem; background: #fee2e2; color: #991b1b; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['ee_label'] }}</span>
+            </div>
+            <div style="background: #fdfaf7; border: 1px solid #ffedd5; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                <div style="font-size: 0.7rem; font-weight: 700; color: #c2410c; letter-spacing: 0.5px;">DEPERSONALISASI (DP)</div>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #c2410c; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['dp_score'] }}%</div>
+                <span style="font-size: 0.7rem; background: #ffedd5; color: #7c2d12; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['dp_label'] }}</span>
+            </div>
+            <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                <div style="font-size: 0.7rem; font-weight: 700; color: #6b21a8; letter-spacing: 0.5px;">PENCAPAIAN DIRI RENDAH (PA)</div>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #6b21a8; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['pa_score'] }}%</div>
+                <span style="font-size: 0.7rem; background: #f3e8ff; color: #581c87; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['pa_label'] }}</span>
+            </div>
+        </div>
+        @endif
+        @endif
 
         <!-- Gejala Terdeteksi -->
         @if ($konsultasi->gejala->isNotEmpty())

@@ -5,12 +5,12 @@
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h1 class="page-title" style="margin: 0;">Audit Log Sistem</h1>
-        <div style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 600;">Total: {{ $logs->total() }} Aksi</div>
+        <div style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 600;">Total: {{ $logs->count() }} Aksi</div>
     </div>
 
-    <div class="content-card">
+    <div class="content-card" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02);">
         <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="logsTable">
                 <thead>
                     <tr>
                         <th>Waktu</th>
@@ -48,9 +48,19 @@
                 </tbody>
             </table>
         </div>
-
-        <div style="margin-top: 1.5rem;">
-            {{ $logs->links() }}
-        </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labels = {
+            placeholder: "Cari log...",
+            perPage: "log per halaman",
+            noRows: "Log tidak ditemukan",
+            info: "Menampilkan {start} sampai {end} dari {rows} log",
+        };
+        new simpleDatatables.DataTable("#logsTable", { searchable: true, labels });
+    });
+</script>
+@endpush

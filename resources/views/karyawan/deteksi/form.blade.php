@@ -3,6 +3,82 @@
 @section('title', 'Deteksi Burnout – BurnoutXpert')
 
 @section('content')
+<style>
+    .likert-option {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 16px;
+        border: 2px solid var(--color-gray-200);
+        background: white;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: left;
+        position: relative;
+    }
+    .likert-option:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-primary);
+        background: rgba(59, 130, 246, 0.02);
+        box-shadow: var(--shadow-md);
+    }
+    .likert-option.selected {
+        border-color: var(--color-primary) !important;
+        background: rgba(59, 130, 246, 0.05) !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    }
+    .likert-emoji {
+        font-size: 2rem;
+        line-height: 1;
+        flex-shrink: 0;
+        transition: transform 0.25s ease;
+    }
+    .likert-option:hover .likert-emoji {
+        transform: scale(1.15) rotate(-5deg);
+    }
+    .likert-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    .likert-label {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-gray-800);
+    }
+    .likert-desc {
+        font-size: 0.8rem;
+        color: var(--color-gray-500);
+        font-weight: 500;
+        line-height: 1.4;
+    }
+    
+    @media (max-width: 600px) {
+        .likert-option {
+            padding: 1rem;
+            gap: 1rem;
+        }
+        .likert-emoji {
+            font-size: 1.75rem;
+        }
+        .likert-label {
+            font-size: 0.95rem;
+        }
+        .likert-desc {
+            font-size: 0.75rem;
+        }
+        .nav-buttons {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .nav-buttons button, .nav-buttons a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
 <div class="main-wrapper" style="margin-left: 0; padding: 0;">
     <main class="wizard-container">
         <!-- Loading Overlay -->
@@ -23,56 +99,45 @@
         <form id="burnoutForm" action="{{ route('karyawan.deteksi.next') }}" method="POST" onsubmit="return handleSubmit(event)">
             @csrf
             <div class="question-card">
-                <!-- Backward Chaining: Simple Phase Label -->
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <span style="display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 1px solid var(--color-gray-200); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.15em;">
-                        {{ session('bc_engine.current_hypothesis', 'Fase 1') }}
-                    </span>
-                </div>
 
                 <!-- Integrated Progress Header -->
+                @php
+                    $initial_percent = count($questions) > 0 ? min(round((1 / count($questions)) * 100), 100) : 0;
+                @endphp
                 <div class="progress-container">
                     <div class="progress-header">
                         <span class="progress-title" id="progress-text">Gejala 1 dari {{ count($questions) }}</span>
-                        <span class="progress-percentage" id="progress-percent">0%</span>
+                        <span class="progress-percentage" id="progress-percent">{{ $initial_percent }}%</span>
                     </div>
                     <div class="modern-progress-bar">
-                        <div class="modern-progress-fill" id="progress-bar" style="width: 0%;"></div>
+                        <div class="modern-progress-fill" id="progress-bar" style="width: {{ $initial_percent }}%;"></div>
                     </div>
                 </div>
                 
                 @foreach ($questions as $index => $q)
-                <div class="step {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index + 1 }}" style="{{ $index === 0 ? '' : 'display:none' }}">
-                    <h2 class="question-text" style="font-size: 1.5rem; line-height: 1.4; margin-bottom: 2.5rem;">Seberapa sering Anda mengalami: {{ $q->nama }}?</h2>
-                    <style>
-                        .option-btn-yes:hover { border-color: #16a34a !important; background: #f0fdf4 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(22, 163, 74, 0.15); }
-                        .option-btn-yes.selected { border-color: #16a34a !important; background: #f0fdf4 !important; box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2); }
-                        
-                        .option-btn-no:hover { border-color: #dc2626 !important; background: #fef2f2 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(220, 38, 38, 0.15); }
-                        .option-btn-no.selected { border-color: #dc2626 !important; background: #fef2f2 !important; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2); }
-                        
-                        @media (max-width: 600px) {
-                            .options-group--2 { grid-template-columns: 1fr !important; }
-                        }
-                    </style>
-                    <div class="options-group options-group--2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <label class="option-btn option-btn-yes" onclick="selectOption({{ $index + 1 }}, 'Ya', '{{ $q->kode }}')" style="padding: 2.5rem 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-radius: 16px; border: 2px solid var(--color-gray-200); cursor: pointer; transition: 0.3s; background: white;">
-                            <input type="radio" name="{{ $q->kode }}" value="Ya" style="display:none">
-                            <div class="icon-circle" style="width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <div class="step {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index + 1 }}" data-gid="{{ $q->kode }}" style="{{ $index === 0 ? '' : 'display:none' }}">
+                    <h2 class="question-text" style="font-size: 1.35rem; line-height: 1.5; margin-bottom: 2rem; color: var(--color-gray-800); text-align: center; font-weight: 800;">
+                        {{ $q->nama }}
+                    </h2>
+                    
+                    <div class="likert-group" style="display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 2rem;">
+                        @foreach([
+                            'Sangat Sering' => ['😫', 'Sangat Sering / Selalu', 'Hampir setiap hari & sangat mengganggu kondisi saya'],
+                            'Sering'        => ['😩', 'Sering Merasakan', 'Beberapa kali dalam seminggu, cukup menguras energi'],
+                            'Kadang'        => ['😐', 'Kadang-Kadang', 'Sekali-sekali saja dalam seminggu atau saat beban bertumpuk'],
+                            'Jarang'        => ['🙁', 'Jarang Sekali', 'Hanya sekali dalam sebulan atau kondisi tertentu'],
+                            'Sangat Jarang' => ['🙂', 'Sangat Jarang', 'Hampir tidak pernah merasakannya sama sekali'],
+                            'Tidak'         => ['😊', 'Tidak Pernah', 'Sama sekali tidak pernah saya rasakan belakangan ini']
+                        ] as $value => $meta)
+                        <label class="likert-option" onclick="selectOption({{ $index + 1 }}, '{{ $value }}', '{{ $q->kode }}')">
+                            <input type="radio" name="{{ $q->kode }}" value="{{ $value }}" style="display:none">
+                            <span class="likert-emoji">{{ $meta[0] }}</span>
+                            <div class="likert-meta">
+                                <span class="likert-label">{{ $meta[1] }}</span>
+                                <span class="likert-desc">{{ $meta[2] }}</span>
                             </div>
-                            <span style="font-weight: 800; font-size: 1.4rem; color: #16a34a; margin-bottom: 0.5rem;">Ya</span>
-                            <span style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 500;">Saya Sering Merasakannya</span>
                         </label>
-
-                        <label class="option-btn option-btn-no" onclick="selectOption({{ $index + 1 }}, 'Tidak', '{{ $q->kode }}')" style="padding: 2.5rem 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-radius: 16px; border: 2px solid var(--color-gray-200); cursor: pointer; transition: 0.3s; background: white;">
-                            <input type="radio" name="{{ $q->kode }}" value="Tidak" style="display:none">
-                            <div class="icon-circle" style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </div>
-                            <span style="font-weight: 800; font-size: 1.4rem; color: #dc2626; margin-bottom: 0.5rem;">Tidak</span>
-                            <span style="font-size: 0.9rem; color: var(--color-gray-500); font-weight: 500;">Saya Tidak Pernah Merasakannya</span>
-                        </label>
+                        @endforeach
                     </div>
                 </div>
                 @endforeach
@@ -111,13 +176,24 @@
             </div>
 
             <!-- Navigation Buttons -->
-            <div class="nav-buttons">
-                <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                    Sebelumnya
-                </button>
+            <div class="nav-buttons" style="display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn-nav btn-prev" id="prevBtn" onclick="changeStep(-1)" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Sebelumnya
+                    </button>
+                    <button type="button" class="btn-nav btn-prev" id="saveLaterBtn" onclick="handleSaveLater()" style="border-color: var(--color-primary); color: var(--color-primary); font-weight: 700;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        Simpan Progres
+                    </button>
+                </div>
+                
                 <button type="button" class="btn-nav btn-next" id="nextBtn" onclick="changeStep(1)" disabled>
                     Lanjutkan
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
@@ -135,6 +211,11 @@
         </form>
     </main>
 </div>
+
+<!-- Hidden form for saving state securely to DB -->
+<form id="saveLaterForm" action="{{ route('karyawan.deteksi.save') }}" method="POST" style="display:none;">
+    @csrf
+</form>
 @endsection
 
 @push('scripts')
@@ -142,6 +223,8 @@
     let currentStep = 1;
     const totalQuestions = {{ count($questions) }};
     const totalSteps = totalQuestions + 1;
+    const totalGejala = {{ $total_gejala }};
+    const initialProgress = {{ $progress }};
     let answers = {};
     let isAnimating = false;
     let autoNextTimeout = null;
@@ -158,15 +241,15 @@
             const data = JSON.parse(saved);
             answers = data.answers || {};
             
-            for (const [step, val] of Object.entries(answers)) {
-                const stepEl = document.querySelector(`.step[data-step="${step}"]`);
-                if (stepEl) {
-                    const btns = stepEl.querySelectorAll('.option-btn');
-                    btns.forEach(btn => {
-                        if (btn.innerText.trim().includes(val)) btn.classList.add('selected');
-                    });
-                    const radio = stepEl.querySelector(`input[value="${val}"]`);
-                    if (radio) radio.checked = true;
+            // Re-hydrate radio buttons and classes
+            for (const [gid, val] of Object.entries(answers)) {
+                const radio = document.querySelector(`input[name="${gid}"][value="${val}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    const parent = radio.closest('.likert-option');
+                    if (parent) {
+                        parent.classList.add('selected');
+                    }
                 }
             }
 
@@ -180,15 +263,20 @@
     function selectOption(step, val, gid) {
         if (isAnimating) return;
         const stepEl = document.querySelector(`.step[data-step="${step}"]`);
-        const btns = stepEl.querySelectorAll('.option-btn');
-        btns.forEach(btn => {
-            btn.classList.remove('selected');
-            if (btn.innerText.trim().includes(val)) btn.classList.add('selected');
-        });
+        
+        // Deselect all
+        const btns = stepEl.querySelectorAll('.likert-option');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        
+        // Select clicked
+        const clickedRadio = stepEl.querySelector(`input[value="${val}"]`);
+        if (clickedRadio) {
+            clickedRadio.checked = true;
+            const parent = clickedRadio.closest('.likert-option');
+            if (parent) parent.classList.add('selected');
+        }
 
-        answers[step] = val;
-        const radio = stepEl.querySelector(`input[value="${val}"]`);
-        if (radio) radio.checked = true;
+        answers[gid] = val;
         
         saveState();
         checkNav();
@@ -197,7 +285,7 @@
             if (autoNextTimeout) clearTimeout(autoNextTimeout);
             autoNextTimeout = setTimeout(() => {
                 if (currentStep === step && !isAnimating) changeStep(1);
-            }, 500);
+            }, 450);
         }
     }
 
@@ -234,11 +322,13 @@
             }
             
             setTimeout(() => { isAnimating = false; }, 300);
-        }, 300);
+        }, 250);
     }
 
     function updateUI(immediate = false) {
-        const percent = Math.round((currentStep / totalSteps) * 100);
+        // Calculate progress percentage of the current wizard page questions
+        const percent = Math.min(Math.round((currentStep / totalQuestions) * 100), 100);
+        
         document.getElementById('progress-bar').style.width = percent + '%';
         
         const percentEl = document.getElementById('progress-percent');
@@ -279,14 +369,46 @@
             document.getElementById('submitBtn').disabled = false;
             return;
         }
-        const hasAnswer = !!answers[currentStep];
+        
+        // Find if the current step question has an answer in the answers object
+        const stepEl = document.querySelector(`.step[data-step="${currentStep}"]`);
+        const gid = stepEl ? stepEl.getAttribute('data-gid') : null;
+        const hasAnswer = gid && !!answers[gid];
+        
         document.getElementById('nextBtn').disabled = !hasAnswer;
         document.getElementById('submitBtn').disabled = !hasAnswer;
     }
 
+    function handleSaveLater() {
+        const form = document.getElementById('saveLaterForm');
+        form.innerHTML = '@csrf'; // Reset to prevent double inputs
+        
+        for (const [gid, val] of Object.entries(answers)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = gid;
+            input.value = val;
+            form.appendChild(input);
+        }
+
+        // Also add other completed answers from session if there are any
+        if (typeof showLoader === 'function') {
+            showLoader('Menyimpan progres deteksi...');
+        }
+        
+        setTimeout(() => {
+            form.submit();
+            localStorage.removeItem(storageKey);
+        }, 400);
+    }
+
     function handleSubmit(e) {
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.style.display = 'flex';
+        if (typeof showLoader === 'function') {
+            showLoader('Menganalisis data klinis...');
+        } else {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
         localStorage.removeItem(storageKey);
         return true;
     }
@@ -297,4 +419,3 @@
     });
 </script>
 @endpush
-

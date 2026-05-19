@@ -3,6 +3,13 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\Aturan;
+use App\Models\Gejala;
+use App\Models\Diagnosa;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +26,32 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // ── 1. Centralized Cache Invalidation Observers ──
+        $clearCache = function () {
+            Cache::forget('aturan_active_rules');
+            Cache::forget('aturan_active_rules_base64');
+            Cache::forget('diagnosa_ordered');
+            Cache::forget('diagnosa_ordered_base64');
+            Cache::forget('diagnosa_default_rendah');
+            Cache::forget('diagnosa_default_rendah_base64');
+            // Clear any parameter-specific caches
+            Cache::flush();
+        };
+
+        Aturan::saved($clearCache);
+        Aturan::deleted($clearCache);
+        Gejala::saved($clearCache);
+        Gejala::deleted($clearCache);
+        Diagnosa::saved($clearCache);
+        Diagnosa::deleted($clearCache);
+
+        // ── 2. Custom API & Critical Route Rate Limiters ──
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('critical', function (Request $request) {
+            return Limit::perMinute(15)->by($request->ip());
+        });
     }
 }

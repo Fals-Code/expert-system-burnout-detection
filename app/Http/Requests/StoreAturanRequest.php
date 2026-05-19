@@ -22,6 +22,10 @@ class StoreAturanRequest extends FormRequest
             'gejala_ids.*' => 'exists:gejala,id',
             'bobot_pakar' => 'required|array',
             'bobot_pakar.*' => 'numeric|min:0|max:1',
+            'prioritas' => 'required|integer|min:1',
+            'is_active' => 'nullable',
+            'deskripsi' => 'nullable|string',
+            'min_threshold' => 'required|numeric|min:0|max:1',
         ];
     }
 }

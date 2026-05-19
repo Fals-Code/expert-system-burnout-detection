@@ -24,7 +24,8 @@ class DeteksiController extends Controller
      */
     public function intro()
     {
-        return view('karyawan.deteksi.index');
+        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+        return view('karyawan.deteksi.index', compact('savedSession'));
     }
 
     /**
@@ -39,6 +40,7 @@ class DeteksiController extends Controller
 
         $answers = Session::get('deteksi_answers', []);
         $answeredCodes = array_keys($answers);
+        $totalGejalaCount = Gejala::count();
 
         // TRUE BACKWARD CHAINING: Cek apakah hipotesis sudah terbukti sebelum lanjut tanya
         if (!empty($answers)) {
@@ -60,19 +62,65 @@ class DeteksiController extends Controller
 
         // Jika benar-benar kosong (baru mulai), ambil beberapa gejala pertama
         if ($questions->isEmpty()) {
-            $questions = Gejala::take(5)->get();
+            $questions = Gejala::take(4)->get();
+        }
+
+        // Terapkan bahasa empati yang hangat pada pertanyaan secara dinamis
+        foreach ($questions as $q) {
+            $q->nama = $this->expertSystem->getEmpatheticPhrasing($q->kode, $q->nama);
         }
 
         return view('karyawan.deteksi.form', [
             'questions' => $questions,
             'question_codes' => $questions->pluck('kode')->toArray(),
             'progress' => count($answeredCodes),
-            'total_gejala' => Gejala::count(),
+            'total_gejala' => $totalGejalaCount,
+            'progress_percent' => $totalGejalaCount > 0 ? round((count($answeredCodes) / $totalGejalaCount) * 100) : 0,
             'options' => [
                 'Ya' => 'Ya, Sering Merasakan',
                 'Tidak' => 'Tidak Pernah'
             ]
         ]);
+    }
+
+    /**
+     * Menyimpan sesi deteksi burnout secara persisten ke database
+     */
+    public function saveSession(Request $request)
+    {
+        $answers = Session::get('deteksi_answers', []);
+
+        if (empty($answers)) {
+            return redirect()->route('karyawan.dashboard')->with('info', 'Tidak ada progres deteksi yang perlu disimpan.');
+        }
+
+        \App\Models\DeteksiSession::updateOrCreate(
+            ['user_id' => Auth::id()],
+            [
+                'answers' => $answers,
+                'current_step_codes' => []
+            ]
+        );
+
+        Session::forget('deteksi_answers');
+
+        return redirect()->route('karyawan.dashboard')->with('success', 'Sesi deteksi Anda berhasil disimpan secara aman! Anda dapat melanjutkannya kapan saja.');
+    }
+
+    /**
+     * Memulihkan sesi deteksi burnout yang tersimpan secara persisten
+     */
+    public function resumeSession(Request $request)
+    {
+        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+
+        if ($savedSession) {
+            Session::put('deteksi_answers', $savedSession->answers);
+            $savedSession->delete();
+            return redirect()->route('karyawan.deteksi')->with('success', 'Sesi deteksi Anda berhasil dipulihkan.');
+        }
+
+        return redirect()->route('karyawan.deteksi')->with('error', 'Tidak ada sesi tersimpan.');
     }
 
     /**
@@ -168,10 +216,18 @@ class DeteksiController extends Controller
             return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
 
+        $tracing = $konsultasi->tracing ?? [];
+        $explanation = $this->expertSystem->generateExplanation(
+            is_array($tracing) ? $tracing : [],
+            $konsultasi->diagnosa,
+            $konsultasi->cf_final
+        );
+
         return view('karyawan.deteksi.report', [
             'konsultasi' => $konsultasi,
             'confidence' => number_format($konsultasi->cf_final * 100, 1),
-            'tracing' => $konsultasi->tracing,
+            'tracing' => $tracing,
+            'explanation' => $explanation,
         ]);
     }
 }

@@ -12,7 +12,7 @@ class NotificationService
     /**
      * Dispatch notifications after a diagnostic session completes.
      * - Karyawan: confirmation of their result
-     * - HRD: alert if burnout level is BERAT
+     * - HRD: alert if burnout level is Moderate, High, or Severe (SEDANG, TINGGI, SANGAT TINGGI)
      */
     public static function dispatchAfterDeteksi(Konsultasi $konsultasi, User $user, Diagnosa $diagnosa): void
     {
@@ -24,23 +24,37 @@ class NotificationService
             'is_read' => false,
         ]);
 
-        // 2. Jika burnout BERAT, kirim peringatan ke semua tim HRD
-        if ($diagnosa->tingkat === 'BERAT') {
+        // 2. Kirim peringatan ke semua tim HRD jika terdeteksi burnout Sedang, Tinggi, atau Sangat Tinggi
+        if (in_array($diagnosa->tingkat, ['SEDANG', 'TINGGI', 'SANGAT TINGGI'])) {
             $hrdUsers = User::where('role', 'hrd')->get();
+            $levelName = $diagnosa->tingkat === 'SEDANG' ? 'Sedang' : ($diagnosa->tingkat === 'TINGGI' ? 'Tinggi' : 'Sangat Tinggi');
+            $title = "⚠️ Peringatan Burnout {$levelName}";
 
             foreach ($hrdUsers as $hrd) {
                 Notification::create([
                     'user_id' => $hrd->id,
-                    'title'   => '⚠️ Peringatan Burnout Tinggi',
-                    'message' => "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") baru saja terdeteksi dengan tingkat burnout BERAT. Segera lakukan tindak lanjut.",
+                    'title'   => $title,
+                    'message' => "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") terdeteksi dengan tingkat burnout **{$diagnosa->tingkat}** ({$diagnosa->nama}). Segera lakukan tindak lanjut.",
                     'is_read' => false,
                 ]);
 
-                // Kirim Email (Asumsi HRD memiliki email yang valid)
+                // Kirim Email (Asinkron via ShouldQueue agar tidak blocking)
                 try {
                     \Illuminate\Support\Facades\Mail::to($hrd->email)->send(new \App\Mail\BurnoutAlert($konsultasi));
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error("Gagal kirim email ke {$hrd->email}: " . $e->getMessage());
+                }
+
+                // Kirim WhatsApp (Mendukung Twilio / Fonnte)
+                if ($hrd->no_telp) {
+                    $waMessage = "[🚨 ALERT BURNOUTXPERT]\n\n" .
+                                 "Halo {$hrd->nama},\n" .
+                                 "Sistem mendeteksi tingkat burnout: *{$diagnosa->tingkat}* ({$diagnosa->nama}) pada karyawan:\n\n" .
+                                 "Nama: {$user->nama}\n" .
+                                 "Divisi: " . ($user->divisi->nama ?? 'N/A') . "\n" .
+                                 "Nilai CF: " . number_format($konsultasi->cf_final * 100, 1) . "%\n\n" .
+                                 "Mohon segera tinjau dashboard HRD untuk detail dan rekomendasi pemulihan.";
+                    self::sendWhatsApp($hrd->no_telp, $waMessage);
                 }
             }
         }
@@ -57,5 +71,52 @@ class NotificationService
             'message' => $message,
             'is_read' => false,
         ]);
+    }
+
+    /**
+     * Send WhatsApp message via Fonnte or Twilio (graceful fallback if not configured).
+     */
+    public static function sendWhatsApp(string $to, string $message): void
+    {
+        // Bersihkan nomor telepon ke format internasional standar
+        $toCleaned = preg_replace('/[^0-9]/', '', $to);
+        if (str_starts_with($toCleaned, '0')) {
+            $toCleaned = '62' . substr($toCleaned, 1);
+        }
+
+        $fonnteToken = env('FONNTE_TOKEN');
+        if ($fonnteToken) {
+            try {
+                \Illuminate\Support\Facades\Http::withHeaders([
+                    'Authorization' => $fonnteToken
+                ])->post('https://api.fonnte.com/send', [
+                    'target' => $toCleaned,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Gagal kirim WhatsApp via Fonnte ke {$toCleaned}: " . $e->getMessage());
+            }
+            return;
+        }
+
+        $twilioSid = env('TWILIO_SID');
+        $twilioToken = env('TWILIO_AUTH_TOKEN');
+        $twilioFrom = env('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886');
+        if ($twilioSid && $twilioToken) {
+            try {
+                \Illuminate\Support\Facades\Http::asForm()
+                    ->withBasicAuth($twilioSid, $twilioToken)
+                    ->post("https://api.twilio.com/2010-04-01/Accounts/{$twilioSid}/Messages.json", [
+                        'To' => "whatsapp:+" . $toCleaned,
+                        'From' => $twilioFrom,
+                        'Body' => $message,
+                    ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Gagal kirim WhatsApp via Twilio ke {$toCleaned}: " . $e->getMessage());
+            }
+            return;
+        }
+
+        \Illuminate\Support\Facades\Log::warning("Notifikasi WhatsApp ke {$toCleaned} tidak terkirim: FONNTE_TOKEN atau TWILIO_SID belum dikonfigurasi.");
     }
 }

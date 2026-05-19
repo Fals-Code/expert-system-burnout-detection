@@ -7,12 +7,16 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HrdController;
 use App\Http\Controllers\DeteksiController;
 
+use App\Http\Controllers\LocaleController;
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/locale/{lang}', [LocaleController::class, 'switch'])->name('locale.switch');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:critical');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Shared Routes
@@ -22,6 +26,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'changePassword'])->name('profile.password');
     Route::get('/help', [\App\Http\Controllers\HelpController::class, 'index'])->name('help');
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications');
+    Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'getUnread'])->name('notifications.unread');
+    Route::get('/notifications/{notification}/read-redirect', [\App\Http\Controllers\NotificationController::class, 'readAndRedirect'])->name('notifications.read_redirect');
     Route::post('/notifications/{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
@@ -32,6 +38,8 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->group(function
     Route::get('/deteksi/intro', [DeteksiController::class, 'intro'])->name('karyawan.deteksi.intro');
     Route::get('/deteksi', [DeteksiController::class, 'index'])->name('karyawan.deteksi');
     Route::post('/deteksi', [DeteksiController::class, 'next'])->name('karyawan.deteksi.next');
+    Route::post('/deteksi/save', [DeteksiController::class, 'saveSession'])->name('karyawan.deteksi.save');
+    Route::post('/deteksi/resume', [DeteksiController::class, 'resumeSession'])->name('karyawan.deteksi.resume');
     Route::get('/hasil', [DeteksiController::class, 'showResult'])->name('karyawan.hasil');
     Route::get('/hasil/download/{id}', [DeteksiController::class, 'downloadReport'])->name('karyawan.laporan.download');
     Route::get('/history', [KaryawanController::class, 'history'])->name('karyawan.history');
@@ -45,6 +53,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     
     // Knowledge Base
     Route::get('/knowledge', [\App\Http\Controllers\Admin\KnowledgeController::class, 'index'])->name('admin.knowledge');
+    Route::get('/knowledge/backup', [\App\Http\Controllers\Admin\KnowledgeController::class, 'backupKnowledgeBase'])->name('admin.knowledge.backup');
+    Route::post('/knowledge/restore', [\App\Http\Controllers\Admin\KnowledgeController::class, 'restoreKnowledgeBase'])->name('admin.knowledge.restore')->middleware('throttle:critical');
     
     Route::post('/knowledge/gejala', [\App\Http\Controllers\Admin\KnowledgeController::class, 'storeGejala'])->name('admin.knowledge.gejala.store');
     Route::put('/knowledge/gejala/{gejala}', [\App\Http\Controllers\Admin\KnowledgeController::class, 'updateGejala'])->name('admin.knowledge.gejala.update');
@@ -52,6 +62,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     
     Route::post('/knowledge/aturan', [\App\Http\Controllers\Admin\KnowledgeController::class, 'storeAturan'])->name('admin.knowledge.aturan.store');
     Route::put('/knowledge/aturan/{aturan}', [\App\Http\Controllers\Admin\KnowledgeController::class, 'updateAturan'])->name('admin.knowledge.aturan.update');
+    Route::put('/knowledge/aturan/{aturan}/quick', [\App\Http\Controllers\Admin\KnowledgeController::class, 'quickUpdateAturan'])->name('admin.knowledge.aturan.quick');
     Route::delete('/knowledge/aturan/{aturan}', [\App\Http\Controllers\Admin\KnowledgeController::class, 'destroyAturan'])->name('admin.knowledge.aturan.destroy');
     
     Route::post('/knowledge/diagnosa', [\App\Http\Controllers\Admin\KnowledgeController::class, 'storeDiagnosa'])->name('admin.knowledge.diagnosa.store');

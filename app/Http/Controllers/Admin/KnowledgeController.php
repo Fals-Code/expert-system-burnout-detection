@@ -62,6 +62,10 @@ class KnowledgeController extends Controller
                     'kode' => $kode,
                     'diagnosa_id' => $request->diagnosa_id,
                     'cf_pakar' => $request->cf_pakar,
+                    'prioritas' => $request->prioritas,
+                    'is_active' => $request->has('is_active'),
+                    'deskripsi' => $request->deskripsi,
+                    'min_threshold' => $request->min_threshold,
                 ]);
 
                 // Attach gejala dengan bobot_pakar masing-masing
@@ -89,6 +93,10 @@ class KnowledgeController extends Controller
                 $aturan->update([
                     'diagnosa_id' => $request->diagnosa_id,
                     'cf_pakar' => $request->cf_pakar,
+                    'prioritas' => $request->prioritas,
+                    'is_active' => $request->has('is_active'),
+                    'deskripsi' => $request->deskripsi,
+                    'min_threshold' => $request->min_threshold,
                 ]);
 
                 $syncData = [];
@@ -105,6 +113,36 @@ class KnowledgeController extends Controller
             return redirect()->back()->with('success', 'Aturan berhasil diperbarui.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui aturan: ' . $e->getMessage());
+        }
+    }
+
+    public function quickUpdateAturan(\Illuminate\Http\Request $request, Aturan $aturan)
+    {
+        try {
+            $data = [];
+            if ($request->has('prioritas')) {
+                $data['prioritas'] = $request->integer('prioritas');
+            }
+            if ($request->has('is_active')) {
+                $data['is_active'] = $request->boolean('is_active');
+            }
+            if ($request->has('min_threshold')) {
+                $data['min_threshold'] = $request->float('min_threshold');
+            }
+
+            $aturan->update($data);
+            $this->log('QUICK_UPDATE_ATURAN', $aturan->kode, "Memperbarui cepat atribut aturan");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Aturan berhasil diperbarui secara instan.',
+                'aturan' => $aturan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -141,6 +179,86 @@ class KnowledgeController extends Controller
         $this->log('DELETE_DIAGNOSA', $kode, "Menghapus diagnosa");
 
         return redirect()->back()->with('success', 'Diagnosa berhasil dihapus.');
+    }
+
+    public function backupKnowledgeBase()
+    {
+        $data = [
+            'diagnosa' => DB::table('diagnosa')->get(),
+            'gejala' => DB::table('gejala')->get(),
+            'aturan' => DB::table('aturan')->get(),
+            'aturan_gejala' => DB::table('aturan_gejala')->get(),
+        ];
+
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $filename = 'burnoutxpert_kb_backup_' . date('Y_m_d_His') . '.json';
+
+        $this->log('BACKUP_KB', 'ALL', 'Melakukan backup basis pengetahuan');
+
+        return response($json)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function restoreKnowledgeBase(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'backup_file' => 'required|file|mimes:json,txt',
+        ]);
+
+        try {
+            $fileContent = file_get_contents($request->file('backup_file')->getRealPath());
+            $data = json_decode($fileContent, true);
+
+            if (!isset($data['diagnosa']) || !isset($data['gejala']) || !isset($data['aturan']) || !isset($data['aturan_gejala'])) {
+                return redirect()->back()->with('error', 'Format backup JSON tidak valid.');
+            }
+
+            DB::transaction(function() use ($data) {
+                $driver = DB::getDriverName();
+                if ($driver === 'sqlite') {
+                    DB::statement('PRAGMA foreign_keys = OFF;');
+                } else {
+                    DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                }
+
+                DB::table('aturan_gejala')->truncate();
+                DB::table('aturan')->truncate();
+                DB::table('gejala')->truncate();
+                DB::table('diagnosa')->truncate();
+
+                foreach ($data['diagnosa'] as $row) {
+                    DB::table('diagnosa')->insert((array)$row);
+                }
+
+                foreach ($data['gejala'] as $row) {
+                    DB::table('gejala')->insert((array)$row);
+                }
+
+                foreach ($data['aturan'] as $row) {
+                    DB::table('aturan')->insert((array)$row);
+                }
+
+                foreach ($data['aturan_gejala'] as $row) {
+                    DB::table('aturan_gejala')->insert((array)$row);
+                }
+
+                if ($driver === 'sqlite') {
+                    DB::statement('PRAGMA foreign_keys = ON;');
+                } else {
+                    DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+                }
+
+                $this->log('RESTORE_KB', 'ALL', 'Melakukan restore basis pengetahuan dari file backup');
+            });
+
+            // Flush cache immediately
+            \Illuminate\Support\Facades\Cache::flush();
+
+            return redirect()->back()->with('success', 'Basis pengetahuan berhasil di-restore dan cache telah dibersihkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal merestore basis pengetahuan: ' . $e->getMessage());
+        }
     }
 
     protected function log($action, $entity, $desc)

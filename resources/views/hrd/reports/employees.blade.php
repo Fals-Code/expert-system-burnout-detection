@@ -79,7 +79,7 @@
             searchable: true,
             labels: {
                 placeholder: "Cari karyawan...",
-                perPage: "{select} data per halaman",
+                perPage: "data per halaman",
                 noRows: "Data tidak ditemukan",
                 info: "Menampilkan {start} sampai {end} dari {rows} data",
             }

@@ -27,7 +27,13 @@
                                 <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary);"></span>
                             @endif
                         </div>
-                        <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5;">{{ $n->message }}</p>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5;">
+                            @php
+                                $parsedMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $n->message);
+                                $parsedMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedMsg);
+                            @endphp
+                            {!! $parsedMsg !!}
+                        </p>
                         <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--color-gray-400);">
                             {{ $n->created_at->diffForHumans() }}
                         </div>

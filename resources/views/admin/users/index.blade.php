@@ -44,26 +44,32 @@
     @endif
 
     <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
-        <div class="content-card stat-card" style="text-align: center; border-bottom: 4px solid #3b82f6;">
+        <div class="content-card stat-card" style="border-bottom: 4px solid #3b82f6;">
             <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-            <div class="stat-value">{{ $stats['karyawan'] }}</div>
-            <div class="stat-label">Total Karyawan</div>
+            <div class="stat-info">
+                <div class="stat-label">Total Karyawan</div>
+                <div class="stat-value">{{ $stats['karyawan'] }}</div>
+            </div>
         </div>
-        <div class="content-card stat-card" style="text-align: center; border-bottom: 4px solid #f59e0b;">
+        <div class="content-card stat-card" style="border-bottom: 4px solid #f59e0b;">
             <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             </div>
-            <div class="stat-value">{{ $stats['hrd'] }}</div>
-            <div class="stat-label">Tim HRD</div>
+            <div class="stat-info">
+                <div class="stat-label">Tim HRD</div>
+                <div class="stat-value">{{ $stats['hrd'] }}</div>
+            </div>
         </div>
-        <div class="content-card stat-card" style="text-align: center; border-bottom: 4px solid #ef4444;">
+        <div class="content-card stat-card" style="border-bottom: 4px solid #ef4444;">
             <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             </div>
-            <div class="stat-value">{{ $stats['admin'] }}</div>
-            <div class="stat-label">Administrator</div>
+            <div class="stat-info">
+                <div class="stat-label">Administrator</div>
+                <div class="stat-value">{{ $stats['admin'] }}</div>
+            </div>
         </div>
     </div>
 
@@ -199,8 +205,10 @@
     function openModal(id) {
         const modal = document.getElementById(id);
         modal.style.display = 'flex';
+        modal.scrollTop = 0;
         setTimeout(() => {
             modal.classList.add('active');
+            modal.scrollTop = 0;
         }, 10);
     }
 
@@ -238,7 +246,7 @@
             perPage: 10,
             labels: {
                 placeholder: "Cari pengguna...",
-                perPage: "{select} data per halaman",
+                perPage: "data per halaman",
                 noRows: "Data tidak ditemukan",
                 info: "Menampilkan {start} sampai {end} dari {rows} data",
             }

@@ -29,6 +29,30 @@
     </div>
 
     <div class="topbar__right">
+        <!-- Language Switcher -->
+        <div style="position: relative; display: inline-block; margin-right: 0.5rem;" id="langSelector">
+            <button onclick="document.getElementById('langDropdown').classList.toggle('active')" style="background: none; border: 1px solid var(--color-gray-200); color: var(--color-gray-700); cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
+                <span>🌐 {{ App::getLocale() === 'en' ? 'EN' : 'ID' }}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div id="langDropdown" style="position: absolute; top: 110%; right: 0; background: var(--color-bg-card, #ffffff); border: 1px solid var(--color-gray-200); border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; flex-direction: column; z-index: 1000; min-width: 120px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
+                <a href="{{ url('/locale/id') }}" style="padding: 0.6rem 1rem; color: var(--color-gray-700); text-decoration: none; font-size: 0.85rem; font-weight: 500; display: block; border-bottom: 1px solid var(--color-gray-100); transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">Indonesia</a>
+                <a href="{{ url('/locale/en') }}" style="padding: 0.6rem 1rem; color: var(--color-gray-700); text-decoration: none; font-size: 0.85rem; font-weight: 500; display: block; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">English</a>
+            </div>
+            <style>
+                #langDropdown.active { display: flex !important; }
+            </style>
+        </div>
+        <script>
+            window.addEventListener('click', function(e) {
+                const selector = document.getElementById('langSelector');
+                const dropdown = document.getElementById('langDropdown');
+                if (selector && dropdown && !selector.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        </script>
+
         <!-- Theme Toggle -->
         <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Dark Mode" style="background: none; border: none; color: var(--color-gray-500); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; transition: 0.2s;">
             <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -56,23 +80,29 @@
                     $unreadCount = $user->unreadNotifications ? $user->unreadNotifications->count() : 0;
                 @endphp
                 @if($unreadCount > 0)
-                    <div class="notif-badge">{{ $unreadCount }}</div>
+                    <div class="notif-badge" id="globalBellBadge">{{ $unreadCount }}</div>
                 @else
-                    <div class="notif-badge" style="display: none;">0</div>
+                    <div class="notif-badge" id="globalBellBadge" style="display: none;">0</div>
                 @endif
             </div>
 
             <div class="notif-dropdown" id="globalBellDropdown">
                 <div class="dropdown-header">
                     <h3>Notifikasi Terbaru</h3>
-                    <span>{{ $user->unreadNotifications ? $user->unreadNotifications->count() : 0 }} Baru</span>
+                    <span id="globalBellHeaderCount">{{ $unreadCount }} Baru</span>
                 </div>
-                <div class="dropdown-list">
+                <div class="dropdown-list" id="globalBellList">
                     @if($user->unreadNotifications && $user->unreadNotifications->count() > 0)
                         @foreach($user->unreadNotifications->take(5) as $notif)
-                            <a href="#" class="dropdown-item" style="padding: 1rem;">
+                            <a href="{{ route('notifications.read_redirect', $notif->id) }}" class="dropdown-item" style="padding: 1rem;">
                                 <div class="dropdown-item__body">
-                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">{{ $notif->message ?? 'Notifikasi Baru' }}</div>
+                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">
+                                        @php
+                                            $parsedTopbarMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $notif->message ?? 'Notifikasi Baru');
+                                            $parsedTopbarMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedTopbarMsg);
+                                        @endphp
+                                        {!! $parsedTopbarMsg !!}
+                                    </div>
                                     <div class="dropdown-item__text" style="font-size: 0.8rem; color: var(--color-gray-500);">{{ $notif->created_at->diffForHumans() }}</div>
                                 </div>
                             </a>
@@ -206,5 +236,57 @@ document.addEventListener('DOMContentLoaded', function() {
             userDropdown.classList.remove('show');
         }
     });
+
+    // Poll for notifications every 3 seconds (3000ms)
+    function pollNotifications() {
+        fetch('{{ route('notifications.unread') }}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('globalBellBadge');
+            const headerCount = document.getElementById('globalBellHeaderCount');
+            const listContainer = document.getElementById('globalBellList');
+
+            if (badge) {
+                if (data.unreadCount > 0) {
+                    badge.innerText = data.unreadCount;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            if (headerCount) {
+                headerCount.innerText = data.unreadCount + ' Baru';
+            }
+
+            if (listContainer) {
+                if (data.notifications.length > 0) {
+                    let html = '';
+                    data.notifications.forEach(notif => {
+                        html += `
+                            <a href="${notif.redirect_url}" class="dropdown-item" style="padding: 1rem;">
+                                <div class="dropdown-item__body">
+                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">${notif.message}</div>
+                                    <div class="dropdown-item__text" style="font-size: 0.8rem; color: var(--color-gray-500);">${notif.time_ago}</div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    listContainer.innerHTML = html;
+                } else {
+                    listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--color-gray-400);">Belum ada notifikasi.</div>';
+                }
+            }
+        })
+        .catch(err => console.error('Gagal mengambil notifikasi:', err));
+    }
+
+    // Run immediately and poll every 3 seconds
+    pollNotifications();
+    setInterval(pollNotifications, 3000);
 });
 </script>

@@ -12,7 +12,7 @@ class Aturan extends Model
     use SoftDeletes;
 
     protected $table = 'aturan';
-    protected $fillable = ['kode', 'diagnosa_id', 'cf_pakar'];
+    protected $fillable = ['kode', 'diagnosa_id', 'cf_pakar', 'prioritas', 'is_active', 'deskripsi', 'min_threshold'];
 
     public function diagnosa(): BelongsTo
     {

@@ -34,4 +34,45 @@ class NotificationController extends Controller
         }
         return redirect()->back()->with('success', 'Notifikasi dihapus.');
     }
+
+    public function getUnread()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['unreadCount' => 0, 'notifications' => []]);
+        }
+
+        $unreadNotifications = Notification::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $notificationsData = $unreadNotifications->take(5)->map(function ($notif) {
+            // Parse Markdown bold and italics
+            $parsedMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $notif->message ?? 'Notifikasi Baru');
+            $parsedMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedMsg);
+
+            return [
+                'id' => $notif->id,
+                'title' => $notif->title,
+                'message' => $parsedMsg,
+                'time_ago' => $notif->created_at->diffForHumans(),
+                'redirect_url' => route('notifications.read_redirect', $notif->id),
+            ];
+        });
+
+        return response()->json([
+            'unreadCount' => $unreadNotifications->count(),
+            'notifications' => $notificationsData
+        ]);
+    }
+
+    public function readAndRedirect(Notification $notification)
+    {
+        if ($notification->user_id === Auth::id()) {
+            $notification->is_read = true;
+            $notification->save();
+        }
+        return redirect()->route('notifications');
+    }
 }

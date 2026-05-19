@@ -88,8 +88,120 @@
                     <span style="background: {{ $konsultasi->diagnosa->color }}20; color: {{ $konsultasi->diagnosa->color }}; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800;">{{ $explanation['confidence_label'] }}</span>
                     <span style="font-size: 0.8rem; color: var(--color-gray-400);">Tingkat Keyakinan Sistem</span>
                 </div>
-                {{ $explanation['summary'] }}
+                @php
+                    $parsedSummary = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary']);
+                    $parsedSummary = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummary);
+                @endphp
+                {!! $parsedSummary !!}
             </div>
+
+            {{-- MBI Dimensions Analysis Visual --}}
+            @if(isset($explanation['mbi_analysis']))
+            <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02);">
+                <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    Analisis Profil Maslach Burnout Inventory (MBI)
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; align-items: center;">
+                    {{-- Chart Canvas --}}
+                    <div style="position: relative; max-width: 320px; margin: 0 auto; width: 100%; height: 320px;">
+                        <canvas id="mbiRadarChart"></canvas>
+                    </div>
+                    
+                    {{-- Horizontal visual progress bars --}}
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        {{-- EE --}}
+                        <div style="background: #fff8f8; border: 1px solid #fee2e2; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.5px;">Kelelahan Emosional (EE)</span>
+                                    <span style="font-size: 1rem; font-weight: 900; color: #b91c1c;">{{ $explanation['mbi_analysis']['ee_score'] }}%</span>
+                                </div>
+                                <div style="height: 6px; background: #fee2e2; border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
+                                    <div style="width: {{ $explanation['mbi_analysis']['ee_score'] }}%; height: 100%; background: #b91c1c; border-radius: 3px;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: #7f1d1d; line-height: 1.3;">Merasa terkuras secara fisik dan mental akibat beban tugas.</span>
+                                    <span class="badge" style="background: #fee2e2; color: #991b1b; font-weight: 800; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 50px;">{{ $explanation['mbi_analysis']['ee_label'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- DP --}}
+                        <div style="background: #fdfaf7; border: 1px solid #ffedd5; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: #c2410c; text-transform: uppercase; letter-spacing: 0.5px;">Depersonalisasi (DP)</span>
+                                    <span style="font-size: 1rem; font-weight: 900; color: #c2410c;">{{ $explanation['mbi_analysis']['dp_score'] }}%</span>
+                                </div>
+                                <div style="height: 6px; background: #ffedd5; border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
+                                    <div style="width: {{ $explanation['mbi_analysis']['dp_score'] }}%; height: 100%; background: #c2410c; border-radius: 3px;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: #7c2d12; line-height: 1.3;">Perasaan sinis, dingin, dan hilangnya empati profesional.</span>
+                                    <span class="badge" style="background: #ffedd5; color: #7c2d12; font-weight: 800; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 50px;">{{ $explanation['mbi_analysis']['dp_label'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- PA --}}
+                        <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: #6b21a8; text-transform: uppercase; letter-spacing: 0.5px;">Pencapaian Diri Rendah (PA)</span>
+                                    <span style="font-size: 1rem; font-weight: 900; color: #6b21a8;">{{ $explanation['mbi_analysis']['pa_score'] }}%</span>
+                                </div>
+                                <div style="height: 6px; background: #f3e8ff; border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
+                                    <div style="width: {{ $explanation['mbi_analysis']['pa_score'] }}%; height: 100%; background: #6b21a8; border-radius: 3px;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: #581c87; line-height: 1.3;">Perasaan tidak kompeten dan penurunan kepuasan berprestasi.</span>
+                                    <span class="badge" style="background: #f3e8ff; color: #581c87; font-weight: 800; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 50px;">{{ $explanation['mbi_analysis']['pa_label'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {{-- Personalized therapeutic recommendation card based on highest dimension --}}
+            @php
+                $eeVal = $explanation['mbi_analysis']['ee_score'] ?? 0;
+                $dpVal = $explanation['mbi_analysis']['dp_score'] ?? 0;
+                $paVal = $explanation['mbi_analysis']['pa_score'] ?? 0;
+                
+                $highestDimension = 'Kelelahan Emosional';
+                $recommendationText = 'Fokus utama Anda saat ini adalah pemulihan energi fisik dan mental secara menyeluruh. Istirahatkan diri Anda, ambil jeda kecil, dan batasi beban kerja tambahan.';
+                $recColor = '#b91c1c';
+                $recBg = '#fff8f8';
+                
+                if ($dpVal > $eeVal && $dpVal > $paVal) {
+                    $highestDimension = 'Depersonalisasi (Sinisme)';
+                    $recommendationText = 'Anda terindikasi mengalami kejenuhan sosial dan hilangnya empati kerja. Cobalah untuk mengambil liburan kecil, ubah rutinitas harian, dan jalin kembali obrolan hangat dengan rekan dekat.';
+                    $recColor = '#c2410c';
+                    $recBg = '#fdfaf7';
+                } elseif ($paVal > $eeVal && $paVal > $dpVal) {
+                    $highestDimension = 'Pencapaian Diri Rendah';
+                    $recommendationText = 'Anda mengalami krisis kepercayaan diri dan keraguan akan makna pekerjaan. Diskusikan dengan atasan Anda untuk penyesuaian pendelegasian tugas, rayakan setiap pencapaian kecil, dan cari mentor profesional.';
+                    $recColor = '#6b21a8';
+                    $recBg = '#faf5ff';
+                }
+            @endphp
+            <div style="background: linear-gradient(135deg, {{ $recBg }} 0%, #ffffff 100%); border: 1.5px solid {{ $recColor }}30; border-radius: 20px; padding: 1.75rem 2rem; margin-bottom: 2.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ $recColor }}20; color: {{ $recColor }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: {{ $recColor }};">
+                        Rekomendasi Terapi Khusus: Fokus {{ $highestDimension }}
+                    </h4>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem; line-height: 1.7; color: var(--color-gray-700); font-weight: 600;">
+                        {{ $recommendationText }}
+                    </p>
+                </div>
+            </div>
+            @endif
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 {{-- Reasoning Chain --}}
@@ -284,6 +396,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     function openTracingModal() {
         const modal = document.getElementById('modalTracing');
@@ -326,9 +439,93 @@
         requestAnimationFrame(update);
     }
 
+    // Initialize Maslach Burnout Inventory dimensions Radar Chart
+    function initMBIRadarChart() {
+        const ctx = document.getElementById('mbiRadarChart');
+        if (!ctx) return;
 
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    ['Kelelahan', 'Emosional (EE)'],
+                    ['Depersonalisasi', '(DP)'],
+                    ['Pencapaian Diri', 'Rendah (PA)']
+                ],
+                datasets: [{
+                    label: 'Skor Dimensi (%)',
+                    data: [
+                        {{ $explanation['mbi_analysis']['ee_score'] ?? 0 }},
+                        {{ $explanation['mbi_analysis']['dp_score'] ?? 0 }},
+                        {{ $explanation['mbi_analysis']['pa_score'] ?? 0 }}
+                    ],
+                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10,
+                        left: 20,
+                        right: 20
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(226, 232, 240, 0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(226, 232, 240, 0.8)'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 10,
+                                weight: '800',
+                                family: "'Inter', sans-serif"
+                            },
+                            color: '#475569',
+                            padding: 12
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: {
+                            stepSize: 20,
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const labelText = Array.isArray(context.label) ? context.label.join(' ') : context.label;
+                                return 'Skor ' + labelText + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 
-    window.addEventListener('load', animateProgress);
+    window.addEventListener('load', () => {
+        animateProgress();
+        initMBIRadarChart();
+    });
 </script>
 @endpush
 
