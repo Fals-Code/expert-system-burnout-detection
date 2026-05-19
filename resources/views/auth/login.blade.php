@@ -195,11 +195,114 @@
 
 @push('scripts')
 <script>
+    // ── Client-side Form Validation ──
+    (function() {
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const btnLogin = document.getElementById('btnLogin');
+        const emailGroup = document.getElementById('emailGroup');
+        const passwordGroup = document.getElementById('passwordGroup');
+
+        // Real-time validation
+        emailInput.addEventListener('input', () => validateField(emailInput, emailGroup));
+        emailInput.addEventListener('blur', () => validateField(emailInput, emailGroup));
+        passwordInput.addEventListener('input', () => validateField(passwordInput, passwordGroup));
+        passwordInput.addEventListener('blur', () => validateField(passwordInput, passwordGroup));
+
+        function validateField(input, group) {
+            clearError(group);
+            
+            if (input.value.trim() === '') return; // Don't validate empty on input, only on submit
+
+            if (input.type === 'email' && input.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input.value.trim())) {
+                    showError(group, 'Format email tidak valid');
+                    return false;
+                }
+            }
+
+            if (input.type === 'password' && input.value.length > 0 && input.value.length < 6) {
+                showError(group, 'Password minimal 6 karakter');
+                return false;
+            }
+
+            showSuccess(group);
+            return true;
+        }
+
+        function showError(group, message) {
+            group.classList.remove('form-group--success');
+            group.classList.add('form-group--error');
+            
+            let existing = group.querySelector('.field-error');
+            if (!existing) {
+                existing = document.createElement('div');
+                existing.className = 'field-error';
+                existing.style.cssText = 'color: #ef4444; font-size: 0.75rem; margin-top: 0.35rem; font-weight: 600; display: flex; align-items: center; gap: 4px; animation: fadeIn 0.2s ease;';
+                group.appendChild(existing);
+            }
+            existing.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ' + message;
+        }
+
+        function showSuccess(group) {
+            group.classList.remove('form-group--error');
+            group.classList.add('form-group--success');
+            let existing = group.querySelector('.field-error');
+            if (existing) existing.remove();
+        }
+
+        function clearError(group) {
+            group.classList.remove('form-group--error', 'form-group--success');
+            let existing = group.querySelector('.field-error');
+            if (existing) existing.remove();
+        }
+
+        // Form submit validation
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Check empty email
+            if (emailInput.value.trim() === '') {
+                showError(emailGroup, 'Email wajib diisi');
+                isValid = false;
+            } else {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailInput.value.trim())) {
+                    showError(emailGroup, 'Format email tidak valid');
+                    isValid = false;
+                }
+            }
+
+            // Check empty password
+            if (passwordInput.value === '') {
+                showError(passwordGroup, 'Password wajib diisi');
+                isValid = false;
+            } else if (passwordInput.value.length < 6) {
+                showError(passwordGroup, 'Password minimal 6 karakter');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                // Shake animation on button
+                btnLogin.style.animation = 'shake 0.4s ease';
+                setTimeout(() => btnLogin.style.animation = '', 400);
+                return;
+            }
+
+            // Loading state
+            btnLogin.classList.add('btn-login--loading');
+            btnLogin.disabled = true;
+        });
+    })();
+
+    // ── Demo Credential Filler ──
     function fillDemo(email, pass) {
         document.getElementById('email').value = email;
         document.getElementById('password').value = pass;
         
-        // Optional: Trigger animation or just submit
         const btn = document.getElementById('btnLogin');
         btn.classList.add('btn-login--loading');
         setTimeout(() => {
@@ -207,4 +310,11 @@
         }, 300);
     }
 </script>
+
+<style>
+    .form-group--error .form-input { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important; }
+    .form-group--success .form-input { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 @endpush

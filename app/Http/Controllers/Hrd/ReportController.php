@@ -14,28 +14,33 @@ class ReportController extends Controller
 {
     public function index()
     {
+        $stats = DB::table('users')
+            ->join('konsultasi', 'users.id', '=', 'konsultasi.user_id')
+            ->join('diagnosa', 'konsultasi.diagnosa_id', '=', 'diagnosa.id')
+            ->join('divisi', 'users.divisi_id', '=', 'divisi.id')
+            ->select(
+                'divisi.id as divisi_id',
+                'divisi.nama as divisi_nama',
+                DB::raw('count(*) as total'),
+                DB::raw("sum(case when diagnosa.tingkat = 'BERAT' then 1 else 0 end) as tinggi"),
+                DB::raw("sum(case when diagnosa.tingkat = 'SEDANG' then 1 else 0 end) as sedang"),
+                DB::raw("sum(case when diagnosa.tingkat = 'RINGAN' then 1 else 0 end) as rendah")
+            )
+            ->groupBy('divisi.id', 'divisi.nama')
+            ->get()
+            ->keyBy('divisi_id');
+
         $divisions = Divisi::all();
         $laporan_divisi = [];
 
         foreach ($divisions as $div) {
-            $stats = DB::table('konsultasi')
-                ->join('users', 'konsultasi.user_id', '=', 'users.id')
-                ->join('diagnosa', 'konsultasi.diagnosa_id', '=', 'diagnosa.id')
-                ->where('users.divisi_id', $div->id)
-                ->select(
-                    DB::raw('count(*) as total'),
-                    DB::raw("sum(case when diagnosa.tingkat = 'BERAT' then 1 else 0 end) as tinggi"),
-                    DB::raw("sum(case when diagnosa.tingkat = 'SEDANG' then 1 else 0 end) as sedang"),
-                    DB::raw("sum(case when diagnosa.tingkat = 'RINGAN' then 1 else 0 end) as rendah")
-                )
-                ->first();
-
+            $divStats = $stats->get($div->id);
             $laporan_divisi[] = [
                 'divisi' => $div->nama,
-                'total' => $stats->total ?? 0,
-                'tinggi' => $stats->tinggi ?? 0,
-                'sedang' => $stats->sedang ?? 0,
-                'rendah' => $stats->rendah ?? 0,
+                'total' => $divStats ? ($divStats->total ?? 0) : 0,
+                'tinggi' => $divStats ? ($divStats->tinggi ?? 0) : 0,
+                'sedang' => $divStats ? ($divStats->sedang ?? 0) : 0,
+                'rendah' => $divStats ? ($divStats->rendah ?? 0) : 0,
             ];
         }
 

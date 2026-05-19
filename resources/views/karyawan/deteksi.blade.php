@@ -5,7 +5,10 @@
 @section('content')
     @if(session('info'))
         <div class="alert" style="margin-bottom: 1rem; padding: 1rem 1.25rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 10px; color: #1e40af; font-weight: 600;">
-            ℹ️ {{ session('info') }}
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                {{ session('info') }}
+            </div>
         </div>
     @endif
     <main class="wizard-container">
@@ -14,7 +17,9 @@
             <div class="loading-content">
                 <div class="spinner-container">
                     <div class="spinner-pulse"></div>
-                    <span class="spinner-icon">⚙️</span>
+                    <span class="spinner-icon">
+                        <svg class="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 2s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></svg>
+                    </span>
                 </div>
                 <p class="loading-text">Menganalisis Jawaban Anda...</p>
                 <p style="font-size: 0.875rem; color: var(--color-gray-400); margin-top: 0.5rem;">Sistem pakar sedang memproses data klinis...</p>
@@ -124,8 +129,9 @@
                     </button>
                 </div>
                 <div style="text-align: center; margin-top: 1.5rem;">
-                    <a href="{{ route('karyawan.deteksi.reset') }}" onclick="return confirm('Batalkan deteksi yang sedang berlangsung? Semua jawaban akan hilang.')" style="font-size: 0.8rem; color: var(--color-gray-400); text-decoration: none;">
-                        ✕ Batalkan Deteksi
+                    <a href="{{ route('karyawan.deteksi.reset') }}" onclick="return confirm('Batalkan deteksi yang sedang berlangsung? Semua jawaban akan hilang.')" style="font-size: 0.8rem; color: var(--color-gray-400); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Batalkan Deteksi
                     </a>
                 </div>
             </div>

@@ -7,13 +7,19 @@
 
     @if(session('success'))
         <div class="alert alert--success" style="margin-bottom: 1.5rem;">
-            ✅ {{ session('success') }}
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                {{ session('success') }}
+            </div>
         </div>
     @endif
 
     @if($errors->any())
         <div class="alert" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 10px; color: #991b1b;">
-            <div style="font-weight: 700; margin-bottom: 0.5rem;">⚠️ Terdapat kesalahan validasi:</div>
+            <div style="font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Terdapat kesalahan validasi:
+            </div>
             <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem; line-height: 2;">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -73,11 +79,15 @@
                         <td style="font-weight: 700;">{{ number_format($g->bobot, 2) }}</td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn-icon" title="Edit" onclick="openEditGejala({{ $g->toJson() }})">✏️</button>
+                                <button class="btn-icon" title="Edit" onclick="openEditGejala({{ $g->toJson() }})">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <form action="{{ route('admin.knowledge.gejala.destroy', $g->id) }}" method="POST" onsubmit="return confirm('Hapus gejala {{ $g->kode }}?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-icon" title="Hapus">🗑️</button>
+                                    <button type="submit" class="btn-icon" title="Hapus">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
                                 </form>
                             </div>
                         </td>
@@ -126,11 +136,15 @@
                         <td style="font-weight: 700; color: #f59e0b;">{{ number_format($a->cf_pakar, 2) }}</td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn-icon" title="Edit" onclick="openEditAturan({{ $a->toJson() }})">✏️</button>
+                                <button class="btn-icon" title="Edit" onclick="openEditAturan({{ $a->toJson() }})">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <form action="{{ route('admin.knowledge.aturan.destroy', $a->id) }}" method="POST" onsubmit="return confirm('Hapus aturan {{ $a->kode }}?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-icon" title="Hapus">🗑️</button>
+                                    <button type="submit" class="btn-icon" title="Hapus">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
                                 </form>
                             </div>
                         </td>
@@ -175,11 +189,15 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn-icon" title="Edit" onclick="openEditDiagnosa({{ $d->toJson() }})">✏️</button>
+                                <button class="btn-icon" title="Edit" onclick="openEditDiagnosa({{ $d->toJson() }})">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <form action="{{ route('admin.knowledge.diagnosa.destroy', $d->id) }}" method="POST" onsubmit="return confirm('Hapus diagnosa {{ $d->kode }}?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-icon" title="Hapus">🗑️</button>
+                                    <button type="submit" class="btn-icon" title="Hapus">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
                                 </form>
                             </div>
                         </td>

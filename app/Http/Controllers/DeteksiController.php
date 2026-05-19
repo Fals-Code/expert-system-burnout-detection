@@ -131,10 +131,19 @@ class DeteksiController extends Controller
             return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
 
+        // Generate Explanation Facility
+        $tracing = $konsultasi->tracing ?? [];
+        $explanation = $this->expertSystem->generateExplanation(
+            is_array($tracing) ? $tracing : [],
+            $konsultasi->diagnosa,
+            $konsultasi->cf_final
+        );
+
         return view('karyawan.deteksi.hasil', [
-            'konsultasi' => $konsultasi,
-            'confidence' => number_format($konsultasi->cf_final * 100, 1),
-            'tracing' => $konsultasi->tracing, // JSON Tracing
+            'konsultasi'  => $konsultasi,
+            'confidence'  => number_format($konsultasi->cf_final * 100, 1),
+            'tracing'     => $tracing,
+            'explanation' => $explanation,
         ]);
     }
 

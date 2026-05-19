@@ -17,7 +17,9 @@
 <div class="main-wrapper" style="margin-left: 0; padding: 0;">
     <main class="result-container">
         <div class="result-header">
-            <div class="header-icon">🔥</div>
+            <div class="header-icon" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            </div>
             <div class="header-text">
                 <h1>Hasil Deteksi Burnout Anda</h1>
                 <p>Berdasarkan analisis sistem pakar terhadap gejala yang Anda laporkan.</p>
@@ -50,7 +52,10 @@
 
         <!-- Gejala yang Teridentifikasi -->
         <div class="symptoms-section">
-            <h2 class="section-title">🔍 Gejala yang Teridentifikasi</h2>
+            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Gejala yang Teridentifikasi
+            </h2>
             <div class="pill-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
                 @if ($konsultasi->gejala->isEmpty())
                     <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala signifikan yang dilaporkan (Semua jawaban bernilai Tidak).</p>
@@ -69,18 +74,90 @@
             </div>
         </div>
 
-        <h2 class="section-title">✨ Rekomendasi Penanganan</h2>
+        {{-- ── Explanation Facility ── --}}
+        @if(isset($explanation))
+        <div class="explanation-section" style="margin-bottom: 2.5rem;">
+            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Penjelasan Sistem Pakar
+            </h2>
+            
+            {{-- Summary --}}
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: 1px solid var(--color-gray-200); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; line-height: 1.8; font-size: 0.95rem; color: var(--color-gray-700);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span style="background: {{ $konsultasi->diagnosa->color }}20; color: {{ $konsultasi->diagnosa->color }}; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800;">{{ $explanation['confidence_label'] }}</span>
+                    <span style="font-size: 0.8rem; color: var(--color-gray-400);">Tingkat Keyakinan Sistem</span>
+                </div>
+                {{ $explanation['summary'] }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                {{-- Reasoning Chain --}}
+                <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: 16px; padding: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        Alur Penalaran (Reasoning Chain)
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        @foreach($explanation['reasoning_chain'] as $i => $step)
+                        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; margin-top: 2px;">{{ $i + 1 }}</div>
+                            <p style="margin: 0; font-size: 0.85rem; line-height: 1.6; color: var(--color-gray-600);">{{ $step }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Dominant Symptoms --}}
+                <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: 16px; padding: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Gejala Dominan (Top 3)
+                    </h3>
+                    @if(count($explanation['dominant_symptoms']) > 0)
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            @foreach($explanation['dominant_symptoms'] as $j => $sym)
+                            <div style="background: var(--color-gray-50); border-radius: 12px; padding: 1rem; border-left: 4px solid {{ $konsultasi->diagnosa->color }};">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-gray-500);">#{{ $j + 1 }} {{ $sym['kode'] }}</span>
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: {{ $konsultasi->diagnosa->color }};">{{ $sym['impact'] }}%</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.85rem; font-weight: 600; color: var(--color-gray-700);">{{ $sym['nama'] }}</p>
+                                <div style="margin-top: 0.5rem; height: 4px; background: var(--color-gray-100); border-radius: 2px; overflow: hidden;">
+                                    <div style="width: {{ min($sym['impact'], 100) }}%; height: 100%; background: {{ $konsultasi->diagnosa->color }}; border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p style="color: var(--color-gray-400); font-size: 0.85rem; font-style: italic;">Tidak ada gejala dominan yang terdeteksi.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Rekomendasi Penanganan
+        </h2>
         <div class="recommendation-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
             @php
                 $saran = explode("\n", $konsultasi->diagnosa->saran);
-                $icons = ['🧘', '✈️', '⚖️', '😴', '🍎'];
+                $svgs = [
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>', // Time/meditation
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>', // Travel/escape
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>', // Balance
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16h20V4H2z"></path><path d="M2 8h20"></path><path d="M6 4v16"></path></svg>', // Rest
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>' // Health
+                ];
             @endphp
             @foreach ($saran as $index => $rec)
                 @if (trim($rec))
                 <div class="rec-card" style="background: white; border: 1px solid var(--color-gray-200); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div class="rec-icon" style="width: 48px; height: 48px; border-radius: 12px; background: {{ $konsultasi->diagnosa->bg_light }}; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                            {{ $icons[$index % count($icons)] }}
+                        <div class="rec-icon" style="width: 48px; height: 48px; border-radius: 12px; background: {{ $konsultasi->diagnosa->bg_light }}; display: flex; align-items: center; justify-content: center; color: {{ $konsultasi->diagnosa->color }};">
+                            {!! $svgs[$index % count($svgs)] !!}
                         </div>
                         <div style="flex: 1;">
                             <div style="font-size: 0.75rem; color: var(--color-gray-500); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">Prioritas {{ $index + 1 }}</div>

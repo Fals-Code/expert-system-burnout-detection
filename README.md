@@ -1,83 +1,202 @@
-# 🧠 BurnoutXpert: Enterprise Expert System
+# 🔥 BurnoutXpert – Sistem Pakar Deteksi Burnout Karyawan
 
-[![Laravel](https://img.shields.io/badge/Framework-Laravel%2011-red.svg)](https://laravel.com)
-[![Expert System](https://img.shields.io/badge/Method-Backward%20Chaining-blue.svg)]()
-[![Certainty Factor](https://img.shields.io/badge/Logic-Certainty%20Factor-green.svg)]()
-[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
+> Aplikasi berbasis web untuk mendeteksi tingkat burnout karyawan menggunakan metode **Backward Chaining** dan **Certainty Factor (CF)**, dibangun dengan framework **Laravel 11**.
 
-**BurnoutXpert** adalah sistem pakar berbasis web profesional yang dirancang untuk mendeteksi tingkat burnout pada karyawan menggunakan metode **Backward Chaining** dan logika **Certainty Factor**. Aplikasi ini menggunakan standar **Maslach Burnout Inventory (MBI)** untuk memberikan diagnosis yang akurat dan berbasis data medis psikologi.
-
----
-
-## 🚀 Fitur Utama
-
-### 1. Core Expert System Engine
-- **Backward Chaining**: Mesin inferensi goal-driven yang efisien untuk membuktikan tingkat burnout.
-- **Certainty Factor (CF)**: Menangani ketidakpastian jawaban pengguna dengan algoritma CF standar.
-- **Explanation Facility**: Transparansi penuh. Pengguna dapat melihat *tracing* atau langkah-langkah bagaimana sistem mencapai kesimpulan tersebut.
-
-### 2. User & HRD Experience
-- **Interactive Wizard**: Proses deteksi step-by-step yang mulus menggunakan Alpine.js.
-- **Enterprise Dashboard**: Visualisasi data analitik (ApexCharts) untuk tren burnout per divisi.
-- **Automated Reporting**: Ekspor hasil deteksi ke format PDF dan Excel (SheetJS).
-- **Notification System**: Peringatan otomatis ke tim HRD jika terdeteksi karyawan dengan burnout tingkat tinggi.
-
-### 3. Management Portal
-- **Knowledge Base Management**: CRUD Gejala, Aturan, dan Diagnosa dengan validasi ketat.
-- **Audit Logs**: Mencatat setiap aktivitas krusial pada sistem untuk keamanan data.
-- **User Management**: Pengaturan hak akses (Admin, HRD, Karyawan).
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 ---
 
-## 🛠️ Tech Stack
-- **Backend**: Laravel 11 (PHP 8.2+)
-- **Database**: MySQL / PostgreSQL
-- **Frontend**: Blade, CSS Vanilla (Premium Design), Alpine.js
-- **Charts**: ApexCharts
-- **Export**: SheetJS (XLSX), HTML2PDF
+## 📋 Deskripsi
+
+BurnoutXpert adalah sistem pakar yang dirancang untuk membantu perusahaan mendeteksi tingkat burnout karyawan secara dini. Sistem ini menggunakan:
+
+- **Backward Chaining** – Metode inferensi goal-driven yang menguji hipotesis dari tingkat burnout tertinggi ke terendah
+- **Certainty Factor (CF)** – Mengukur tingkat keyakinan diagnosis berdasarkan jawaban pengguna dan bobot pakar
+- **Knowledge Base berbasis MBI** – Gejala-gejala disusun berdasarkan Maslach Burnout Inventory (Maslach, Jackson & Leiter, 1996)
+
+### Referensi Ilmiah
+
+| Sumber | Keterangan |
+|--------|------------|
+| Maslach, C., Jackson, S.E. & Leiter, M.P. (1996). *Maslach Burnout Inventory Manual* (3rd ed.). CPP. | Instrumen standar pengukuran burnout |
+| Maslach, C. & Leiter, M.P. (2016). *Understanding the burnout experience*. World Psychiatry, 15(2), 103-111. | Teori 3 dimensi burnout |
+| Shortliffe, E.H. & Buchanan, B.G. (1975). *A model of inexact reasoning in medicine*. Mathematical Biosciences, 23, 351-379. | Certainty Factor model |
 
 ---
 
-## 📦 Cara Instalasi
+## ✨ Fitur Utama
 
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/Fals-Code/expert-system-burnout-detection.git
-   cd expert-system-burnout-detection
-   ```
+### 🧠 Sistem Pakar
+- Backward Chaining + Certainty Factor (CF Combine)
+- 12 gejala berbasis MBI (4 kategori: Emosional, Perilaku, Kognitif, Fisik)
+- 8 rules dengan 4 tingkat diagnosis
+- Explanation Facility (penjelasan bahasa natural)
+- Tracing kalkulasi transparan
 
-2. **Install Dependencies**
-   ```bash
-   composer install
-   npm install && npm run dev
-   ```
+### 👥 Multi-Role System
+| Role | Akses |
+|------|-------|
+| **Admin** | CRUD Knowledge Base, manajemen user, audit log |
+| **HRD** | Dashboard monitoring, laporan per divisi, riwayat karyawan |
+| **Karyawan** | Deteksi burnout (wizard), riwayat + grafik tren, unduh PDF |
 
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+### 🎨 UI/UX
+- Dark mode toggle
+- Responsive design
+- ApexCharts analytics
+- SweetAlert2 confirmations
+- Progressive Web App (PWA)
+- Animated page transitions
 
-4. **Database Configuration**
-   Sesuaikan `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` di file `.env`.
-
-5. **Run Migrations & Seeders**
-   ```bash
-   php artisan migrate --seed
-   ```
-
----
-
-## 📋 Basis Pengetahuan (MBI Standard)
-Sistem ini memetakan gejala ke dalam 3 dimensi utama:
-1. **Emotional Exhaustion** (Kelelahan Emosional)
-2. **Depersonalization** (Sinisme/Depersonalisasi)
-3. **Reduced Personal Accomplishment** (Penurunan Pencapaian Diri)
+### 🔒 Keamanan
+- CSRF protection
+- Password hashing (bcrypt)
+- Role-based access control (middleware)
+- Login rate limiting (5x per 2 menit)
+- Audit logging
 
 ---
 
-## 👨‍💻 Kontributor
-- **Fals-Code** - *Project Lead & Architect*
+## 🚀 Instalasi
+
+### Prasyarat
+
+- PHP ≥ 8.2
+- Composer
+- MySQL / MariaDB
+- Node.js ≥ 18 (opsional, untuk asset compilation)
+
+### Langkah Instalasi
+
+```bash
+# 1. Clone repository
+git clone https://github.com/Fals-Code/expert-system-burnout-detection.git
+cd expert-system-burnout-detection
+
+# 2. Install dependensi PHP
+composer install
+
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Generate application key
+php artisan key:generate
+
+# 5. Konfigurasi database di .env
+#    Ubah sesuai kredensial MySQL Anda:
+#    DB_DATABASE=burnoutxpert
+#    DB_USERNAME=root
+#    DB_PASSWORD=
+
+# 6. Jalankan migrasi database
+php artisan migrate
+
+# 7. Seed data Knowledge Base + User demo
+php artisan db:seed
+
+# 8. Jalankan server development
+php artisan serve
+```
+
+### Akun Demo
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@burnoutxpert.com | password |
+| HRD | hrd@burnoutxpert.com | password |
+| Karyawan | karyawan@burnoutxpert.com | password |
+
+> ⚠️ Ganti password default setelah login pertama kali!
+
+---
+
+## 📁 Struktur Proyek
+
+```
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Auth/LoginController.php     # Autentikasi + rate limiting
+│   │   ├── Admin/                       # CRUD Knowledge Base + Users
+│   │   ├── Hrd/ReportController.php     # Laporan & monitoring
+│   │   ├── DeteksiController.php        # Wizard deteksi burnout
+│   │   ├── KaryawanController.php       # Dashboard + riwayat
+│   │   └── ProfileController.php        # Profil + ubah sandi
+│   ├── Models/
+│   │   ├── Gejala.php                   # 12 gejala MBI-based
+│   │   ├── Diagnosa.php                 # 4 level burnout
+│   │   ├── Aturan.php                   # 8 rules inferensi
+│   │   └── Konsultasi.php               # Hasil deteksi
+│   └── Services/
+│       ├── ExpertSystemService.php      # Engine BC + CF + Explanation
+│       └── NotificationService.php      # Notifikasi sistem
+├── database/
+│   ├── migrations/                      # Schema database
+│   └── seeders/
+│       └── BurnoutKnowledgeBaseSeeder.php  # Knowledge base MBI
+├── resources/views/
+│   ├── admin/                           # Views admin
+│   ├── hrd/                             # Views HRD + reports
+│   ├── karyawan/                        # Views karyawan + deteksi
+│   ├── errors/                          # Custom error pages (403/404/500)
+│   └── layouts/                         # Template layouts
+├── tests/Unit/
+│   └── ExpertSystemServiceTest.php      # 19 unit tests (58 assertions)
+└── public/
+    ├── manifest.json                    # PWA manifest
+    ├── sw.js                            # Service Worker
+    └── assets/css/                      # Stylesheets
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Jalankan semua tests
+php artisan test
+
+# Jalankan hanya unit test expert system
+php artisan test --filter=ExpertSystemServiceTest
+
+# Expected output: 19 tests, 58 assertions — PASSED
+```
+
+---
+
+## 📊 Knowledge Base
+
+### Dimensi Gejala (MBI-Based)
+
+| Dimensi | Kode | Gejala | Bobot |
+|---------|------|--------|-------|
+| Emotional Exhaustion | G01-G04 | Terkuras emosional, kelelahan, beban berat, mudah marah | 0.60-0.80 |
+| Depersonalization | G05-G07 | Sinisme, tidak peduli, isolasi diri | 0.70-0.90 |
+| Reduced Personal Accomplishment | G08-G10 | Tidak berdampak, sulit konsentrasi, tidak puas | 0.60-0.70 |
+| Fisik | G11-G12 | Sakit kepala/pencernaan, gangguan tidur | 0.55-0.60 |
+
+### Rules Inferensi
+
+| Rule | Diagnosa | CF Pakar | Gejala |
+|------|----------|----------|--------|
+| R01 | Sangat Tinggi | 0.95 | G01, G02, G05, G06 |
+| R02 | Sangat Tinggi | 0.90 | G01, G04, G07, G12 |
+| R03 | Tinggi | 0.85 | G01, G03, G08, G09 |
+| R04 | Tinggi | 0.80 | G05, G06, G07, G11 |
+| R05 | Sedang | 0.75 | G01, G11, G12 |
+| R06 | Sedang | 0.70 | G08, G09, G10, G04 |
+| R07 | Rendah | 0.60 | G04, G10 |
+| R08 | Rendah | 0.55 | G11, G12, G02 |
+
+---
 
 ## 📄 Lisensi
-Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+Proyek ini dikembangkan untuk keperluan akademis – UAS Mata Kuliah **Kecerdasan Buatan**, Program Studi D4 Teknik Informatika.
+
+---
+
+<p align="center">
+  <strong>BurnoutXpert</strong> · Dibuat dengan ❤️ menggunakan Laravel 11
+</p>

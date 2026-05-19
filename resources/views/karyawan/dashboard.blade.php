@@ -5,7 +5,7 @@
 @section('content')
     <div class="welcome-banner" data-intro="Selamat datang di Dashboard Karyawan! Di sini Anda dapat melihat ringkasan aktivitas dan kondisi kesehatan mental Anda." data-step="1">
         <div class="welcome-content">
-            <h1 class="welcome-title">{{ $greet }}, {{ Auth::user()->nama }}! 👋</h1>
+            <h1 class="welcome-title">{{ $greet }}, {{ Auth::user()->nama }}!</h1>
             <p class="welcome-subtitle">Bagaimana perasaan Anda hari ini? Lakukan deteksi rutin untuk menjaga keseimbangan kesehatan mental Anda.</p>
             <div style="margin-top: 1.5rem;">
                 <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" data-intro="Klik tombol ini kapan saja Anda merasa lelah secara fisik maupun emosional untuk memulai tes." data-step="2">Mulai Deteksi Sekarang</a>
@@ -75,7 +75,10 @@
 
         <!-- Quick Tip Card -->
         <div class="content-card" style="background: var(--color-accent); color: white;">
-            <h2 class="card-title" style="color: white;">💡 Tips Hari Ini</h2>
+            <h2 class="card-title" style="color: white; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15 13a5 5 0 0 0 3-4.5 4.5 4.5 0 0 0-9 0 4.5 4.5 0 0 0 3 4.5V15h3v-2z"></path></svg>
+                Tips Hari Ini
+            </h2>
             <p style="font-size: 0.95rem; line-height: 1.6; opacity: 0.9;">
                 "Luangkan waktu 5 menit setiap jam untuk sekadar meregangkan tubuh atau menjauh dari layar komputer. Hal kecil ini sangat membantu menjaga fokus Anda."
             </p>

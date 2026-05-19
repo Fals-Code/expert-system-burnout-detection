@@ -9,7 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Konsultasi extends Model
 {
     protected $table = 'konsultasi';
-    protected $fillable = ['user_id', 'diagnosa_id', 'cf_final'];
+    protected $fillable = ['user_id', 'diagnosa_id', 'cf_final', 'tracing'];
+
+    protected $casts = [
+        'tracing' => 'array',
+    ];
 
     public function user(): BelongsTo
     {

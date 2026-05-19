@@ -13,8 +13,14 @@
 <body class="report-body">
 
     <div class="controls">
-        <a href="{{ route('karyawan.history') }}" class="btn btn-back">← Kembali ke Riwayat</a>
-        <button onclick="generatePDF()" class="btn btn-print">📄 Unduh Laporan (PDF)</button>
+        <a href="{{ route('karyawan.history') }}" class="btn btn-back" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 19"></polyline></svg>
+            Kembali ke Riwayat
+        </a>
+        <button onclick="generatePDF()" class="btn btn-print" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg class="btn-pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Unduh Laporan (PDF)
+        </button>
     </div>
 
     <!-- html2pdf.js -->
@@ -31,11 +37,11 @@
             };
             
             const btn = document.querySelector('.btn-print');
-            btn.innerHTML = '⏳ Sedang Memproses...';
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; margin-right: 6px;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></svg> Sedang Memproses...';
             btn.disabled = true;
 
             html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = '📄 Unduh Laporan (PDF)';
+                btn.innerHTML = '<svg class="btn-pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Unduh Laporan (PDF)';
                 btn.disabled = false;
             });
         }
@@ -107,7 +113,7 @@
                 <div class="rec-item">
                     <div class="rec-bullet">{{ $index + 1 }}</div>
                     <div class="rec-text">
-                        <h3>{{ $icons[$index % count($icons)] }} {{ Str::before($rec, ':') }}</h3>
+                        <h3>{{ Str::before($rec, ':') }}</h3>
                         <p>{{ Str::after($rec, ':') }}</p>
                     </div>
                 </div>

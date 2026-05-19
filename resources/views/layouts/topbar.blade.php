@@ -149,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if(themeBtn) {
         themeBtn.addEventListener('click', () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
+            const nextTheme = isDark ? 'light' : 'dark';
             
             if (isDark) {
                 document.documentElement.removeAttribute('data-theme');
@@ -166,6 +167,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     sunIcon.style.display = 'block';
                     moonIcon.style.display = 'none';
                 }
+            }
+
+            if (window.activeCharts) {
+                window.activeCharts.forEach(c => {
+                    c.updateOptions({
+                        theme: {
+                            mode: nextTheme
+                        }
+                    });
+                });
             }
         });
     }

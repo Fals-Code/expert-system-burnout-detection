@@ -47,12 +47,14 @@
 
             <!-- Navigation Buttons -->
             <div class="wizard-footer">
-                <button type="button" class="btn-nav" @click="prevStep" x-show="currentStep > 0">
-                    ← Kembali
+                <button type="button" class="btn-nav" @click="prevStep" x-show="currentStep > 0" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Kembali
                 </button>
                 <div style="flex-grow: 1;"></div>
-                <button type="button" class="btn-cta" @click="nextStep" x-show="currentStep < {{ count($questions) - 1 }}">
-                    Lanjut →
+                <button type="button" class="btn-cta" @click="nextStep" x-show="currentStep < {{ count($questions) - 1 }}" style="display: inline-flex; align-items: center; gap: 8px;">
+                    Lanjut
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
                 <button type="submit" class="btn-cta btn-submit" x-show="currentStep === {{ count($questions) - 1 }}" :disabled="!isCurrentStepAnswered()">
                     Selesaikan Langkah Ini
@@ -63,7 +65,9 @@
 
     <!-- Help Tooltip -->
     <div class="help-section">
-        <div class="help-icon">💡</div>
+        <div class="help-icon" style="color: #d97706; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15 13a5 5 0 0 0 3-4.5 4.5 4.5 0 0 0-9 0 4.5 4.5 0 0 0 3 4.5V15h3v-2z"></path></svg>
+        </div>
         <p>Jawablah dengan jujur berdasarkan perasaan Anda dalam <strong>1 bulan terakhir</strong> untuk hasil yang akurat.</p>
     </div>
 </div>
@@ -80,7 +84,7 @@ function deteksiWizard() {
         answers: {},
         
         isCurrentStepAnswered() {
-            const currentCodes = {!! json_encode($questions->pluck('kode')) !!};
+            const currentCodes = {!! json_encode(collect($questions)->pluck('kode')) !!};
             const currentCode = currentCodes[this.currentStep];
             return this.answers[currentCode] !== undefined;
         },

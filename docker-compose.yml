@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: burnoutxpert-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8080
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=burnoutxpert
+      - DB_USERNAME=burnout
+      - DB_PASSWORD=secret
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app-storage:/var/www/storage
+    networks:
+      - burnoutxpert
+
+  db:
+    image: mysql:8.0
+    container_name: burnoutxpert-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: burnoutxpert
+      MYSQL_USER: burnout
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - burnoutxpert
+
+volumes:
+  db-data:
+  app-storage:
+
+networks:
+  burnoutxpert:
+    driver: bridge
