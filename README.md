@@ -209,5 +209,5 @@ Proyek ini dikembangkan untuk keperluan akademis – UAS Mata Kuliah **Kecerdasa
 ---
 
 <p align="center">
-  <strong>BurnoutXpert</strong> · Dibuat dengan ❤️ menggunakan Laravel 11
+  <strong>BurnoutXpert</strong> · Dibuat menggunakan Laravel 11
 </p>
