@@ -21,11 +21,14 @@
             <div class="content-card" style="padding: 1.25rem; border-left: 4px solid {{ $n->is_read ? '#e2e8f0' : 'var(--color-primary)' }}; position: relative; transition: 0.3s; {{ $n->is_read ? 'opacity: 0.7;' : '' }}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
-                            <span style="font-weight: 700; color: var(--color-gray-800);">{{ $n->title }}</span>
-                            @if(!$n->is_read)
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary);"></span>
-                            @endif
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-weight: 700; color: var(--color-gray-800);">{{ $n->title }}</span>
+                                @if(!$n->is_read)
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary);"></span>
+                                @endif
+                            </div>
+                            <span style="font-size: 0.75rem; padding: 0.25rem 0.65rem; border-radius: 999px; background: {{ $n->color ?? 'var(--color-primary)' }}22; color: {{ $n->color ?? 'var(--color-primary)' }}; text-transform: capitalize;">{{ $n->category ?? 'informasi' }}</span>
                         </div>
                         <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5;">
                             @php

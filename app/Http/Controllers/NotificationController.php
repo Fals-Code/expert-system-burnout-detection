@@ -24,6 +24,11 @@ class NotificationController extends Controller
             $notification->is_read = true;
             $notification->save();
         }
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back();
     }
 
@@ -32,6 +37,11 @@ class NotificationController extends Controller
         if ($notification->user_id === Auth::id()) {
             $notification->delete();
         }
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back()->with('success', 'Notifikasi dihapus.');
     }
 
@@ -73,6 +83,7 @@ class NotificationController extends Controller
             $notification->is_read = true;
             $notification->save();
         }
+
         return redirect()->route('notifications');
     }
 }

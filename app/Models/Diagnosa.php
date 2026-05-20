@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $kode
+ * @property string $nama
+ * @property string $tingkat
+ * @property string|null $deskripsi
+ * @property string|null $saran
+ * @property string|null $color
+ * @property string|null $bg_light
+ */
 class Diagnosa extends Model
 {
     use SoftDeletes;

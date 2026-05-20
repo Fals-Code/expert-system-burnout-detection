@@ -17,12 +17,14 @@ class NotificationService
     public static function dispatchAfterDeteksi(Konsultasi $konsultasi, User $user, Diagnosa $diagnosa): void
     {
         // 1. Notifikasi untuk karyawan yang baru saja menyelesaikan deteksi
-        Notification::create([
-            'user_id' => $user->id,
-            'title'   => 'Hasil Deteksi Tersimpan',
-            'message' => "Deteksi burnout Anda telah selesai. Hasil: **{$diagnosa->nama}** dengan tingkat keyakinan " . number_format($konsultasi->cf_final * 100, 1) . "%. Lihat riwayat Anda untuk detail lengkap.",
-            'is_read' => false,
-        ]);
+        self::send(
+            $user->id,
+            'Hasil Deteksi Tersimpan',
+            "Deteksi burnout Anda telah selesai. Hasil: **{$diagnosa->nama}** dengan tingkat keyakinan " . number_format($konsultasi->cf_final * 100, 1) . "%. Lihat riwayat Anda untuk detail lengkap.",
+            'informasi',
+            'check-circle',
+            '#2563eb'
+        );
 
         // 2. Kirim peringatan ke semua tim HRD jika terdeteksi burnout Sedang, Tinggi, atau Sangat Tinggi
         if (in_array($diagnosa->tingkat, ['SEDANG', 'TINGGI', 'SANGAT TINGGI'])) {
@@ -31,12 +33,14 @@ class NotificationService
             $title = "⚠️ Peringatan Burnout {$levelName}";
 
             foreach ($hrdUsers as $hrd) {
-                Notification::create([
-                    'user_id' => $hrd->id,
-                    'title'   => $title,
-                    'message' => "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") terdeteksi dengan tingkat burnout **{$diagnosa->tingkat}** ({$diagnosa->nama}). Segera lakukan tindak lanjut.",
-                    'is_read' => false,
-                ]);
+                self::send(
+                    $hrd->id,
+                    $title,
+                    "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") terdeteksi dengan tingkat burnout **{$diagnosa->tingkat}** ({$diagnosa->nama}). Segera lakukan tindak lanjut.",
+                    'peringatan',
+                    'alert-triangle',
+                    '#dc2626'
+                );
 
                 // Kirim Email (Asinkron via ShouldQueue agar tidak blocking)
                 try {
@@ -63,12 +67,15 @@ class NotificationService
     /**
      * Dispatch a generic system notification to a user.
      */
-    public static function send(int $userId, string $title, string $message): void
+    public static function send(int $userId, string $title, string $message, string $category = 'informasi', ?string $icon = null, ?string $color = null): void
     {
         Notification::create([
             'user_id' => $userId,
+            'category' => $category,
             'title'   => $title,
             'message' => $message,
+            'icon' => $icon,
+            'color' => $color,
             'is_read' => false,
         ]);
     }

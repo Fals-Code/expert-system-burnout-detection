@@ -196,7 +196,7 @@ class ExpertSystemService
             return $diagnosa ? base64_encode(serialize($diagnosa)) : null;
         });
         $defaultDiagnosa = $serializedDefault ? unserialize(base64_decode($serializedDefault)) : null;
-        $defaultDiagnosa = $defaultDiagnosa ?? new Diagnosa([
+        $defaultDiagnosa = $defaultDiagnosa ?? Diagnosa::make([
             'id' => 4,
             'kode' => 'D04',
             'nama' => 'Risiko Burnout Rendah (Normal/Mild)',
@@ -373,126 +373,6 @@ class ExpertSystemService
             }
 
             foreach ($unanswered as $gejala) {
-                $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-                $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobot_pakar);
-                $estimatedGain = max(0.0, ($potentialCfCombine * $rule->cf_pakar) - ($currentCfCombine * $rule->cf_pakar));
-
-                $candidateSymptoms[$gejala->kode] = $this->mergeSymptomCandidate(
-                    $candidateSymptoms[$gejala->kode] ?? [],
-                    $gejala,
-                    $estimatedGain,
-                    $bobot_pakar,
-                    $rule->kode
-                );
-            }
-
-            $fallbackUnanswered = array_merge($fallbackUnanswered, $unanswered->pluck('kode')->toArray());
-        }
-
-        return [$candidateSymptoms, $fallbackUnanswered];
-    }
-
-    /**
-     * Gabungkan data kandidat gejala ketika muncul di lebih dari satu aturan.
-     *
-     * @param array $existing
-     * @param \App\Models\Gejala $gejala
-     * @param float $estimatedGain
-     * @param float $weight
-     * @param string $ruleCode
-     * @return array
-     */
-    private function mergeSymptomCandidate(array $existing, $gejala, float $estimatedGain, float $weight, string $ruleCode): array
-    {
-        return [
-            'kode' => $gejala->kode,
-            'nama' => $gejala->nama,
-            'gain' => ($existing['gain'] ?? 0.0) + $estimatedGain,
-            'frequency' => ($existing['frequency'] ?? 0) + 1,
-            'max_weight' => max($existing['max_weight'] ?? 0.0, $weight),
-            'rules' => array_unique(array_merge($existing['rules'] ?? [], [$ruleCode])),
-        ];
-    }
-
-    /**
-     * Ranking kandidat gejala berdasarkan strategi yang dipilih.
-     *
-     * @param array $candidateSymptoms
-     * @param string $strategy
-     * @param string[] $fallbackUnanswered
-     * @return string[]
-     */
-    private function rankCandidateSymptoms(array $candidateSymptoms, string $strategy, array $fallbackUnanswered): array
-    {
-        if ($strategy === 'diagnosis_order') {
-            return array_values(array_unique($fallbackUnanswered));
-        }
-
-        $symptomCollection = collect($candidateSymptoms);
-
-        $ordered = $symptomCollection->sortByDesc(fn ($item) => [
-            $strategy === 'most_common' ? $item['frequency'] : $item['gain'],
-            $item['gain'],
-            $item['max_weight'],
-        ]);
-
-        return $ordered->pluck('kode')->unique()->values()->toArray();
-    }
-
-    /**
-     * Hitung kombinasi CF saat ini berdasarkan gejala yang sudah dijawab.
-     *
-     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
-     * @param array<string, string> $answers
-     * @return float
-     */
-    private function calculateCurrentCfCombine($gejalaList, array $answers): float
-    {
-        $cfCombine = 0.0;
-        foreach ($gejalaList as $gejala) {
-            if (!isset($answers[$gejala->kode])) {
-                continue;
-            }
-
-            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-            $cfCombine = $this->combineCf($cfCombine, $this->getCfUser($answers[$gejala->kode]) * $bobot_pakar);
-        }
-
-        return $cfCombine;
-    }
-
-    /**
-     * Hitung kombinasi CF optimistik untuk gejala yang belum dijawab.
-     *
-     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
-     * @param array<string, string> $answers
-     * @return float
-     */
-    private function calculateOptimisticCfCombine($gejalaList, array $answers): float
-    {
-        $cfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
-        foreach ($gejalaList as $gejala) {
-            if (isset($answers[$gejala->kode])) {
-                continue;
-            }
-
-            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-            $cfCombine = $this->combineCf($cfCombine, 1.0 * $bobot_pakar);
-        }
-
-        return $cfCombine;
-    }
-
-    /**
-     * Ambil gejala belum dijawab dari daftar aturan.
-     *
-     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
-     * @param array $answeredCodes
-     * @return \Illuminate\Support\Collection<int, \App\Models\Gejala>
-     */
-    private function getUnansweredSymptoms($gejalaList, array $answeredCodes)
-    {
-        return $gejalaList->filter(fn ($g) => !in_array($g->kode, $answeredCodes))ch ($unanswered as $gejala) {
                 $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
                 $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobot_pakar);
                 $estimatedGain = max(0.0, ($potentialCfCombine * $rule->cf_pakar) - ($currentCfCombine * $rule->cf_pakar));

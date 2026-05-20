@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $kode
+ * @property string $nama
+ * @property float $bobot
+ * @property string $kategori
+ */
 class Gejala extends Model
 {
     use SoftDeletes;
