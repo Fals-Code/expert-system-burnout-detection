@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            <div class="main-result-card">
+            <div class="main-result-card" data-intro="Ini adalah ringkasan hasil deteksi Anda. Menunjukkan tingkat burnout dan tingkat akurasi analisis berdasarkan jawaban Anda." data-step="1">
                 <div class="result-info">
                     <h2>Tingkat Burnout</h2>
                     <div class="level-label" style="color: {{ $color }};">{{ $label }}</div>
@@ -43,7 +43,7 @@
             </div>
 
             <!-- Gejala yang Teridentifikasi -->
-            <div class="symptoms-section">
+            <div class="symptoms-section" data-intro="Di sini Anda dapat melihat gejala-gejala spesifik apa saja yang berhasil diidentifikasi oleh sistem dari jawaban Anda." data-step="2">
                 <h2 class="section-title">🔍 Gejala yang Teridentifikasi</h2>
                 <div class="pill-group">
                     @forelse ($gejala_terdeteksi as $g)
@@ -57,7 +57,7 @@
             </div>
 
             <h2 class="section-title">✨ Rekomendasi Penanganan</h2>
-            <div class="recommendation-list">
+            <div class="recommendation-list" data-intro="Sistem memberikan beberapa rekomendasi penanganan yang disesuaikan dengan tingkat keparahan burnout Anda. Klik untuk membuka detail." data-step="3">
                 @foreach ($rekomendasi as $index => $rec)
                 <div class="accordion-item {{ $index === 0 ? 'active' : '' }}">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -203,5 +203,20 @@
     }
     window.addEventListener('DOMContentLoaded', animateProgress);
     @endif
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_hasil')) {
+            setTimeout(() => {
+                introJs().setOptions({
+                    nextLabel: 'Lanjut',
+                    prevLabel: 'Kembali',
+                    doneLabel: 'Mengerti',
+                    showStepNumbers: true,
+                    showBullets: true,
+                    overlayOpacity: 0.6
+                }).start();
+            }, 1200);
+        }
+    });
 </script>
 @endpush

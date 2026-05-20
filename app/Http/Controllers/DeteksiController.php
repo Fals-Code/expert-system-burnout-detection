@@ -45,7 +45,8 @@ class DeteksiController extends Controller
         // TRUE BACKWARD CHAINING: Cek apakah hipotesis sudah terbukti sebelum lanjut tanya
         if (!empty($answers)) {
             $currentResult = $this->expertSystem->solve($answers);
-            if ($currentResult['cf'] >= 0.25 && $currentResult['cf'] > 0) {
+            // Hanya berhenti prematur jika sistem SANGAT YAKIN (CF >= 0.85)
+            if ($currentResult['cf'] >= 0.85 && $currentResult['cf'] > 0) {
                 return $this->processResult(); 
             }
         }

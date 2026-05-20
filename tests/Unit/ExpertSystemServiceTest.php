@@ -35,13 +35,13 @@ class ExpertSystemServiceTest extends TestCase
     public function test_cf_user_kadang_returns_point_six(): void
     {
         $this->assertEquals(0.6, $this->service->getCfUser('Kadang'));
-        $this->assertEquals(0.6, $this->service->getCfUser('Mungkin'));
+        $this->assertEquals(0.5, $this->service->getCfUser('Mungkin'));
     }
 
     public function test_cf_user_jarang_returns_point_four(): void
     {
         $this->assertEquals(0.4, $this->service->getCfUser('Jarang'));
-        $this->assertEquals(0.4, $this->service->getCfUser('Ragu-ragu'));
+        $this->assertEquals(0.3, $this->service->getCfUser('Ragu-ragu'));
     }
 
     public function test_cf_user_sangat_jarang_returns_point_two(): void
@@ -159,8 +159,9 @@ class ExpertSystemServiceTest extends TestCase
     {
         $method = new \ReflectionMethod($this->service, 'solve');
         $params = $method->getParameters();
-        $this->assertCount(1, $params);
+        $this->assertCount(2, $params);
         $this->assertEquals('answers', $params[0]->getName());
+        $this->assertEquals('conflictStrategy', $params[1]->getName());
     }
 
     public function test_get_cf_user_covers_all_expected_answer_options(): void
@@ -172,9 +173,9 @@ class ExpertSystemServiceTest extends TestCase
             'Sering'         => 0.8,
             'Hampir Pasti'   => 0.8,
             'Kadang'         => 0.6,
-            'Mungkin'        => 0.6,
+            'Mungkin'        => 0.5,
             'Jarang'         => 0.4,
-            'Ragu-ragu'      => 0.4,
+            'Ragu-ragu'      => 0.3,
             'Sangat Jarang'  => 0.2,
             'Sedikit'        => 0.2,
             'Tidak'          => 0.0,

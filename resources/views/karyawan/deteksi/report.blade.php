@@ -152,8 +152,41 @@
         @endif
         @endif
 
-        <!-- Gejala Terdeteksi -->
-        @if ($konsultasi->gejala->isNotEmpty())
+        <!-- Rincian Jawaban & Skor Gejala -->
+        @if (isset($tracing['gejala_details']) && count($tracing['gejala_details']) > 0)
+        <h2 class="section-title">Rincian Jawaban & Skor Gejala</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85em; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+                    <th style="padding: 0.6rem 0.75rem; text-align: left; font-weight: 700; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Kode</th>
+                    <th style="padding: 0.6rem 0.75rem; text-align: left; font-weight: 700; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Gejala</th>
+                    <th style="padding: 0.6rem 0.75rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Jawaban</th>
+                    <th style="padding: 0.6rem 0.75rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">CF User</th>
+                    <th style="padding: 0.6rem 0.75rem; text-align: center; font-weight: 700; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Kontribusi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($tracing['gejala_details'] as $detail)
+                @php
+                    $cf = $detail['cf_user'] ?? 0;
+                    $ansBg = '#f1f5f9'; $ansCol = '#64748b';
+                    if ($cf >= 0.8) { $ansBg = '#fee2e2'; $ansCol = '#dc2626'; }
+                    elseif ($cf > 0) { $ansBg = '#ffedd5'; $ansCol = '#ea580c'; }
+                    elseif ($cf < 0) { $ansBg = '#dcfce7'; $ansCol = '#16a34a'; }
+                @endphp
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 0.5rem 0.75rem; font-family: monospace; font-weight: 600; color: #64748b;">{{ $detail['kode'] }}</td>
+                    <td style="padding: 0.5rem 0.75rem; color: #334155;">{{ $detail['gejala'] }}</td>
+                    <td style="padding: 0.5rem 0.75rem; text-align: center;">
+                        <span style="background: {{ $ansBg }}; color: {{ $ansCol }}; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.8em; white-space: nowrap;">{{ $detail['user_ans'] ?? '-' }}</span>
+                    </td>
+                    <td style="padding: 0.5rem 0.75rem; text-align: center; font-family: monospace; font-weight: 600; color: {{ $ansCol }};">{{ number_format($cf, 2) }}</td>
+                    <td style="padding: 0.5rem 0.75rem; text-align: center; font-family: monospace; font-weight: 600;">{{ number_format(($detail['cf_sub'] ?? 0) * 100, 1) }}%</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @elseif ($konsultasi->gejala->isNotEmpty())
         <h2 class="section-title">Gejala yang Terdeteksi</h2>
         <ul class="content-para" style="padding-left: 1.5rem; line-height: 2;">
             @foreach ($konsultasi->gejala as $g)

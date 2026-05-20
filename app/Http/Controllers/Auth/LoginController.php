@@ -62,6 +62,10 @@ class LoginController extends Controller
             
             $request->session()->regenerate();
 
+            // Generate unique onboarding token per login session
+            // This resets onboarding tours every time user logs in
+            $request->session()->put('onboarding_token', Str::random(16));
+
             $user = Auth::user();
 
             AuditLog::create([

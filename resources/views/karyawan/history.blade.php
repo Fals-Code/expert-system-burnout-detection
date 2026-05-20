@@ -3,10 +3,10 @@
 @section('title', 'Riwayat Deteksi – BurnoutXpert')
 
 @section('content')
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;" data-intro="Halaman ini menampilkan seluruh riwayat deteksi burnout yang pernah Anda lakukan beserta tren dan distribusinya." data-step="1">
     <h1 class="page-title" style="margin: 0;">Riwayat Deteksi Anda</h1>
     @if(count($history) > 0)
-    <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;">
+    <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;" data-intro="Klik tombol ini untuk memulai deteksi burnout baru kapan saja." data-step="2">
         + Deteksi Baru
     </a>
     @endif
@@ -23,7 +23,7 @@
     </div>
 @else
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-        <div class="content-card">
+        <div class="content-card" data-intro="Grafik ini menampilkan tren tingkat burnout Anda dari waktu ke waktu. Pantau perubahan skor CF Anda secara visual." data-step="3">
             <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
                 Tren Tingkat Burnout
@@ -33,7 +33,7 @@
             </p>
             <div id="trendChart"></div>
         </div>
-        <div class="content-card">
+        <div class="content-card" data-intro="Diagram ini menunjukkan distribusi hasil diagnosis dari seluruh riwayat deteksi Anda, lengkap dengan statistik rata-rata." data-step="4">
             <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                 Distribusi Hasil
@@ -62,7 +62,7 @@
     </div>
 
     {{-- ── Timeline Riwayat ── --}}
-    <div class="content-card">
+    <div class="content-card" data-intro="Daftar lengkap riwayat deteksi Anda ditampilkan dalam format timeline. Klik 'Lihat Detail' untuk melihat hasil dan rekomendasi dari setiap deteksi." data-step="5">
         <h2 class="card-title" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Riwayat Lengkap
@@ -242,4 +242,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_history')) {
+        setTimeout(() => {
+            introJs().setOptions({
+                nextLabel: 'Lanjut',
+                prevLabel: 'Kembali',
+                doneLabel: 'Mengerti',
+                showStepNumbers: true,
+                showBullets: true,
+                overlayOpacity: 0.6
+            }).start();
+        }, 1200);
+    }
+});
+</script>
 @endpush

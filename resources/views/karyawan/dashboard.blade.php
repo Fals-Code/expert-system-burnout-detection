@@ -296,8 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
         new ApexCharts(document.querySelector('#longitudinalTrendChart'), trendOptions).render();
     @endif
 
-    // ── Tour Guide Dashboard ──
-    if (!localStorage.getItem('tour_completed_karyawan_v2')) {
+    // ── Tour Guide Dashboard (per-login-session) ──
+    if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_dashboard')) {
         setTimeout(() => {
             introJs().setOptions({
                 nextLabel: 'Lanjut',
@@ -306,12 +306,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showStepNumbers: true,
                 showBullets: true,
                 overlayOpacity: 0.6
-            }).start().oncomplete(function() {
-                localStorage.setItem('tour_completed_karyawan_v2', 'true');
-            }).onexit(function() {
-                localStorage.setItem('tour_completed_karyawan_v2', 'true');
-            });
-        }, 500);
+            }).start();
+        }, 1200);
     }
 });
 </script>

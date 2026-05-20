@@ -54,19 +54,32 @@
         <div class="symptoms-section">
             <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                Gejala yang Teridentifikasi
+                Rincian Jawaban & Skor Gejala
             </h2>
             <div class="pill-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                @if ($konsultasi->gejala->isEmpty())
-                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada gejala signifikan yang dilaporkan (Semua jawaban bernilai Tidak).</p>
+                @if (!isset($tracing['gejala_details']) || count($tracing['gejala_details']) === 0)
+                    <p style="color: var(--color-gray-400); font-size: 0.9rem; font-style: italic;">Tidak ada rincian gejala yang tercatat.</p>
                 @else
-                    @foreach ($konsultasi->gejala as $g)
+                    @foreach ($tracing['gejala_details'] as $detail)
+                        @php
+                            $ans = $detail['user_ans'] ?? '-';
+                            $cf = $detail['cf_user'] ?? 0;
+                            $bg = '#f1f5f9'; $col = '#64748b';
+                            if ($cf >= 0.8) { $bg = '#fee2e2'; $col = '#dc2626'; }
+                            elseif ($cf > 0) { $bg = '#ffedd5'; $col = '#ea580c'; }
+                            elseif ($cf < 0) { $bg = '#dcfce7'; $col = '#16a34a'; }
+                        @endphp
                         <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
-                            <div style="font-weight: 500; color: var(--color-gray-700); font-size: 0.95rem;">
-                                {{ $g->nama }}
+                            <div style="flex: 1; padding-right: 1rem;">
+                                <div style="font-weight: 500; color: var(--color-gray-700); font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                    {{ $detail['gejala'] }}
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--color-gray-500);">
+                                    Kode: {{ $detail['kode'] }} | Kontribusi: {{ number_format(($detail['cf_sub'] ?? 0) * 100, 1) }}%
+                                </div>
                             </div>
-                            <div style="padding: 0.35rem 1rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; background: #dcfce7; color: #16a34a;">
-                                Ya
+                            <div style="padding: 0.35rem 1rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; background: {{ $bg }}; color: {{ $col }}; text-align: center; white-space: nowrap;">
+                                {{ $ans }}
                             </div>
                         </div>
                     @endforeach

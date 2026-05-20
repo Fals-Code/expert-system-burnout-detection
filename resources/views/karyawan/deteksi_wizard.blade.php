@@ -7,7 +7,7 @@
     <!-- Header Progress -->
     <div class="wizard-header">
         <h1 class="page-title">Deteksi Kesehatan Mental</h1>
-        <div class="progress-container">
+        <div class="progress-container" data-intro="Di sini Anda dapat melihat progres pengisian kuesioner. Pastikan semua gejala terjawab untuk hasil yang maksimal." data-step="1">
             <div class="progress-bar-wrapper">
                 <div class="progress-bar-fill" :style="'width: ' + progressPercent + '%'"></div>
             </div>
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Wizard Form -->
-    <div class="content-card wizard-card">
+    <div class="content-card wizard-card" data-intro="Baca pertanyaan dengan saksama dan pilih opsi jawaban yang paling sesuai dengan kondisi Anda." data-step="2">
         <form action="{{ route('karyawan.deteksi.proses') }}" method="POST">
             @csrf
             
@@ -56,7 +56,7 @@
                     Lanjut
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
-                <button type="submit" class="btn-cta btn-submit" x-show="currentStep === {{ count($questions) - 1 }}" :disabled="!isCurrentStepAnswered()">
+                <button type="submit" class="btn-cta btn-submit" x-show="currentStep === {{ count($questions) - 1 }}" :disabled="!isCurrentStepAnswered()" data-intro="Setelah menjawab semua pertanyaan, klik tombol ini untuk mengirim dan melihat hasil analisis pakar." data-step="3">
                     Selesaikan Langkah Ini
                 </button>
             </div>
@@ -111,6 +111,23 @@ function deteksiWizard() {
         }
     }
 }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_deteksi_wizard')) {
+        setTimeout(() => {
+            introJs().setOptions({
+                nextLabel: 'Lanjut',
+                prevLabel: 'Kembali',
+                doneLabel: 'Mengerti',
+                showStepNumbers: true,
+                showBullets: true,
+                overlayOpacity: 0.6
+            }).start();
+        }, 1200);
+    }
+});
 </script>
 @endpush
 

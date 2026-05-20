@@ -270,6 +270,110 @@
             50% { opacity: 1; transform: scale(1); }
             100% { opacity: 0.5; transform: scale(0.98); }
         }
+
+        /* ── Premium Intro.js Onboarding Styles ── */
+        .introjs-tooltip {
+            background: var(--color-bg-card, #ffffff);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
+            font-family: 'Poppins', sans-serif !important;
+            padding: 1.25rem;
+            max-width: 380px;
+            border: none;
+        }
+        [data-theme='dark'] .introjs-tooltip {
+            background: #1e293b;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            color: #f8fafc;
+        }
+        .introjs-tooltiptext {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--color-gray-700, #334155);
+            padding-bottom: 1rem;
+        }
+        [data-theme='dark'] .introjs-tooltiptext {
+            color: #cbd5e1;
+        }
+        .introjs-tooltipbuttons {
+            border-top: 1px solid var(--color-gray-100, #f1f5f9);
+            padding-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        [data-theme='dark'] .introjs-tooltipbuttons {
+            border-top-color: #334155;
+        }
+        .introjs-button {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            text-shadow: none;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.85rem;
+            border: none;
+        }
+        .introjs-prevbutton {
+            background: var(--color-gray-100, #f1f5f9) !important;
+            color: var(--color-gray-700, #334155) !important;
+            box-shadow: none !important;
+        }
+        [data-theme='dark'] .introjs-prevbutton {
+            background: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        .introjs-nextbutton, .introjs-donebutton {
+            background: var(--color-primary, #3b82f6) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        }
+        .introjs-button:hover:not(.introjs-disabled) {
+            transform: translateY(-1px);
+        }
+        .introjs-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .introjs-bullets {
+            padding-bottom: 0.5rem;
+        }
+        .introjs-bullets ul li a {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-gray-300, #cbd5e1);
+            transition: all 0.2s ease;
+        }
+        .introjs-bullets ul li a.active {
+            background: var(--color-primary, #3b82f6);
+            width: 16px;
+            border-radius: 4px;
+        }
+        .introjs-helperLayer {
+            background-color: transparent !important;
+            border-radius: 12px;
+            box-shadow: 0 0 0 0 rgba(33, 33, 33, 0.5), 0 0 0 5000px rgba(15, 23, 42, 0.6) !important;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            animation: helper-pulse 2s infinite;
+        }
+        @keyframes helper-pulse {
+            0% { border-color: rgba(59, 130, 246, 0.4); }
+            50% { border-color: rgba(59, 130, 246, 0.8); }
+            100% { border-color: rgba(59, 130, 246, 0.4); }
+        }
+        .introjs-arrow.top { border-bottom-color: var(--color-bg-card, #ffffff); }
+        .introjs-arrow.bottom { border-top-color: var(--color-bg-card, #ffffff); }
+        .introjs-arrow.left { border-right-color: var(--color-bg-card, #ffffff); }
+        .introjs-arrow.right { border-left-color: var(--color-bg-card, #ffffff); }
+        
+        [data-theme='dark'] .introjs-arrow.top { border-bottom-color: #1e293b; }
+        [data-theme='dark'] .introjs-arrow.bottom { border-top-color: #1e293b; }
+        [data-theme='dark'] .introjs-arrow.left { border-right-color: #1e293b; }
+        [data-theme='dark'] .introjs-arrow.right { border-left-color: #1e293b; }
     </style>
 </head>
 <body>
@@ -295,6 +399,7 @@
 
         // Page Transition Interceptor
         document.addEventListener('DOMContentLoaded', () => {
+            const mainWrapper = document.querySelector('.main-wrapper');
             const links = document.querySelectorAll('a[href]');
             links.forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -312,7 +417,6 @@
                     
                     if (isInternal && !isKaryawanDashboard) {
                         e.preventDefault();
-                        const mainWrapper = document.querySelector('.main-wrapper');
                         if (mainWrapper) {
                             mainWrapper.classList.remove('page-fade-in');
                             mainWrapper.classList.add('page-fade-out');
@@ -327,7 +431,6 @@
 
             window.addEventListener('pageshow', function (event) {
                 if (event.persisted) {
-                    const mainWrapper = document.querySelector('.main-wrapper');
                     if (mainWrapper) {
                         mainWrapper.classList.remove('page-fade-out');
                         mainWrapper.classList.add('page-fade-in');
@@ -435,6 +538,64 @@
             }
         });
     </script>
+
+    {{-- Global Onboarding Helper (per-login-session tours for karyawan) --}}
+    @auth
+    @if(Auth::user()->role === 'karyawan')
+    <script>
+        /**
+         * Onboarding Tour Helper
+         * - Resets all onboarding flags when login token changes (new login session)
+         * - Shows onboarding only on the FIRST visit to each page after login
+         * - Uses localStorage keyed by login token to track visited pages
+         */
+        window.OnboardingHelper = (function() {
+            // Using session ID is foolproof because Laravel regenerates it on login
+            const CURRENT_TOKEN = "{{ session()->getId() }}";
+            const TOKEN_KEY = 'onboarding_login_token';
+            const PREFIX = 'onboarding_visited_';
+
+            console.log("[Onboarding] Current session token:", CURRENT_TOKEN);
+
+            // Check if login token changed (new login) → clear old onboarding flags
+            const storedToken = localStorage.getItem(TOKEN_KEY);
+            if (storedToken !== CURRENT_TOKEN) {
+                console.log("[Onboarding] New login detected! Clearing old tour data.");
+                // Clear all previous onboarding visited flags
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith(PREFIX) || key.startsWith('tour_completed_'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+                // Store new token
+                localStorage.setItem(TOKEN_KEY, CURRENT_TOKEN);
+            }
+
+            return {
+                /**
+                 * Check if onboarding should show for the given page.
+                 * Returns true if this is the first visit after login.
+                 * Automatically marks the page as visited.
+                 */
+                shouldShow: function(pageName) {
+                    const key = PREFIX + pageName;
+                    if (localStorage.getItem(key)) {
+                        console.log("[Onboarding] Page already visited this session:", pageName);
+                        return false; // Already visited after this login
+                    }
+                    console.log("[Onboarding] First visit this session, showing tour for:", pageName);
+                    localStorage.setItem(key, 'true');
+                    return true;
+                }
+            };
+        })();
+    </script>
+    @endif
+    @endauth
+
     @stack('scripts')
 
     {{-- Premium Global Page Loader Overlay (starts active for instant loading) --}}

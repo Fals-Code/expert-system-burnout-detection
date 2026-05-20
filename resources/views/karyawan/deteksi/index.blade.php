@@ -5,7 +5,7 @@
 @section('content')
 <main class="wizard-container">
     <!-- Welcome Step -->
-    <div id="startScreen" class="question-card" style="text-align: center;">
+    <div id="startScreen" class="question-card" style="text-align: center;" data-intro="Ini adalah halaman persiapan sebelum memulai deteksi burnout. Di sini Anda bisa memulai sesi baru atau melanjutkan sesi yang tersimpan." data-step="1">
         <div class="step active" style="opacity: 1; transform: none;">
             <div class="finish-icon-wrapper" style="margin-bottom: 2rem;">
                 <div class="pulse-ring"></div>
@@ -43,7 +43,7 @@
                 </div>
             </div>
             @else
-            <a href="{{ route('karyawan.deteksi') }}" class="btn-nav btn-result" style="margin: 0 auto; padding: 1.25rem 3rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; max-width: max-content;">
+            <a href="{{ route('karyawan.deteksi') }}" class="btn-nav btn-result" style="margin: 0 auto; padding: 1.25rem 3rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; max-width: max-content;" data-intro="Klik tombol ini untuk memulai proses deteksi burnout. Anda akan menjawab serangkaian pertanyaan klinis." data-step="2">
                 Mulai Analisis Sekarang
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -55,3 +55,21 @@
 </main>
 @endsection
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_deteksi_intro')) {
+        setTimeout(() => {
+            introJs().setOptions({
+                nextLabel: 'Lanjut',
+                prevLabel: 'Kembali',
+                doneLabel: 'Mengerti',
+                showStepNumbers: true,
+                showBullets: true,
+                overlayOpacity: 0.6
+            }).start();
+        }, 1200);
+    }
+});
+</script>
+@endpush

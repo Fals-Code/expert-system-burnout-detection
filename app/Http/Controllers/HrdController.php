@@ -13,10 +13,27 @@ class HrdController extends Controller
         $total_konsultasi = Konsultasi::count();
         $total_karyawan = User::where('role', 'karyawan')->count();
         
+        $latestConsultations = Konsultasi::with(['user', 'diagnosa'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique('user_id');
+
+        $tinggi = 0; $sedang = 0; $rendah = 0;
+        foreach ($latestConsultations as $c) {
+            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'RENDAH');
+            if (in_array($tingkat, ['SANGAT TINGGI', 'TINGGI'])) {
+                $tinggi++;
+            } elseif ($tingkat === 'SEDANG') {
+                $sedang++;
+            } else {
+                $rendah++;
+            }
+        }
+
         $stats = [
-            'tinggi' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'BERAT'))->count(),
-            'sedang' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'SEDANG'))->count(),
-            'rendah' => Konsultasi::whereHas('diagnosa', fn($q) => $q->where('tingkat', 'RINGAN'))->count(),
+            'tinggi' => $tinggi,
+            'sedang' => $sedang,
+            'rendah' => $rendah,
         ];
         
         $history = Konsultasi::with(['user', 'diagnosa'])->orderBy('created_at', 'desc')->take(5)->get();

@@ -19,13 +19,15 @@ class ExpertSystemService
     public function getCfUser($answer): float
     {
         return match ($answer) {
-            'Sangat Sering', 'Pasti Ya', 'Ya' => 1.0,
+            'Sangat Sering', 'Ya', 'Pasti Ya' => 1.0,
             'Sering', 'Hampir Pasti'          => 0.8,
-            'Kadang', 'Mungkin'               => 0.6,
-            'Jarang', 'Ragu-ragu'             => 0.4,
+            'Kadang'                          => 0.6,
+            'Mungkin'                         => 0.5,
+            'Jarang'                          => 0.4,
+            'Ragu-ragu'                       => 0.3,
             'Sangat Jarang', 'Sedikit'        => 0.2,
-            'Tidak', 'Tidak Pernah'           => 0.0,
-            default                           => 0.0,
+            'Tidak', 'Tidak Pernah'            => 0.0,
+            default                            => 0.0,
         };
     }
 
@@ -36,7 +38,7 @@ class ExpertSystemService
      * @param string $conflictStrategy 'highest_cf' | 'first_matched' | 'priority_based'
      * @return array [hasil_diagnosa, cf_final, tracing]
      */
-    public function solve(array $answers): array
+    public function solve(array $answers, string $conflictStrategy = 'highest_cf'): array
     {
         $conflictStrategy = func_num_args() > 1 ? func_get_arg(1) : 'highest_cf';
         $serializedRules = \Illuminate\Support\Facades\Cache::remember('aturan_active_rules_base64', 86400, function () {
@@ -48,7 +50,7 @@ class ExpertSystemService
 
         // 2. Jika tidak ada aturan sama sekali, kembalikan hasil default (Rendah)
         if ($rules->isEmpty()) {
-            return $this->defaultResult('Tidak ada aturan aktif di basis pengetahuan.');
+            return $this->defaultResult('Tidak ada aturan aktif di basis pengetahuan.', $answers);
         }
 
         $triggeredRules = [];
@@ -63,10 +65,13 @@ class ExpertSystemService
             $answered_count = 0;
 
             foreach ($gejalaList as $gejala) {
-                // Ambil jawaban user, default 'Tidak Pernah' jika belum dijawab
-                $user_answer = $answers[$gejala->kode] ?? 'Tidak Pernah';
-                $cf_user = $this->getCfUser($user_answer);
-                
+                $user_answer = 'Belum Dijawab';
+                $cf_user = 0.0;
+                if (isset($answers[$gejala->kode])) {
+                    $user_answer = $answers[$gejala->kode];
+                    $cf_user = $this->getCfUser($user_answer);
+                }
+
                 // Gunakan bobot_pakar dari pivot aturan_gejala, fallback ke bobot gejala umum
                 $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
                 
@@ -77,9 +82,17 @@ class ExpertSystemService
                     $answered_count++;
                 }
 
-                // Kalkulasi CF Combine jika nilai di atas 0
-                if ($cf_weighted > 0) {
+                // Kalkulasi CF Combine dengan rumus standar MYCIN (mendukung CF negatif)
+                if ($cf_combine >= 0 && $cf_weighted >= 0) {
                     $cf_combine = $cf_combine + ($cf_weighted * (1 - $cf_combine));
+                } elseif ($cf_combine < 0 && $cf_weighted < 0) {
+                    $cf_combine = $cf_combine + ($cf_weighted * (1 + $cf_combine));
+                } else {
+                    // Berbeda tanda
+                    $divisor = 1 - min(abs($cf_combine), abs($cf_weighted));
+                    if ($divisor != 0) {
+                        $cf_combine = ($cf_combine + $cf_weighted) / $divisor;
+                    }
                 }
 
                 $rule_trace[] = [
@@ -114,7 +127,7 @@ class ExpertSystemService
 
         // 4. Jika tidak ada aturan yang terpicu sama sekali
         if (empty($triggeredRules)) {
-            return $this->defaultResult('Tidak ada gejala yang cukup signifikan untuk memicu aturan deteksi.');
+            return $this->defaultResult('Tidak ada gejala yang cukup signifikan untuk memicu aturan deteksi.', $answers);
         }
 
         // ── RESOLUSI KONFLIK (CONFLICT RESOLUTION) ──
@@ -176,7 +189,7 @@ class ExpertSystemService
     /**
      * Membantu pencarian hasil default saat tidak ada hipotesis terpenuhi
      */
-    protected function defaultResult(string $reason): array
+    protected function defaultResult(string $reason, array $answers = []): array
     {
         $serializedDefault = \Illuminate\Support\Facades\Cache::remember('diagnosa_default_rendah_base64', 86400, function () {
             $diagnosa = Diagnosa::where('tingkat', 'RENDAH')->first();
@@ -192,12 +205,35 @@ class ExpertSystemService
             'saran' => 'Pertahankan rutinitas positif Anda.'
         ]);
 
+        // Build gejala_details from ALL user answers so the results page can display them
+        $gejalaDetails = [];
+        if (!empty($answers)) {
+            $answeredKodes = array_keys($answers);
+            $gejalaList = Gejala::whereIn('kode', $answeredKodes)->get()->keyBy('kode');
+            foreach ($answers as $kode => $userAnswer) {
+                $gejala = $gejalaList[$kode] ?? null;
+                if ($gejala) {
+                    $cfUser = $this->getCfUser($userAnswer);
+                    $gejalaDetails[] = [
+                        'gejala' => $gejala->nama,
+                        'kode' => $gejala->kode,
+                        'kategori' => $gejala->kategori ?? 'emosional',
+                        'user_ans' => $userAnswer,
+                        'cf_user' => $cfUser,
+                        'bobot' => $gejala->bobot ?? 0.5,
+                        'cf_sub' => $cfUser * ($gejala->bobot ?? 0.5),
+                    ];
+                }
+            }
+        }
+
         return [
             'diagnosa' => $defaultDiagnosa,
             'cf' => 0.0,
             'tracing' => [
                 'message' => $reason,
-                'method' => 'Fallback Default Result'
+                'method' => 'Fallback Default Result',
+                'gejala_details' => $gejalaDetails,
             ]
         ];
     }
@@ -227,77 +263,373 @@ class ExpertSystemService
 
     /**
      * ADAPTIVE QUESTIONING (Hanya tanya gejala yang relevan)
-     * Menggunakan Backward Chaining terarah dengan Rule Pruning (Alpha-Beta Optimization)
-     * 
+     * Menggunakan Backward Chaining terarah dengan Rule Pruning dan strategi pemilihan gejala.
+     *
      * @param array $answeredCodes Daftar kode gejala yang sudah dijawab
+     * @param string $strategy Strategi pemilihan gejala: highest_cf_gain|most_common|diagnosis_order
      * @return array Daftar kode gejala berikutnya yang wajib ditanyakan
      */
-    public function getNextSymptoms(array $answeredCodes): array
+    public function getNextSymptoms(array $answeredCodes, string $strategy = 'highest_cf_gain'): array
+    {
+        $strategy = in_array($strategy, ['highest_cf_gain', 'most_common', 'diagnosis_order'])
+            ? $strategy
+            : 'highest_cf_gain';
+
+        $diagnosas = $this->getOrderedDiagnosas();
+        $answers = $this->getSessionAnswers();
+
+        foreach ($diagnosas as $diagnosa) {
+            $rules = $this->getRulesForDiagnosa($diagnosa);
+            [$candidateSymptoms, $fallbackUnanswered] = $this->buildSymptomCandidates(
+                $rules,
+                $answers,
+                $answeredCodes
+            );
+
+            if (empty($candidateSymptoms)) {
+                continue;
+            }
+
+            Session::put('bc_engine.current_hypothesis', 'Menganalisis Hipotesis: ' . $diagnosa->nama . ' (Backward Chaining)');
+            return $this->rankCandidateSymptoms($candidateSymptoms, $strategy, $fallbackUnanswered);
+        }
+
+        return [];
+    }
+
+    /**
+     * Ambil jawaban deteksi yang tersimpan di session.
+     *
+     * @return array<string, string>
+     */
+    private function getSessionAnswers(): array
+    {
+        return Session::get('deteksi_answers', []);
+    }
+
+    /**
+     * Ambil diagnosa terurut dari cache untuk menghindari query berulang.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Diagnosa>
+     */
+    private function getOrderedDiagnosas()
     {
         $serializedDiagnosas = \Illuminate\Support\Facades\Cache::remember('diagnosa_ordered_base64', 86400, function () {
             return base64_encode(serialize(Diagnosa::orderBy('kode', 'asc')->get()));
         });
-        $diagnosas = unserialize(base64_decode($serializedDiagnosas));
-        $answers = Session::get('deteksi_answers', []);
 
-        foreach ($diagnosas as $diagnosa) {
-            // Ambil aturan aktif untuk diagnosa ini, urutkan berdasarkan prioritas aturan tertinggi
-            $serializedRules = \Illuminate\Support\Facades\Cache::remember("aturan_by_diagnosa_{$diagnosa->id}_base64", 86400, function () use ($diagnosa) {
-                return base64_encode(serialize(Aturan::where('diagnosa_id', $diagnosa->id)
-                    ->where('is_active', true)
-                    ->orderBy('prioritas', 'desc')
-                    ->with('gejala')
-                    ->get()));
-            });
-            $rules = unserialize(base64_decode($serializedRules));
+        return collect(unserialize(base64_decode($serializedDiagnosas)));
+    }
 
-            foreach ($rules as $rule) {
-                // Rule Pruning: Jika secara matematika tidak mungkin mencapai min_threshold karena jawaban "Tidak" / "Jarang", skip aturan ini!
-                $gejalaList = $rule->gejala;
-                if ($gejalaList->isEmpty()) continue;
+    /**
+     * Ambil aturan aktif untuk diagnosa tertentu dari cache.
+     *
+     * @param \App\Models\Diagnosa $diagnosa
+     * @return \Illuminate\Support\Collection<int, \App\Models\Aturan>
+     */
+    private function getRulesForDiagnosa(Diagnosa $diagnosa)
+    {
+        $serializedRules = \Illuminate\Support\Facades\Cache::remember("aturan_by_diagnosa_{$diagnosa->id}_base64", 86400, function () use ($diagnosa) {
+            return base64_encode(serialize(Aturan::where('diagnosa_id', $diagnosa->id)
+                ->where('is_active', true)
+                ->orderBy('prioritas', 'desc')
+                ->with('gejala')
+                ->get()));
+        });
 
-                $cf_combine = 0.0;
-                foreach ($gejalaList as $gejala) {
-                    $hasAnswer = isset($answers[$gejala->kode]);
-                    if ($hasAnswer) {
-                        $user_answer = $answers[$gejala->kode];
-                        $cf_user = $this->getCfUser($user_answer);
-                    } else {
-                        // Optimistic simulation: assume maximum possible Likert answer (1.0 CF)
-                        $cf_user = 1.0;
-                    }
-                    
-                    $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-                    $cf_weighted = $cf_user * $bobot_pakar;
-                    
-                    if ($cf_weighted > 0) {
-                        $cf_combine = $cf_combine + ($cf_weighted * (1 - $cf_combine));
-                    }
-                }
-                
-                $max_possible_cf = $cf_combine * $rule->cf_pakar;
-                
-                // If it can never meet the threshold, prune this rule!
-                if ($max_possible_cf < $rule->min_threshold) {
-                    continue;
-                }
+        return collect(unserialize(base64_decode($serializedRules)));
+    }
 
-                // Ambil daftar gejala pada aturan ini yang BELUM dijawab oleh user
-                $unanswered = $rule->gejala->filter(function ($g) use ($answeredCodes) {
-                    return !in_array($g->kode, $answeredCodes);
-                });
+    /**
+     * Kumpulkan kandidat gejala dari aturan yang masih layak (feasible) untuk ditanyakan berikutnya.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Aturan> $rules
+     * @param array<string, string> $answers
+     * @param array $answeredCodes
+     * @return array{0: array<string, array>, 1: array<string>}
+     */
+    private function buildSymptomCandidates($rules, array $answers, array $answeredCodes): array
+    {
+        $candidateSymptoms = [];
+        $fallbackUnanswered = [];
 
-                if ($unanswered->isNotEmpty()) {
-                    // Berikan label fase hipotesis saat ini ke dalam session untuk ditampilkan di UI
-                    Session::put('bc_engine.current_hypothesis', 'Menganalisis Hipotesis: ' . $diagnosa->nama . ' (Aturan ' . $rule->kode . ')');
-                    
-                    // Kembalikan daftar kode gejala yang belum dijawab dari aturan prioritas saat ini
-                    return $unanswered->pluck('kode')->unique()->toArray();
-                }
+        foreach ($rules as $rule) {
+            $gejalaList = $rule->gejala;
+            if ($gejalaList->isEmpty()) {
+                continue;
             }
+
+            $currentCfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
+            $optimisticCfCombine = $this->calculateOptimisticCfCombine($gejalaList, $answers);
+            $maxPossibleCf = $optimisticCfCombine * $rule->cf_pakar;
+
+            if ($maxPossibleCf < $rule->min_threshold) {
+                continue;
+            }
+
+            $unanswered = $this->getUnansweredSymptoms($gejalaList, $answeredCodes);
+            if ($unanswered->isEmpty()) {
+                continue;
+            }
+
+            foreach ($unanswered as $gejala) {
+                $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+                $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobot_pakar);
+                $estimatedGain = max(0.0, ($potentialCfCombine * $rule->cf_pakar) - ($currentCfCombine * $rule->cf_pakar));
+
+                $candidateSymptoms[$gejala->kode] = $this->mergeSymptomCandidate(
+                    $candidateSymptoms[$gejala->kode] ?? [],
+                    $gejala,
+                    $estimatedGain,
+                    $bobot_pakar,
+                    $rule->kode
+                );
+            }
+
+            $fallbackUnanswered = array_merge($fallbackUnanswered, $unanswered->pluck('kode')->toArray());
         }
-        
-        return [];
+
+        return [$candidateSymptoms, $fallbackUnanswered];
+    }
+
+    /**
+     * Gabungkan data kandidat gejala ketika muncul di lebih dari satu aturan.
+     *
+     * @param array $existing
+     * @param \App\Models\Gejala $gejala
+     * @param float $estimatedGain
+     * @param float $weight
+     * @param string $ruleCode
+     * @return array
+     */
+    private function mergeSymptomCandidate(array $existing, $gejala, float $estimatedGain, float $weight, string $ruleCode): array
+    {
+        return [
+            'kode' => $gejala->kode,
+            'nama' => $gejala->nama,
+            'gain' => ($existing['gain'] ?? 0.0) + $estimatedGain,
+            'frequency' => ($existing['frequency'] ?? 0) + 1,
+            'max_weight' => max($existing['max_weight'] ?? 0.0, $weight),
+            'rules' => array_unique(array_merge($existing['rules'] ?? [], [$ruleCode])),
+        ];
+    }
+
+    /**
+     * Ranking kandidat gejala berdasarkan strategi yang dipilih.
+     *
+     * @param array $candidateSymptoms
+     * @param string $strategy
+     * @param string[] $fallbackUnanswered
+     * @return string[]
+     */
+    private function rankCandidateSymptoms(array $candidateSymptoms, string $strategy, array $fallbackUnanswered): array
+    {
+        if ($strategy === 'diagnosis_order') {
+            return array_values(array_unique($fallbackUnanswered));
+        }
+
+        $symptomCollection = collect($candidateSymptoms);
+
+        $ordered = $symptomCollection->sortByDesc(fn ($item) => [
+            $strategy === 'most_common' ? $item['frequency'] : $item['gain'],
+            $item['gain'],
+            $item['max_weight'],
+        ]);
+
+        return $ordered->pluck('kode')->unique()->values()->toArray();
+    }
+
+    /**
+     * Hitung kombinasi CF saat ini berdasarkan gejala yang sudah dijawab.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array<string, string> $answers
+     * @return float
+     */
+    private function calculateCurrentCfCombine($gejalaList, array $answers): float
+    {
+        $cfCombine = 0.0;
+        foreach ($gejalaList as $gejala) {
+            if (!isset($answers[$gejala->kode])) {
+                continue;
+            }
+
+            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+            $cfCombine = $this->combineCf($cfCombine, $this->getCfUser($answers[$gejala->kode]) * $bobot_pakar);
+        }
+
+        return $cfCombine;
+    }
+
+    /**
+     * Hitung kombinasi CF optimistik untuk gejala yang belum dijawab.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array<string, string> $answers
+     * @return float
+     */
+    private function calculateOptimisticCfCombine($gejalaList, array $answers): float
+    {
+        $cfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
+        foreach ($gejalaList as $gejala) {
+            if (isset($answers[$gejala->kode])) {
+                continue;
+            }
+
+            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+            $cfCombine = $this->combineCf($cfCombine, 1.0 * $bobot_pakar);
+        }
+
+        return $cfCombine;
+    }
+
+    /**
+     * Ambil gejala belum dijawab dari daftar aturan.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array $answeredCodes
+     * @return \Illuminate\Support\Collection<int, \App\Models\Gejala>
+     */
+    private function getUnansweredSymptoms($gejalaList, array $answeredCodes)
+    {
+        return $gejalaList->filter(fn ($g) => !in_array($g->kode, $answeredCodes))ch ($unanswered as $gejala) {
+                $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+                $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobot_pakar);
+                $estimatedGain = max(0.0, ($potentialCfCombine * $rule->cf_pakar) - ($currentCfCombine * $rule->cf_pakar));
+
+                $candidateSymptoms[$gejala->kode] = $this->mergeSymptomCandidate(
+                    $candidateSymptoms[$gejala->kode] ?? [],
+                    $gejala,
+                    $estimatedGain,
+                    $bobot_pakar,
+                    $rule->kode
+                );
+            }
+
+            $fallbackUnanswered = array_merge($fallbackUnanswered, $unanswered->pluck('kode')->toArray());
+        }
+
+        return [$candidateSymptoms, $fallbackUnanswered];
+    }
+
+    /**
+     * Gabungkan data kandidat gejala ketika muncul di lebih dari satu aturan.
+     *
+     * @param array $existing
+     * @param \App\Models\Gejala $gejala
+     * @param float $estimatedGain
+     * @param float $weight
+     * @param string $ruleCode
+     * @return array
+     */
+    private function mergeSymptomCandidate(array $existing, $gejala, float $estimatedGain, float $weight, string $ruleCode): array
+    {
+        return [
+            'kode' => $gejala->kode,
+            'nama' => $gejala->nama,
+            'gain' => ($existing['gain'] ?? 0.0) + $estimatedGain,
+            'frequency' => ($existing['frequency'] ?? 0) + 1,
+            'max_weight' => max($existing['max_weight'] ?? 0.0, $weight),
+            'rules' => array_unique(array_merge($existing['rules'] ?? [], [$ruleCode])),
+        ];
+    }
+
+    /**
+     * Ranking kandidat gejala berdasarkan strategi yang dipilih.
+     *
+     * @param array $candidateSymptoms
+     * @param string $strategy
+     * @param string[] $fallbackUnanswered
+     * @return string[]
+     */
+    private function rankCandidateSymptoms(array $candidateSymptoms, string $strategy, array $fallbackUnanswered): array
+    {
+        if ($strategy === 'diagnosis_order') {
+            return array_values(array_unique($fallbackUnanswered));
+        }
+
+        $symptomCollection = collect($candidateSymptoms);
+
+        $ordered = $symptomCollection->sortByDesc(fn ($item) => [
+            $strategy === 'most_common' ? $item['frequency'] : $item['gain'],
+            $item['gain'],
+            $item['max_weight'],
+        ]);
+
+        return $ordered->pluck('kode')->unique()->values()->toArray();
+    }
+
+    /**
+     * Hitung kombinasi CF saat ini berdasarkan gejala yang sudah dijawab.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array<string, string> $answers
+     * @return float
+     */
+    private function calculateCurrentCfCombine($gejalaList, array $answers): float
+    {
+        $cfCombine = 0.0;
+        foreach ($gejalaList as $gejala) {
+            if (!isset($answers[$gejala->kode])) {
+                continue;
+            }
+
+            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+            $cfCombine = $this->combineCf($cfCombine, $this->getCfUser($answers[$gejala->kode]) * $bobot_pakar);
+        }
+
+        return $cfCombine;
+    }
+
+    /**
+     * Hitung kombinasi CF optimistik untuk gejala yang belum dijawab.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array<string, string> $answers
+     * @return float
+     */
+    private function calculateOptimisticCfCombine($gejalaList, array $answers): float
+    {
+        $cfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
+        foreach ($gejalaList as $gejala) {
+            if (isset($answers[$gejala->kode])) {
+                continue;
+            }
+
+            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
+            $cfCombine = $this->combineCf($cfCombine, 1.0 * $bobot_pakar);
+        }
+
+        return $cfCombine;
+    }
+
+    /**
+     * Ambil gejala belum dijawab dari daftar aturan.
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
+     * @param array $answeredCodes
+     * @return \Illuminate\Support\Collection<int, \App\Models\Gejala>
+     */
+    private function getUnansweredSymptoms($gejalaList, array $answeredCodes)
+    {
+        return $gejalaList->filter(fn ($g) => !in_array($g->kode, $answeredCodes));
+    }
+
+    /**
+     * Combine two CF values using standard MYCIN combination.
+     */
+    private function combineCf(float $cf_combine, float $cf_weighted): float
+    {
+        if ($cf_combine >= 0 && $cf_weighted >= 0) {
+            return $cf_combine + ($cf_weighted * (1 - $cf_combine));
+        }
+
+        if ($cf_combine < 0 && $cf_weighted < 0) {
+            return $cf_combine + ($cf_weighted * (1 + $cf_combine));
+        }
+
+        $divisor = 1 - min(abs($cf_combine), abs($cf_weighted));
+        return $divisor != 0 ? ($cf_combine + $cf_weighted) / $divisor : $cf_combine;
     }
 
     /**
@@ -422,10 +754,10 @@ class ExpertSystemService
                 }
             }
 
-            // Hitung rata-rata skor dimensi
-            $ee_avg = $ee_count > 0 ? ($ee_sum / $ee_count) : 0.0;
-            $dp_avg = $dp_count > 0 ? ($dp_sum / $dp_count) : 0.0;
-            $pa_avg = $pa_count > 0 ? ($pa_sum / $pa_count) : 0.0;
+            // Hitung rata-rata skor dimensi dan pastikan tidak negatif (clamp ke 0)
+            $ee_avg = $ee_count > 0 ? max(0.0, $ee_sum / $ee_count) : 0.0;
+            $dp_avg = $dp_count > 0 ? max(0.0, $dp_sum / $dp_count) : 0.0;
+            $pa_avg = $pa_count > 0 ? max(0.0, $pa_sum / $pa_count) : 0.0;
 
             $explanation['mbi_analysis']['ee_score'] = round($ee_avg * 100, 1);
             $explanation['mbi_analysis']['dp_score'] = round($dp_avg * 100, 1);
