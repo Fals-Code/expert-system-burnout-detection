@@ -6,15 +6,14 @@ use App\Models\Aturan;
 use App\Models\Gejala;
 use App\Models\Diagnosa;
 use App\Models\Konsultasi;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
 class ExpertSystemService
 {
-    // Default threshold fallback: 0.25
     /**
      * Certainty Factor Mapping (CF_User)
-     * Mengubah jawaban linguistik menjadi nilai kepastian kuantitatif
+     * Mengubah jawaban linguistik menjadi nilai kepastian kuantitatif.
      */
     public function getCfUser($answer): float
     {
@@ -32,120 +31,145 @@ class ExpertSystemService
     }
 
     /**
-     * Backward Chaining & Certainty Factor Engine dengan Conflict Resolution, Priority, dan Rule Validation
-     * 
-     * @param array $answers ['G01' => 'Sering', ...]
-     * @param string $conflictStrategy 'highest_cf' | 'first_matched' | 'priority_based'
-     * @return array [hasil_diagnosa, cf_final, tracing]
+     * Mengarahkan nilai CF user berdasarkan arah evidence pada pivot aturan_gejala.
+     *
+     * PRESENT_SUPPORTS:
+     * - Jawaban Ya mendukung rule.
+     * - Jawaban Tidak tidak mendukung rule.
+     *
+     * ABSENT_SUPPORTS:
+     * - Jawaban Tidak mendukung rule.
+     * - Jawaban Ya tidak mendukung rule.
+     */
+    public function getDirectedCfUser($answer, string $evidenceDirection = 'PRESENT_SUPPORTS'): float
+    {
+        $rawCf = $this->getCfUser($answer);
+
+        return match ($evidenceDirection) {
+            'ABSENT_SUPPORTS' => 1.0 - $rawCf,
+            default => $rawCf,
+        };
+    }
+
+    /**
+     * Backward Chaining & Certainty Factor Engine dengan Conflict Resolution,
+     * Priority, Rule Validation, dan Directional Evidence.
+     *
+     * @param array $answers Format: ['G01' => 'Ya', 'G02' => 'Tidak', ...]
+     * @param string $conflictStrategy highest_cf|first_matched|priority_based
+     * @return array
      */
     public function solve(array $answers, string $conflictStrategy = 'highest_cf'): array
     {
-        $conflictStrategy = func_num_args() > 1 ? func_get_arg(1) : 'highest_cf';
-        $serializedRules = \Illuminate\Support\Facades\Cache::remember('aturan_active_rules_base64', 86400, function () {
-            return base64_encode(serialize(Aturan::where('is_active', true)
-                ->with(['diagnosa', 'gejala'])
-                ->get()));
-        });
-        $rules = unserialize(base64_decode($serializedRules));
+        $conflictStrategy = in_array($conflictStrategy, [
+            'highest_cf',
+            'first_matched',
+            'priority_based',
+        ], true) ? $conflictStrategy : 'highest_cf';
 
-        // 2. Jika tidak ada aturan sama sekali, kembalikan hasil default (Rendah)
+        $serializedRules = Cache::remember('aturan_active_rules_base64', 86400, function () {
+            return base64_encode(serialize(
+                Aturan::where('is_active', true)
+                    ->with(['diagnosa', 'gejala'])
+                    ->get()
+            ));
+        });
+
+        $rules = collect(unserialize(base64_decode($serializedRules)));
+
         if ($rules->isEmpty()) {
             return $this->defaultResult('Tidak ada aturan aktif di basis pengetahuan.', $answers);
         }
 
         $triggeredRules = [];
 
-        // 3. Evaluasi setiap aturan menggunakan kombinasi Certainty Factor
         foreach ($rules as $rule) {
             $gejalaList = $rule->gejala;
-            if ($gejalaList->isEmpty()) continue;
 
-            $cf_combine = 0.0;
-            $rule_trace = [];
-            $answered_count = 0;
+            if ($gejalaList->isEmpty()) {
+                continue;
+            }
+
+            $cfCombine = 0.0;
+            $ruleTrace = [];
+            $answeredCount = 0;
 
             foreach ($gejalaList as $gejala) {
-                $user_answer = 'Belum Dijawab';
-                $cf_user = 0.0;
+                $userAnswer = 'Belum Dijawab';
+                $rawCfUser = 0.0;
+                $cfUser = 0.0;
+
+                $bobotPakar = (float) (
+                    $gejala->pivot->bobot_pakar
+                    ?? $gejala->bobot
+                    ?? 0.0
+                );
+
+                $evidenceDirection = $gejala->pivot->evidence_direction
+                    ?? 'PRESENT_SUPPORTS';
+
                 if (isset($answers[$gejala->kode])) {
-                    $user_answer = $answers[$gejala->kode];
-                    $cf_user = $this->getCfUser($user_answer);
+                    $answeredCount++;
+
+                    $userAnswer = $answers[$gejala->kode];
+                    $rawCfUser = $this->getCfUser($userAnswer);
+                    $cfUser = $this->getDirectedCfUser($userAnswer, $evidenceDirection);
                 }
 
-                // Gunakan bobot_pakar dari pivot aturan_gejala, fallback ke bobot gejala umum
-                $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-                
-                // CF[H,E] = CF_user * CF_pakar (bobot gejala)
-                $cf_weighted = $cf_user * $bobot_pakar;
+                $cfWeighted = $cfUser * $bobotPakar;
+                $cfCombine = $this->combineCf($cfCombine, $cfWeighted);
 
-                if (isset($answers[$gejala->kode])) {
-                    $answered_count++;
-                }
-
-                // Kalkulasi CF Combine dengan rumus standar MYCIN (mendukung CF negatif)
-                if ($cf_combine >= 0 && $cf_weighted >= 0) {
-                    $cf_combine = $cf_combine + ($cf_weighted * (1 - $cf_combine));
-                } elseif ($cf_combine < 0 && $cf_weighted < 0) {
-                    $cf_combine = $cf_combine + ($cf_weighted * (1 + $cf_combine));
-                } else {
-                    // Berbeda tanda
-                    $divisor = 1 - min(abs($cf_combine), abs($cf_weighted));
-                    if ($divisor != 0) {
-                        $cf_combine = ($cf_combine + $cf_weighted) / $divisor;
-                    }
-                }
-
-                $rule_trace[] = [
+                $ruleTrace[] = [
                     'gejala' => $gejala->nama,
                     'kode' => $gejala->kode,
                     'kategori' => $gejala->kategori,
-                    'user_ans' => $user_answer,
-                    'cf_user' => $cf_user,
-                    'bobot' => $bobot_pakar,
-                    'cf_sub' => $cf_weighted
+                    'user_ans' => $userAnswer,
+                    'raw_cf_user' => $rawCfUser,
+                    'cf_user' => $cfUser,
+                    'bobot' => $bobotPakar,
+                    'cf_sub' => $cfWeighted,
+                    'evidence_direction' => $evidenceDirection,
                 ];
             }
 
-            // CF_final = CF_combine_gejala * CF_pakar_rule
-            $cf_final_rule = $cf_combine * $rule->cf_pakar;
+            $cfPakarRule = (float) ($rule->cf_pakar ?? 0.0);
+            $minThreshold = (float) ($rule->min_threshold ?? 0.25);
+            $cfFinalRule = $cfCombine * $cfPakarRule;
 
-            // ── VALIDASI RULE (RULE VALIDATION) ──
-            // Aturan hanya dianggap "Triggered" jika CF Final memenuhi ambang batas minimum aturan (min_threshold)
-            $is_valid = $cf_final_rule >= $rule->min_threshold;
+            $isValid = $answeredCount > 0 && $cfFinalRule >= $minThreshold;
 
-            if ($is_valid && $answered_count > 0) {
+            if ($isValid) {
                 $triggeredRules[] = [
                     'rule' => $rule,
-                    'cf_final' => $cf_final_rule,
-                    'cf_combine' => $cf_combine,
-                    'trace_details' => $rule_trace,
-                    'prioritas' => $rule->prioritas,
-                    'diagnosa' => $rule->diagnosa
+                    'cf_final' => $cfFinalRule,
+                    'cf_combine' => $cfCombine,
+                    'trace_details' => $ruleTrace,
+                    'prioritas' => (int) ($rule->prioritas ?? 0),
+                    'diagnosa' => $rule->diagnosa,
+                    'min_threshold' => $minThreshold,
                 ];
             }
         }
 
-        // 4. Jika tidak ada aturan yang terpicu sama sekali
         if (empty($triggeredRules)) {
-            return $this->defaultResult('Tidak ada gejala yang cukup signifikan untuk memicu aturan deteksi.', $answers);
+            return $this->defaultResult(
+                'Tidak ada aturan yang mencapai ambang batas minimum. Sistem mengembalikan kondisi default sehat/tidak burnout.',
+                $answers
+            );
         }
 
-        // ── RESOLUSI KONFLIK (CONFLICT RESOLUTION) ──
-        // Mengatasi kondisi jika ada beberapa aturan yang terpicu untuk diagnosis yang berbeda
         switch ($conflictStrategy) {
             case 'priority_based':
-                // Urutkan berdasarkan prioritas aturan tertinggi (angka prioritas terbesar)
-                // Jika prioritas sama, pilih CF tertinggi
                 usort($triggeredRules, function ($a, $b) {
                     if ($b['prioritas'] === $a['prioritas']) {
                         return $b['cf_final'] <=> $a['cf_final'];
                     }
+
                     return $b['prioritas'] <=> $a['prioritas'];
                 });
                 break;
 
             case 'first_matched':
-                // Menggunakan aturan pertama berdasarkan tingkat keparahan diagnosis (D01 -> D04)
                 usort($triggeredRules, function ($a, $b) {
                     return $a['diagnosa']->kode <=> $b['diagnosa']->kode;
                 });
@@ -153,77 +177,98 @@ class ExpertSystemService
 
             case 'highest_cf':
             default:
-                // Urutkan murni berdasarkan CF tertinggi untuk akurasi sains paling optimal
                 usort($triggeredRules, function ($a, $b) {
                     return $b['cf_final'] <=> $a['cf_final'];
                 });
                 break;
         }
 
-        // Pilih aturan pemenang setelah resolusi konflik
         $winner = $triggeredRules[0];
 
-        $final_result = [
+        return [
             'diagnosa' => $winner['diagnosa'],
             'cf' => $winner['cf_final'],
             'tracing' => [
                 'rule_kode' => $winner['rule']->kode,
                 'cf_pakar_rule' => $winner['rule']->cf_pakar,
                 'cf_combine_gejala' => $winner['cf_combine'],
+                'min_threshold' => $winner['min_threshold'],
                 'gejala_details' => $winner['trace_details'],
                 'prioritas' => $winner['prioritas'],
                 'conflict_strategy' => $conflictStrategy,
-                'method' => 'Backward Chaining (CF Combine) with ' . ucfirst(str_replace('_', ' ', $conflictStrategy)) . ' Conflict Resolution',
-                'all_candidate_rules' => collect($triggeredRules)->map(fn($r) => [
-                    'rule_kode' => $r['rule']->kode,
-                    'diagnosa' => $r['diagnosa']->nama,
-                    'cf_final' => round($r['cf_final'], 4),
-                    'prioritas' => $r['prioritas']
-                ])->toArray()
-            ]
+                'method' => 'Backward Chaining (Directional Evidence + CF Combine)',
+                'all_candidate_rules' => collect($triggeredRules)->map(function ($item) {
+                    return [
+                        'rule_kode' => $item['rule']->kode,
+                        'diagnosa' => $item['diagnosa']->nama,
+                        'cf_final' => round($item['cf_final'], 4),
+                        'prioritas' => $item['prioritas'],
+                        'min_threshold' => $item['min_threshold'],
+                    ];
+                })->toArray(),
+            ],
         ];
-
-        return $final_result;
     }
 
     /**
-     * Membantu pencarian hasil default saat tidak ada hipotesis terpenuhi
+     * Hasil default ketika tidak ada rule burnout yang cukup kuat.
+     * Karena D01 sekarang adalah Tidak Burnout, fallback harus mengarah ke D01.
      */
     protected function defaultResult(string $reason, array $answers = []): array
     {
-        $serializedDefault = \Illuminate\Support\Facades\Cache::remember('diagnosa_default_rendah_base64', 86400, function () {
-            $diagnosa = Diagnosa::where('tingkat', 'RENDAH')->first();
+        $serializedDefault = Cache::remember('diagnosa_default_tidak_burnout_base64', 86400, function () {
+            $diagnosa = Diagnosa::where('kode', 'D01')
+                ->orWhere('tingkat', 'TIDAK BURNOUT')
+                ->orWhere('nama', 'like', '%Tidak Burnout%')
+                ->first();
+
             return $diagnosa ? base64_encode(serialize($diagnosa)) : null;
         });
-        $defaultDiagnosa = $serializedDefault ? unserialize(base64_decode($serializedDefault)) : null;
+
+        $defaultDiagnosa = $serializedDefault
+            ? unserialize(base64_decode($serializedDefault))
+            : null;
+
         $defaultDiagnosa = $defaultDiagnosa ?? Diagnosa::make([
-            'id' => 4,
-            'kode' => 'D04',
-            'nama' => 'Risiko Burnout Rendah (Normal/Mild)',
-            'tingkat' => 'RENDAH',
-            'deskripsi' => 'Kondisi psikologis Anda cenderung stabil.',
-            'saran' => 'Pertahankan rutinitas positif Anda.'
+            'id' => 1,
+            'kode' => 'D01',
+            'nama' => 'Tidak Burnout (Kondisi Sehat)',
+            'tingkat' => 'TIDAK BURNOUT',
+            'deskripsi' => 'Tidak ditemukan pola gejala burnout yang signifikan.',
+            'saran' => 'Pertahankan pola kerja sehat, istirahat cukup, dan keseimbangan aktivitas harian.',
         ]);
 
-        // Build gejala_details from ALL user answers so the results page can display them
         $gejalaDetails = [];
+
         if (!empty($answers)) {
             $answeredKodes = array_keys($answers);
-            $gejalaList = Gejala::whereIn('kode', $answeredKodes)->get()->keyBy('kode');
+
+            $gejalaList = Gejala::whereIn('kode', $answeredKodes)
+                ->get()
+                ->keyBy('kode');
+
             foreach ($answers as $kode => $userAnswer) {
                 $gejala = $gejalaList[$kode] ?? null;
-                if ($gejala) {
-                    $cfUser = $this->getCfUser($userAnswer);
-                    $gejalaDetails[] = [
-                        'gejala' => $gejala->nama,
-                        'kode' => $gejala->kode,
-                        'kategori' => $gejala->kategori ?? 'emosional',
-                        'user_ans' => $userAnswer,
-                        'cf_user' => $cfUser,
-                        'bobot' => $gejala->bobot ?? 0.5,
-                        'cf_sub' => $cfUser * ($gejala->bobot ?? 0.5),
-                    ];
+
+                if (!$gejala) {
+                    continue;
                 }
+
+                $rawCfUser = $this->getCfUser($userAnswer);
+                $directedCfUser = $this->getDirectedCfUser($userAnswer, 'ABSENT_SUPPORTS');
+                $bobot = (float) ($gejala->bobot ?? 0.5);
+
+                $gejalaDetails[] = [
+                    'gejala' => $gejala->nama,
+                    'kode' => $gejala->kode,
+                    'kategori' => $gejala->kategori ?? 'emosional',
+                    'user_ans' => $userAnswer,
+                    'raw_cf_user' => $rawCfUser,
+                    'cf_user' => $directedCfUser,
+                    'bobot' => $bobot,
+                    'cf_sub' => $directedCfUser * $bobot,
+                    'evidence_direction' => 'ABSENT_SUPPORTS',
+                ];
             }
         }
 
@@ -232,14 +277,14 @@ class ExpertSystemService
             'cf' => 0.0,
             'tracing' => [
                 'message' => $reason,
-                'method' => 'Fallback Default Result',
+                'method' => 'Fallback Default Result - Tidak Burnout',
                 'gejala_details' => $gejalaDetails,
-            ]
+            ],
         ];
     }
 
     /**
-     * Empathetic symptom phrasing dictionary translating clinical names into highly compassionate questions
+     * Empathetic symptom phrasing dictionary translating clinical names into highly compassionate questions.
      */
     public function getEmpatheticPhrasing(string $symptomCode, string $defaultName): string
     {
@@ -314,7 +359,7 @@ class ExpertSystemService
      */
     private function getOrderedDiagnosas()
     {
-        $serializedDiagnosas = \Illuminate\Support\Facades\Cache::remember('diagnosa_ordered_base64', 86400, function () {
+        $serializedDiagnosas = Cache::remember('diagnosa_ordered_base64', 86400, function () {
             return base64_encode(serialize(Diagnosa::orderBy('kode', 'asc')->get()));
         });
 
@@ -329,7 +374,7 @@ class ExpertSystemService
      */
     private function getRulesForDiagnosa(Diagnosa $diagnosa)
     {
-        $serializedRules = \Illuminate\Support\Facades\Cache::remember("aturan_by_diagnosa_{$diagnosa->id}_base64", 86400, function () use ($diagnosa) {
+        $serializedRules = Cache::remember("aturan_by_diagnosa_{$diagnosa->id}_base64", 86400, function () use ($diagnosa) {
             return base64_encode(serialize(Aturan::where('diagnosa_id', $diagnosa->id)
                 ->where('is_active', true)
                 ->orderBy('prioritas', 'desc')
@@ -355,33 +400,42 @@ class ExpertSystemService
 
         foreach ($rules as $rule) {
             $gejalaList = $rule->gejala;
+
             if ($gejalaList->isEmpty()) {
                 continue;
             }
 
             $currentCfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
             $optimisticCfCombine = $this->calculateOptimisticCfCombine($gejalaList, $answers);
-            $maxPossibleCf = $optimisticCfCombine * $rule->cf_pakar;
+            $cfPakarRule = (float) ($rule->cf_pakar ?? 0.0);
+            $minThreshold = (float) ($rule->min_threshold ?? 0.25);
+            $maxPossibleCf = $optimisticCfCombine * $cfPakarRule;
 
-            if ($maxPossibleCf < $rule->min_threshold) {
+            if ($maxPossibleCf < $minThreshold) {
                 continue;
             }
 
             $unanswered = $this->getUnansweredSymptoms($gejalaList, $answeredCodes);
+
             if ($unanswered->isEmpty()) {
                 continue;
             }
 
             foreach ($unanswered as $gejala) {
-                $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-                $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobot_pakar);
-                $estimatedGain = max(0.0, ($potentialCfCombine * $rule->cf_pakar) - ($currentCfCombine * $rule->cf_pakar));
+                $bobotPakar = (float) (
+                    $gejala->pivot->bobot_pakar
+                    ?? $gejala->bobot
+                    ?? 0.0
+                );
+
+                $potentialCfCombine = $this->combineCf($currentCfCombine, 1.0 * $bobotPakar);
+                $estimatedGain = max(0.0, ($potentialCfCombine * $cfPakarRule) - ($currentCfCombine * $cfPakarRule));
 
                 $candidateSymptoms[$gejala->kode] = $this->mergeSymptomCandidate(
                     $candidateSymptoms[$gejala->kode] ?? [],
                     $gejala,
                     $estimatedGain,
-                    $bobot_pakar,
+                    $bobotPakar,
                     $rule->kode
                 );
             }
@@ -440,7 +494,8 @@ class ExpertSystemService
     }
 
     /**
-     * Hitung kombinasi CF saat ini berdasarkan gejala yang sudah dijawab.
+     * Hitung kombinasi CF saat ini berdasarkan gejala yang sudah dijawab,
+     * dengan memperhatikan arah evidence pada pivot.
      *
      * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
      * @param array<string, string> $answers
@@ -449,13 +504,27 @@ class ExpertSystemService
     private function calculateCurrentCfCombine($gejalaList, array $answers): float
     {
         $cfCombine = 0.0;
+
         foreach ($gejalaList as $gejala) {
             if (!isset($answers[$gejala->kode])) {
                 continue;
             }
 
-            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-            $cfCombine = $this->combineCf($cfCombine, $this->getCfUser($answers[$gejala->kode]) * $bobot_pakar);
+            $bobotPakar = (float) (
+                $gejala->pivot->bobot_pakar
+                ?? $gejala->bobot
+                ?? 0.0
+            );
+
+            $evidenceDirection = $gejala->pivot->evidence_direction
+                ?? 'PRESENT_SUPPORTS';
+
+            $cfUser = $this->getDirectedCfUser(
+                $answers[$gejala->kode],
+                $evidenceDirection
+            );
+
+            $cfCombine = $this->combineCf($cfCombine, $cfUser * $bobotPakar);
         }
 
         return $cfCombine;
@@ -463,6 +532,8 @@ class ExpertSystemService
 
     /**
      * Hitung kombinasi CF optimistik untuk gejala yang belum dijawab.
+     * Untuk PRESENT_SUPPORTS, asumsi optimistik = Ya.
+     * Untuk ABSENT_SUPPORTS, asumsi optimistik = Tidak.
      *
      * @param \Illuminate\Support\Collection<int, \App\Models\Gejala> $gejalaList
      * @param array<string, string> $answers
@@ -471,13 +542,24 @@ class ExpertSystemService
     private function calculateOptimisticCfCombine($gejalaList, array $answers): float
     {
         $cfCombine = $this->calculateCurrentCfCombine($gejalaList, $answers);
+
         foreach ($gejalaList as $gejala) {
             if (isset($answers[$gejala->kode])) {
                 continue;
             }
 
-            $bobot_pakar = $gejala->pivot->bobot_pakar ?? $gejala->bobot;
-            $cfCombine = $this->combineCf($cfCombine, 1.0 * $bobot_pakar);
+            $bobotPakar = (float) (
+                $gejala->pivot->bobot_pakar
+                ?? $gejala->bobot
+                ?? 0.0
+            );
+
+            $optimisticCfUser = 1.0;
+
+            $cfCombine = $this->combineCf(
+                $cfCombine,
+                $optimisticCfUser * $bobotPakar
+            );
         }
 
         return $cfCombine;
@@ -509,11 +591,12 @@ class ExpertSystemService
         }
 
         $divisor = 1 - min(abs($cf_combine), abs($cf_weighted));
+
         return $divisor != 0 ? ($cf_combine + $cf_weighted) / $divisor : $cf_combine;
     }
 
     /**
-     * Simpan hasil konsultasi ke dalam basis data
+     * Simpan hasil konsultasi ke dalam basis data.
      */
     public function saveResult($userId, array $result, array $allAnswers)
     {
@@ -525,16 +608,17 @@ class ExpertSystemService
         ]);
 
         $gejalaIds = [];
+
         foreach ($allAnswers as $kode => $ans) {
-            // Simpan gejala jika tingkat keyakinan > 0
             if ($this->getCfUser($ans) > 0) {
                 $gejala = Gejala::where('kode', $kode)->first();
+
                 if ($gejala) {
                     $gejalaIds[] = $gejala->id;
                 }
             }
         }
-        
+
         $konsultasi->gejala()->attach($gejalaIds);
 
         return $konsultasi;
@@ -542,7 +626,7 @@ class ExpertSystemService
 
     /**
      * EXPLANATION FACILITY (Sistem Penjelasan Ilmiah & Natural)
-     * Mengurai proses inferensi Backward Chaining + analisis 3 Dimensi MBI (Maslach Burnout Inventory)
+     * Mengurai proses inferensi Backward Chaining + analisis 3 Dimensi MBI (Maslach Burnout Inventory).
      */
     public function generateExplanation(array $tracing, $diagnosa, float $cfFinal): array
     {
@@ -557,12 +641,12 @@ class ExpertSystemService
                 'pa_score' => 0.0,
                 'ee_label' => 'Rendah',
                 'dp_label' => 'Rendah',
-                'pa_label' => 'Tinggi (Kondisi Baik)'
-            ]
+                'pa_label' => 'Tinggi (Kondisi Baik)',
+            ],
         ];
 
-        // 1. Tentukan Confidence Label (Tingkat Keyakinan)
         $pct = round($cfFinal * 100, 1);
+
         if ($cfFinal >= 0.8) {
             $explanation['confidence_label'] = 'Sangat Yakin';
         } elseif ($cfFinal >= 0.6) {
@@ -575,12 +659,11 @@ class ExpertSystemService
             $explanation['confidence_label'] = 'Tidak Terkonfirmasi';
         }
 
-        // 2. Susun Rantai Inferensi (Reasoning Chain)
-        $explanation['reasoning_chain'][] = 'Sistem memicu mekanisme Backward Chaining untuk menguji hipotesis burnout secara terstruktur dari tingkat paling berat (Severe) hingga paling ringan (Normal).';
+        $explanation['reasoning_chain'][] = 'Sistem memicu mekanisme Backward Chaining untuk menguji hipotesis burnout secara terstruktur berdasarkan aturan pakar yang aktif.';
 
         if (isset($tracing['rule_kode'])) {
             $explanation['reasoning_chain'][] = "Mengevaluasi Aturan Pakar {$tracing['rule_kode']} yang berasosiasi dengan diagnosis \"{$diagnosa->nama}\".";
-            
+
             if (isset($tracing['prioritas'])) {
                 $explanation['reasoning_chain'][] = "Aturan {$tracing['rule_kode']} memiliki tingkat prioritas pakar {$tracing['prioritas']} dalam basis pengetahuan.";
             }
@@ -590,90 +673,96 @@ class ExpertSystemService
                 $explanation['reasoning_chain'][] = "Sistem menggunakan metode resolusi konflik \"" . ucwords($strategyLabel) . "\" untuk memvalidasi aturan paling tepat.";
             }
 
+            if (isset($tracing['min_threshold'])) {
+                $explanation['reasoning_chain'][] = 'Aturan ini memiliki ambang batas minimum (min_threshold) sebesar ' . number_format((float) $tracing['min_threshold'], 2) . '.';
+            }
+
             if (isset($tracing['cf_combine_gejala']) && isset($tracing['cf_pakar_rule'])) {
                 $cfCombine = number_format($tracing['cf_combine_gejala'], 4);
                 $cfPakar = number_format($tracing['cf_pakar_rule'], 2);
-                $explanation['reasoning_chain'][] = "Kombinasi jawaban gejala Anda menghasilkan skor Certainty Factor (CF) gabungan senilai {$cfCombine}.";
-                $explanation['reasoning_chain'][] = "Skor gabungan dikalikan dengan faktor kepercayaan pakar untuk aturan ini ({$cfPakar}) menghasilkan CF Final = " . number_format($cfFinal, 4) . " ({$pct}%).";
+                $explanation['reasoning_chain'][] = "Kombinasi jawaban gejala menghasilkan skor Certainty Factor (CF) gabungan senilai {$cfCombine}.";
+                $explanation['reasoning_chain'][] = 'Skor gabungan dikalikan dengan faktor kepercayaan pakar untuk aturan ini (' . $cfPakar . ') menghasilkan CF Final = ' . number_format($cfFinal, 4) . " ({$pct}%).";
             }
 
             if (isset($tracing['all_candidate_rules']) && count($tracing['all_candidate_rules']) > 1) {
-                $explanation['reasoning_chain'][] = "Terdapat " . count($tracing['all_candidate_rules']) . " kandidat aturan yang terpicu secara bersamaan. Sistem berhasil meresolusi konflik dan memilih aturan {$tracing['rule_kode']} sebagai jalur inferensi terbaik.";
+                $explanation['reasoning_chain'][] = 'Terdapat ' . count($tracing['all_candidate_rules']) . " kandidat aturan yang terpicu secara bersamaan. Sistem memilih aturan {$tracing['rule_kode']} sebagai jalur inferensi terbaik.";
             }
         } elseif (isset($tracing['message'])) {
-            $explanation['reasoning_chain'][] = "Inferensi Fallback: " . $tracing['message'];
+            $explanation['reasoning_chain'][] = 'Inferensi Fallback: ' . $tracing['message'];
         }
 
-        // 3. Ekstrak Gejala Dominan & Analisis Dimensi MBI (Maslach Burnout Inventory)
         if (isset($tracing['gejala_details'])) {
             $details = collect($tracing['gejala_details']);
 
-            // Filter gejala yang dirasakan oleh user
-            $activeDetails = $details->filter(fn($d) => $d['cf_user'] > 0);
+            $activeDetails = $details->filter(fn ($detail) => ($detail['cf_user'] ?? 0) > 0);
 
-            // Klasifikasi berdasarkan kategori MBI
-            $ee_sum = 0.0; $ee_count = 0;
-            $dp_sum = 0.0; $dp_count = 0;
-            $pa_sum = 0.0; $pa_count = 0;
+            $eeSum = 0.0;
+            $eeCount = 0;
+            $dpSum = 0.0;
+            $dpCount = 0;
+            $paSum = 0.0;
+            $paCount = 0;
 
             foreach ($details as $detail) {
                 $kategori = $detail['kategori'] ?? 'emosional';
-                $cf_val = $detail['cf_user'];
+                $cfValue = (float) ($detail['cf_user'] ?? 0.0);
 
                 if ($kategori === 'emosional') {
-                    $ee_sum += $cf_val;
-                    $ee_count++;
+                    $eeSum += $cfValue;
+                    $eeCount++;
                 } elseif ($kategori === 'perilaku') {
-                    // Depersonalisasi
-                    $dp_sum += $cf_val;
-                    $dp_count++;
+                    $dpSum += $cfValue;
+                    $dpCount++;
                 } elseif ($kategori === 'kognitif') {
-                    // Reduced Personal Accomplishment (Dalam MBI dibalik, semakin tinggi keluhan kognitif = pencapaian rendah)
-                    $pa_sum += $cf_val;
-                    $pa_count++;
+                    $paSum += $cfValue;
+                    $paCount++;
                 }
             }
 
-            // Hitung rata-rata skor dimensi dan pastikan tidak negatif (clamp ke 0)
-            $ee_avg = $ee_count > 0 ? max(0.0, $ee_sum / $ee_count) : 0.0;
-            $dp_avg = $dp_count > 0 ? max(0.0, $dp_sum / $dp_count) : 0.0;
-            $pa_avg = $pa_count > 0 ? max(0.0, $pa_sum / $pa_count) : 0.0;
+            $eeAvg = $eeCount > 0 ? max(0.0, $eeSum / $eeCount) : 0.0;
+            $dpAvg = $dpCount > 0 ? max(0.0, $dpSum / $dpCount) : 0.0;
+            $paAvg = $paCount > 0 ? max(0.0, $paSum / $paCount) : 0.0;
 
-            $explanation['mbi_analysis']['ee_score'] = round($ee_avg * 100, 1);
-            $explanation['mbi_analysis']['dp_score'] = round($dp_avg * 100, 1);
-            $explanation['mbi_analysis']['pa_score'] = round($pa_avg * 100, 1);
+            $explanation['mbi_analysis']['ee_score'] = round($eeAvg * 100, 1);
+            $explanation['mbi_analysis']['dp_score'] = round($dpAvg * 100, 1);
+            $explanation['mbi_analysis']['pa_score'] = round($paAvg * 100, 1);
 
-            // Beri label ilmiah MBI
-            $explanation['mbi_analysis']['ee_label'] = $ee_avg >= 0.7 ? 'Tinggi' : ($ee_avg >= 0.4 ? 'Sedang' : 'Rendah');
-            $explanation['mbi_analysis']['dp_label'] = $dp_avg >= 0.7 ? 'Tinggi' : ($dp_avg >= 0.4 ? 'Sedang' : 'Rendah');
-            $explanation['mbi_analysis']['pa_label'] = $pa_avg >= 0.7 ? 'Tinggi (Sangat Terganggu)' : ($pa_avg >= 0.4 ? 'Sedang' : 'Rendah (Normal)');
+            $explanation['mbi_analysis']['ee_label'] = $eeAvg >= 0.7 ? 'Tinggi' : ($eeAvg >= 0.4 ? 'Sedang' : 'Rendah');
+            $explanation['mbi_analysis']['dp_label'] = $dpAvg >= 0.7 ? 'Tinggi' : ($dpAvg >= 0.4 ? 'Sedang' : 'Rendah');
+            $explanation['mbi_analysis']['pa_label'] = $paAvg >= 0.7 ? 'Tinggi (Sangat Terganggu)' : ($paAvg >= 0.4 ? 'Sedang' : 'Rendah (Normal)');
 
-            // Susun Gejala Dominan (3 kontributor terbesar)
             $sorted = $activeDetails->sortByDesc('cf_sub')->values();
+
             foreach ($sorted->take(3) as $detail) {
                 $explanation['dominant_symptoms'][] = [
-                    'nama'    => $detail['gejala'],
-                    'kode'    => $detail['kode'],
+                    'nama' => $detail['gejala'],
+                    'kode' => $detail['kode'],
                     'kategori' => $detail['kategori'] ?? 'emosional',
-                    'impact'  => round($detail['cf_sub'] * 100, 1),
+                    'impact' => round(($detail['cf_sub'] ?? 0) * 100, 1),
                     'jawaban' => $detail['user_ans'],
+                    'evidence_direction' => $detail['evidence_direction'] ?? 'PRESENT_SUPPORTS',
                 ];
             }
         }
 
-        // 4. Susun Narasi Ringkas (Summary) Secara Natural
         $symptomCount = count($explanation['dominant_symptoms']);
-        if ($symptomCount > 0) {
+        $isHealthyDiagnosis = ($diagnosa->kode ?? null) === 'D01'
+            || str_contains(strtolower($diagnosa->nama ?? ''), 'tidak burnout');
+
+        if ($isHealthyDiagnosis) {
+            $explanation['summary'] = "Berdasarkan analisis backward chaining pakar, Anda berada pada kondisi **{$diagnosa->nama}** dengan tingkat keyakinan **{$pct}% ({$explanation['confidence_label']})**. "
+                . 'Pola jawaban Anda tidak menunjukkan bukti gejala burnout yang dominan, sehingga sistem menilai kondisi Anda cenderung stabil.';
+        } elseif ($symptomCount > 0) {
             $topSymptom = $explanation['dominant_symptoms'][0]['nama'];
             $eeLabel = $explanation['mbi_analysis']['ee_label'];
             $dpLabel = $explanation['mbi_analysis']['dp_label'];
-            
+
             $explanation['summary'] = "Berdasarkan analisis backward chaining pakar, Anda terindikasi berada pada fase **{$diagnosa->nama}** dengan tingkat keyakinan **{$pct}% ({$explanation['confidence_label']})**. "
                 . "Dari dimensi Maslach Burnout Inventory (MBI), Anda mengalami tingkat *Kelelahan Emosional (EE)* yang **{$eeLabel}** serta tingkat *Depersonalisasi (DP)* yang **{$dpLabel}**. "
                 . "Faktor pemicu utama yang berkontribusi paling besar terhadap kondisi ini adalah gejala **\"{$topSymptom}\"** yang Anda rasakan dengan intensitas \"{$explanation['dominant_symptoms'][0]['jawaban']}\".";
         } else {
             $explanation['summary'] = "Berdasarkan analisis penelusuran pakar, Anda berada pada kondisi **{$diagnosa->nama}** dengan kepastian sebesar **{$pct}%**. "
-                . "Seluruh dimensi evaluasi Maslach Burnout Inventory (MBI) Anda berada dalam batas normal dan stabil. Tidak ditemukan pola gejala kelelahan emosional atau sinisme kerja yang signifikan.";
+                . 'Seluruh dimensi evaluasi Maslach Burnout Inventory (MBI) Anda berada dalam batas normal dan stabil. Tidak ditemukan pola gejala kelelahan emosional atau sinisme kerja yang signifikan.';
         }
 
         return $explanation;
