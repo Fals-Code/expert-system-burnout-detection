@@ -1,133 +1,133 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Check-in Saya – BurnoutXpert')
+@section('title', 'Riwayat Saya – Sanctuary Hub')
 
 @section('content')
-<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;" data-intro="Halaman ini menampilkan catatan check-in pribadi Anda sebagai bahan refleksi kerja dari waktu ke waktu." data-step="1">
-    <div>
-        <h1 class="page-title" style="margin:0 0 0.5rem;">Riwayat Check-in Saya</h1>
-        <p style="margin:0; color:var(--color-gray-500); line-height:1.7; max-width:680px;">
-            Gunakan halaman ini untuk melihat perkembangan kondisi kerja pribadi Anda. Catatan ini ditampilkan untuk membantu refleksi, bukan untuk memberi label atau penilaian performa.
-        </p>
-    </div>
-    @if(count($history) > 0)
-        <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" style="padding:0.7rem 1.25rem; font-size:0.875rem; text-decoration:none;" data-intro="Klik tombol ini untuk mengisi check-in kerja baru kapan saja." data-step="2">
-            + Check-in Baru
-        </a>
+@php
+    $latest = $history->first();
+    $latestLabel = match ((int) ($latest->diagnosa->id ?? 0)) {
+        1 => 'Keseimbangan Stabil',
+        2 => 'Butuh Dukungan Ekstra',
+        3 => 'Perlu Pemantauan',
+        4 => 'Perhatian Ringan',
+        default => 'Belum ada check-in',
+    };
+@endphp
+
+<div class="quiet-history-page">
+    <header class="quiet-history-header" data-intro="Halaman ini menampilkan catatan check-in pribadi Anda sebagai bahan refleksi kerja dari waktu ke waktu." data-step="1">
+        <div>
+            <p class="quiet-kicker">Riwayat Pribadi</p>
+            <h1>Riwayat Check-in Saya</h1>
+            <p>Lihat perkembangan kondisi kerja Anda tanpa label berlebihan. Detail tiap check-in bisa dibuka seperlunya.</p>
+        </div>
+        <a href="{{ route('karyawan.deteksi.intro') }}" class="quiet-btn quiet-btn-primary" data-intro="Klik tombol ini untuk mengisi check-in kerja baru kapan saja." data-step="2">Check-in Baru</a>
+    </header>
+
+    @if(count($history) === 0)
+        <section class="quiet-empty-state">
+            <strong>Belum ada catatan check-in</strong>
+            <p>Mulai dari sesi singkat untuk memahami pola beban kerja, energi, dan dukungan yang Anda rasakan.</p>
+            <a href="{{ route('karyawan.deteksi.intro') }}" class="quiet-btn quiet-btn-primary">Mulai Check-in</a>
+        </section>
+    @else
+        <section class="quiet-history-summary">
+            <div>
+                <span>Total Check-in</span>
+                <strong>{{ count($history) }}x</strong>
+            </div>
+            <div>
+                <span>Terakhir Diisi</span>
+                <strong>{{ $latest->created_at->translatedFormat('d M Y') }}</strong>
+            </div>
+            <div>
+                <span>Kondisi Terakhir</span>
+                <strong>{{ $latestLabel }}</strong>
+            </div>
+        </section>
+
+        <section class="quiet-history-section" data-intro="Daftar ini menampilkan catatan check-in pribadi Anda. Klik satu baris untuk melihat ringkasan dan area yang muncul." data-step="3">
+            <div class="quiet-section-head">
+                <div>
+                    <h2>Catatan Check-in</h2>
+                    <p>Setiap sesi ditampilkan ringkas. Buka detail hanya saat perlu membaca hasil lengkap.</p>
+                </div>
+            </div>
+
+            <div class="quiet-history-list">
+                @foreach($history as $h)
+                    @php
+                        $diagnosisId = (int) ($h->diagnosa->id ?? 0);
+                        $label = match ($diagnosisId) {
+                            1 => 'Keseimbangan Stabil',
+                            2 => 'Butuh Dukungan Ekstra',
+                            3 => 'Perlu Pemantauan',
+                            4 => 'Perhatian Ringan',
+                            default => 'Ringkasan Evaluasi',
+                        };
+                        $color = $h->diagnosa->color ?? '#2563eb';
+                    @endphp
+
+                    <details class="quiet-history-item" {{ $loop->first ? 'open' : '' }}>
+                        <summary>
+                            <div class="quiet-item-left">
+                                <span class="quiet-dot" style="background:{{ $color }};"></span>
+                                <div>
+                                    <strong>{{ $label }}</strong>
+                                    <span>{{ $h->created_at->translatedFormat('d F Y, H:i') }}</span>
+                                </div>
+                            </div>
+                            <div class="quiet-item-right">
+                                <span>{{ number_format($h->cf_final * 100, 1) }} skor</span>
+                                <b>⌄</b>
+                            </div>
+                        </summary>
+
+                        <div class="quiet-history-detail">
+                            <div>
+                                <h3>Ringkasan</h3>
+                                <p>{{ $h->diagnosa->deskripsi ?? 'Ringkasan belum tersedia.' }}</p>
+                            </div>
+
+                            <div>
+                                <h3>Area yang Muncul</h3>
+                                @if($h->gejala->isEmpty())
+                                    <p>Tidak ada rincian area tercatat.</p>
+                                @else
+                                    <ul class="quiet-tag-list">
+                                        @foreach($h->gejala->take(6) as $g)
+                                            <li>{{ $g->nama }}</li>
+                                        @endforeach
+                                        @if($h->gejala->count() > 6)
+                                            <li>+{{ $h->gejala->count() - 6 }} area lain</li>
+                                        @endif
+                                    </ul>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('karyawan.hasil') }}?id={{ $h->id }}" class="quiet-link">Lihat ringkasan lengkap</a>
+                        </div>
+                    </details>
+                @endforeach
+            </div>
+        </section>
     @endif
 </div>
-
-@if(count($history) === 0)
-    <div class="content-card" style="text-align:center; padding:3rem;">
-        <div style="width:64px; height:64px; border-radius:999px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-weight:900; font-size:1.4rem;">◷</div>
-        <h3 style="color:var(--color-gray-700); margin-bottom:0.5rem;">Belum Ada Catatan Check-in</h3>
-        <p style="color:var(--color-gray-500); margin:0 auto 1.5rem; max-width:460px; line-height:1.7;">
-            Anda belum mengisi check-in kerja. Mulai dari sesi singkat untuk memahami pola beban kerja, energi, dan dukungan yang Anda rasakan.
-        </p>
-        <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" style="text-decoration:none;">Mulai Check-in</a>
-    </div>
-@else
-    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-        <div class="content-card" style="padding:1.25rem; background:#eff6ff; border-color:#bfdbfe;">
-            <div style="font-size:0.75rem; color:#1d4ed8; font-weight:900; text-transform:uppercase; letter-spacing:0.08em;">Total Check-in</div>
-            <div style="font-size:2rem; color:#1e3a8a; font-weight:950; margin-top:0.3rem;">{{ count($history) }}x</div>
-        </div>
-        <div class="content-card" style="padding:1.25rem; background:#f0fdf4; border-color:#bbf7d0;">
-            <div style="font-size:0.75rem; color:#166534; font-weight:900; text-transform:uppercase; letter-spacing:0.08em;">Terakhir Diisi</div>
-            <div style="font-size:1rem; color:#14532d; font-weight:900; margin-top:0.6rem;">{{ collect($history)->first()->created_at->translatedFormat('d F Y') }}</div>
-        </div>
-        <div class="content-card" style="padding:1.25rem; background:#fff7ed; border-color:#fed7aa;">
-            <div style="font-size:0.75rem; color:#9a3412; font-weight:900; text-transform:uppercase; letter-spacing:0.08em;">Catatan</div>
-            <div style="font-size:0.9rem; color:#7c2d12; font-weight:800; margin-top:0.6rem; line-height:1.6;">Perubahan skor dibaca sebagai sinyal refleksi, bukan nilai performa.</div>
-        </div>
-    </div>
-
-    <div class="content-card" style="padding:1.5rem; margin-bottom:1.5rem; background:#f8fafc; border-color:#e2e8f0;">
-        <h2 class="card-title" style="margin:0 0 0.75rem;">Yang Anda Lihat dan Yang Pengelola Lihat</h2>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                <div style="font-weight:900; color:var(--color-gray-800); margin-bottom:0.5rem;">Yang Anda lihat</div>
-                <ul style="margin:0; padding-left:1.1rem; color:var(--color-gray-600); line-height:1.8; font-size:0.88rem;">
-                    <li>Riwayat pribadi</li>
-                    <li>Ringkasan evaluasi</li>
-                    <li>Rekomendasi dukungan</li>
-                </ul>
-            </div>
-            <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                <div style="font-weight:900; color:var(--color-gray-800); margin-bottom:0.5rem;">Yang pengelola gunakan</div>
-                <ul style="margin:0; padding-left:1.1rem; color:var(--color-gray-600); line-height:1.8; font-size:0.88rem;">
-                    <li>Pola kebutuhan dukungan kerja</li>
-                    <li>Tren kondisi secara terkelola</li>
-                    <li>Bahan perbaikan lingkungan kerja</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <div class="content-card" data-intro="Daftar ini menampilkan catatan check-in pribadi Anda. Klik detail untuk melihat ringkasan dan rekomendasi dari setiap sesi." data-step="3">
-        <h2 class="card-title" style="margin-bottom:1.5rem;">Catatan Check-in</h2>
-        <div class="timeline">
-            @foreach($history as $h)
-                @php
-                    $diagnosisId = (int) ($h->diagnosa->id ?? 0);
-                    $label = match ($diagnosisId) {
-                        1 => 'Keseimbangan Stabil',
-                        2 => 'Butuh Dukungan Ekstra',
-                        3 => 'Perlu Pemantauan',
-                        4 => 'Perhatian Ringan',
-                        default => 'Ringkasan Evaluasi',
-                    };
-                @endphp
-                <div style="position:relative; padding-left:2rem; margin-bottom:1.5rem;">
-                    <div style="position:absolute; left:0; top:0.75rem; width:12px; height:12px; border-radius:50%; background:{{ $h->diagnosa->color }}; box-shadow:0 0 0 3px {{ $h->diagnosa->bg_light }};"></div>
-                    @if(!$loop->last)
-                        <div style="position:absolute; left:5px; top:1.5rem; width:2px; height:calc(100% + 0.75rem); background:var(--color-gray-100);"></div>
-                    @endif
-
-                    <div style="border:1px solid var(--color-gray-100); border-radius:16px; padding:1.25rem; border-left:4px solid {{ $h->diagnosa->color }}; background:var(--color-bg-card);">
-                        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.75rem;">
-                            <div>
-                                <div style="font-size:0.75rem; color:var(--color-gray-400); font-weight:800; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                                    {{ $h->created_at->translatedFormat('d F Y, H:i') }}
-                                </div>
-                                <h3 style="margin:0; font-size:1rem; color:{{ $h->diagnosa->color }};">{{ $label }}</h3>
-                            </div>
-                            <div style="text-align:right;">
-                                <div style="font-size:1.35rem; font-weight:950; color:{{ $h->diagnosa->color }}; line-height:1;">{{ number_format($h->cf_final * 100, 1) }}</div>
-                                <div style="font-size:0.7rem; color:var(--color-gray-400);">Skor Keseimbangan</div>
-                            </div>
-                        </div>
-
-                        @if($h->gejala->isNotEmpty())
-                            <div style="margin-bottom:1rem;">
-                                <div style="font-size:0.7rem; font-weight:800; color:var(--color-gray-500); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">Area yang muncul dalam evaluasi:</div>
-                                <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
-                                    @foreach($h->gejala->take(4) as $g)
-                                        <span style="background:var(--color-gray-50); border:1px solid var(--color-gray-100); color:var(--color-gray-600); font-size:0.72rem; padding:0.2rem 0.6rem; border-radius:50px; font-weight:500;">{{ $g->nama }}</span>
-                                    @endforeach
-                                    @if($h->gejala->count() > 4)
-                                        <span style="background:var(--color-gray-100); color:var(--color-gray-500); font-size:0.72rem; padding:0.2rem 0.6rem; border-radius:50px;">+{{ $h->gejala->count() - 4 }} area lain</span>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
-
-                        <div style="display:flex; justify-content:flex-end;">
-                            <a href="{{ route('karyawan.hasil') }}?id={{ $h->id }}" style="font-size:0.82rem; color:var(--color-primary); font-weight:800; text-decoration:none;">
-                                Lihat Ringkasan & Rekomendasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-@endif
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const items = document.querySelectorAll('.quiet-history-item');
+    items.forEach((item) => {
+        item.addEventListener('toggle', function() {
+            if (!this.open) return;
+            items.forEach((other) => {
+                if (other !== this) other.removeAttribute('open');
+            });
+        });
+    });
+
     if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_history')) {
         setTimeout(() => {
             introJs().setOptions({
@@ -145,10 +145,42 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 <style>
-    @media (max-width: 900px) {
-        [style*="grid-template-columns:repeat(3"],
-        [style*="grid-template-columns:1fr 1fr"] {
-            grid-template-columns:1fr !important;
-        }
+    .quiet-history-page { max-width: 980px; margin: 0 auto; }
+    .quiet-history-header { display:flex; justify-content:space-between; gap:1.5rem; align-items:flex-end; padding:0.75rem 0 1.5rem; border-bottom:1px solid rgba(148,163,184,.18); }
+    .quiet-kicker { margin:0 0 .6rem; color:#2563eb; font-size:.72rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .quiet-history-header h1 { margin:0; color:#0f172a; font-size:clamp(2rem,4vw,3rem); line-height:1.05; letter-spacing:-.06em; }
+    .quiet-history-header p { margin:.75rem 0 0; color:#64748b; line-height:1.75; max-width:660px; }
+    .quiet-btn { display:inline-flex; align-items:center; justify-content:center; padding:.8rem 1.15rem; border-radius:999px; text-decoration:none; color:#2563eb; font-weight:900; white-space:nowrap; }
+    .quiet-btn-primary { background:#2563eb; color:#fff; }
+    .quiet-empty-state { padding:3rem 0; max-width:540px; }
+    .quiet-empty-state strong { display:block; color:#0f172a; font-size:1.3rem; margin-bottom:.45rem; }
+    .quiet-empty-state p { color:#64748b; line-height:1.7; margin:0 0 1.25rem; }
+    .quiet-history-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.25rem; padding:1.35rem 0; border-bottom:1px solid rgba(148,163,184,.18); }
+    .quiet-history-summary span { display:block; color:#94a3b8; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.35rem; }
+    .quiet-history-summary strong { display:block; color:#0f172a; font-size:1.25rem; line-height:1.25; font-weight:950; }
+    .quiet-history-section { padding-top:2rem; }
+    .quiet-section-head h2 { margin:0 0 .35rem; color:#0f172a; font-size:1.3rem; font-weight:950; letter-spacing:-.03em; }
+    .quiet-section-head p { margin:0; color:#64748b; line-height:1.7; }
+    .quiet-history-list { margin-top:1.25rem; display:flex; flex-direction:column; }
+    .quiet-history-item { border-bottom:1px solid rgba(148,163,184,.18); }
+    .quiet-history-item summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0; }
+    .quiet-history-item summary::-webkit-details-marker { display:none; }
+    .quiet-item-left, .quiet-item-right { display:flex; align-items:center; gap:.75rem; }
+    .quiet-dot { width:10px; height:10px; border-radius:999px; flex-shrink:0; }
+    .quiet-item-left strong { display:block; color:#0f172a; font-size:1rem; font-weight:950; }
+    .quiet-item-left span, .quiet-item-right span { display:block; color:#64748b; font-size:.82rem; margin-top:.18rem; }
+    .quiet-item-right b { color:#94a3b8; transition:transform .2s ease; }
+    .quiet-history-item[open] .quiet-item-right b { transform:rotate(180deg); }
+    .quiet-history-detail { padding:0 0 1.25rem 1.45rem; display:grid; grid-template-columns:1.1fr .9fr; gap:1.5rem; }
+    .quiet-history-detail h3 { margin:0 0 .45rem; color:#1e293b; font-size:.85rem; font-weight:950; text-transform:uppercase; letter-spacing:.06em; }
+    .quiet-history-detail p { margin:0; color:#64748b; line-height:1.7; font-size:.9rem; }
+    .quiet-tag-list { margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:.45rem; }
+    .quiet-tag-list li { color:#475569; background:#f8fafc; border-radius:999px; padding:.3rem .65rem; font-size:.76rem; font-weight:800; }
+    .quiet-link { grid-column:1/-1; color:#2563eb; font-weight:900; text-decoration:none; font-size:.86rem; }
+    @media (max-width: 760px) {
+        .quiet-history-header { flex-direction:column; align-items:flex-start; }
+        .quiet-history-summary, .quiet-history-detail { grid-template-columns:1fr; }
+        .quiet-history-item summary { align-items:flex-start; flex-direction:column; }
     }
 </style>
+@endsection
