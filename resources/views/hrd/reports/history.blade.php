@@ -122,23 +122,6 @@
         </section>
     @endif
 </div>
-@endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const items = document.querySelectorAll('.hrd-check-item');
-    items.forEach((item) => {
-        item.addEventListener('toggle', function () {
-            if (!this.open) return;
-            items.forEach((other) => {
-                if (other !== this) other.removeAttribute('open');
-            });
-        });
-    });
-});
-</script>
-@endpush
 
 <style>
     .hrd-min-page { max-width: 1040px; margin: 0 auto; }
@@ -177,3 +160,19 @@ document.addEventListener('DOMContentLoaded', function () {
     @media (max-width: 560px) { .hrd-min-summary, .hrd-detail-grid { grid-template-columns:1fr; } }
 </style>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const items = document.querySelectorAll('.hrd-check-item');
+    items.forEach((item) => {
+        item.addEventListener('toggle', function () {
+            if (!this.open) return;
+            items.forEach((other) => {
+                if (other !== this) other.removeAttribute('open');
+            });
+        });
+    });
+});
+</script>
+@endpush
