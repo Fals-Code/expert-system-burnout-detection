@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Check-in Kerja – Ruang Check-in')
+@section('title', 'Check-in Kerja – Sanctuary Hub')
 
 @section('content')
 <style>
