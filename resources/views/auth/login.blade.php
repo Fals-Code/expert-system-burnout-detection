@@ -13,8 +13,8 @@
     </div>
 
     <a href="{{ url('/') }}" class="brand-logo" aria-label="Sanctuary Hub">
-        <div class="brand-logo__icon" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;background:#dbeafe;color:#1d4ed8;border-radius:14px;font-weight:900;box-shadow:0 10px 22px rgba(37,99,235,.16);">
-            ✓
+        <div class="brand-logo__icon" aria-hidden="true" style="background:transparent;border:none;backdrop-filter:none;overflow:hidden;">
+            <img src="{{ asset('assets/img/sanctuary-hub-mark.svg') }}" alt="" style="width:40px;height:40px;display:block;">
         </div>
         <span class="brand-logo__text">Sanctuary<span class="brand-logo__accent">Hub</span></span>
     </a>
@@ -22,8 +22,8 @@
     <main class="login-wrapper" role="main">
         <div class="login-card" id="loginCard">
             <div class="login-card__header">
-                <div class="login-card__icon" aria-hidden="true" style="background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;border-radius:24px;font-size:1.6rem;font-weight:900;">
-                    ✓
+                <div class="login-card__icon" aria-hidden="true" style="background:transparent;display:flex;align-items:center;justify-content:center;border-radius:24px;box-shadow:none;">
+                    <img src="{{ asset('assets/img/sanctuary-hub-mark.svg') }}" alt="" style="width:64px;height:64px;display:block;">
                 </div>
                 <h1 class="login-card__title">Masuk</h1>
                 <p class="login-card__subtitle animate-delay-1">
