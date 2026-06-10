@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreDeteksiRequest;
 use App\Models\Gejala;
-use App\Models\Diagnosa;
 use App\Models\Aturan;
+use App\Models\Konsultasi;
 use App\Services\ExpertSystemService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class DeteksiController extends Controller
@@ -91,11 +93,6 @@ class DeteksiController extends Controller
 
     /**
      * Menentukan apakah proses deteksi boleh dihentikan lebih awal.
-     *
-     * Catatan:
-     * - min_threshold tetap dibaca dinamis dari tabel aturan.
-     * - Early stop tidak boleh terlalu rendah agar satu-dua jawaban
-     *   tidak langsung menghasilkan vonis final.
      */
     private function shouldStopEarly(array $result, array $answers): bool
     {
@@ -112,16 +109,7 @@ class DeteksiController extends Controller
             ->value('min_threshold');
 
         $dynamicRuleThreshold = (float) ($minThreshold ?? 0.25);
-
-        /**
-         * min_threshold = batas validasi rule.
-         * earlyStopThreshold = batas aman untuk menghentikan sesi sebelum semua gejala selesai.
-         */
         $earlyStopThreshold = max($dynamicRuleThreshold, 0.85);
-
-        /**
-         * Minimal jawaban agar sistem tidak terlalu cepat mengambil keputusan.
-         */
         $minimumAnsweredSymptoms = 4;
 
         return count($answers) >= $minimumAnsweredSymptoms
@@ -129,7 +117,7 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Menyimpan sesi deteksi burnout secara persisten ke database
+     * Menyimpan sesi deteksi secara persisten ke database.
      */
     public function saveSession(Request $request)
     {
@@ -153,7 +141,7 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Memulihkan sesi deteksi burnout yang tersimpan secara persisten
+     * Memulihkan sesi deteksi yang tersimpan secara persisten.
      */
     public function resumeSession(Request $request)
     {
@@ -169,15 +157,32 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Simpan jawaban sementara dan lanjut ke langkah berikutnya
+     * Simpan jawaban sementara dan lanjut ke langkah berikutnya.
      */
-    public function next(Request $request)
+    public function next(StoreDeteksiRequest $request)
     {
+        $request->validated();
+
         $answers = Session::get('deteksi_answers', []);
-        
-        foreach ($request->except('_token') as $kode => $value) {
+
+        foreach ($request->except('_token', 'gejala_id') as $kode => $value) {
             if (str_starts_with($kode, 'G')) {
                 $answers[$kode] = $value;
+            }
+        }
+
+        /**
+         * Dukungan aman untuk payload alternatif berbasis gejala_id[].
+         * Field ini sudah divalidasi oleh StoreDeteksiRequest.
+         */
+        if ($request->filled('gejala_id')) {
+            $selectedCodes = Gejala::query()
+                ->whereIn('id', $request->input('gejala_id', []))
+                ->pluck('kode')
+                ->all();
+
+            foreach ($selectedCodes as $kode) {
+                $answers[$kode] = 'Ya';
             }
         }
 
@@ -187,44 +192,57 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Hitung hasil akhir deteksi
+     * Hitung hasil akhir deteksi.
      */
     protected function processResult()
     {
         $answers = Session::get('deteksi_answers', []);
-        
-        // Jalankan Engine Sistem Pakar
-        $result = $this->expertSystem->solve($answers);
-        
-        // Simpan ke Database
-        $konsultasi = $this->expertSystem->saveResult(Auth::id(), $result, $answers);
 
-        // Notifikasi
+        if (empty($answers)) {
+            return redirect()
+                ->route('karyawan.deteksi')
+                ->with('error', 'Belum ada jawaban yang dapat dianalisis. Silakan isi survei terlebih dahulu.');
+        }
+
+        $result = $this->expertSystem->solve($answers);
+
+        /**
+         * Seluruh proses penyimpanan konsultasi, tracing, dan pivot gejala
+         * dibungkus transaction agar tidak ada data setengah tersimpan.
+         */
+        $konsultasi = DB::transaction(function () use ($result, $answers) {
+            return $this->expertSystem->saveResult(Auth::id(), $result, $answers);
+        });
+
         NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $result['diagnosa']);
 
-        // Simpan ke Session untuk tampilan hasil
         Session::put('last_result_id', $konsultasi->id);
         Session::forget('deteksi_answers');
+        Session::forget('bc_engine.current_hypothesis');
 
         return redirect()->route('karyawan.hasil');
     }
 
     /**
-     * Tampilkan halaman hasil deteksi
+     * Tampilkan halaman hasil deteksi.
+     * Halaman ini hanya membaca record historis Konsultasi yang sudah fixed.
      */
     public function showResult(Request $request)
     {
         $id = $request->id ?? Session::get('last_result_id');
-        
-        if (!$id) return redirect()->route('karyawan.dashboard');
 
-        $konsultasi = \App\Models\Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
-
-        if (!$konsultasi || ($konsultasi->user_id !== Auth::id() && !Auth::user()->isHrd())) {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
+        if (!$id) {
+            return redirect()->route('karyawan.dashboard');
         }
 
-        // Generate Explanation Facility
+        $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+
+        if (!$konsultasi) {
+            return redirect()->route('karyawan.dashboard')->with('error', 'Data hasil deteksi tidak ditemukan.');
+        }
+
+        abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
+
         $tracing = $konsultasi->tracing ?? [];
         $currentResult = [
             'tracing' => is_array($tracing) ? $tracing : [],
@@ -239,31 +257,37 @@ class DeteksiController extends Controller
         return view('karyawan.deteksi.hasil', [
             'konsultasi'  => $konsultasi,
             'confidence'  => number_format($konsultasi->cf_final * 100, 1),
-            'tracing'     => $currentResult['tracing'] ?? [], // Pastikan baris ini ada di Controller
+            'tracing'     => $currentResult['tracing'] ?? [],
             'explanation' => $explanation,
         ]);
     }
 
     /**
-     * Reset sesi deteksi
+     * Reset sesi deteksi dan mulai ulang dengan form kosong.
      */
     public function reset()
     {
         Session::forget('deteksi_answers');
         Session::forget('last_result_id');
-        return redirect()->route('karyawan.dashboard')->with('info', 'Sesi deteksi telah direset.');
+        Session::forget('bc_engine.current_hypothesis');
+
+        return redirect()
+            ->route('karyawan.deteksi')
+            ->with('info', 'Sesi lama sudah dibersihkan. Silakan mulai survei baru dari awal.');
     }
 
     /**
-     * Download laporan deteksi (PDF Mock/Print View)
+     * Download laporan deteksi (PDF Mock/Print View).
      */
     public function downloadReport($id)
     {
-        $konsultasi = \App\Models\Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+        $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
 
-        if (!$konsultasi || ($konsultasi->user_id !== Auth::id() && !Auth::user()->isHrd())) {
+        if (!$konsultasi) {
             return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
+
+        abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
 
         $tracing = $konsultasi->tracing ?? [];
         $explanation = $this->expertSystem->generateExplanation(
