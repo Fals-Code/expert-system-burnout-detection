@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Karyawan – BurnoutXpert')
+@section('title', 'Dashboard Karyawan – Sanctuary Hub')
 
 @section('content')
 @php
@@ -14,9 +14,9 @@
     };
 
     $trendLabel = match ($trend_direction) {
-        'up' => 'Ada sinyal beban meningkat',
-        'down' => 'Kondisi cenderung membaik',
-        default => 'Kondisi relatif stabil',
+        'up' => 'Beban meningkat',
+        'down' => 'Cenderung membaik',
+        default => 'Relatif stabil',
     };
 
     $trendColor = match ($trend_direction) {
@@ -24,145 +24,129 @@
         'down' => '#16a34a',
         default => '#2563eb',
     };
+
+    $latestScore = $last_result ? number_format($last_result->cf_final * 100, 1) : '-';
 @endphp
 
-<section class="welcome-banner" style="background:linear-gradient(135deg,#eff6ff 0%,#ffffff 58%,#ecfdf5 100%); color:#0f172a;" data-intro="Dashboard ini adalah ruang pribadi untuk melihat check-in kerja, riwayat, dan rekomendasi dukungan." data-step="1">
-    <div class="welcome-content">
-        <p style="display:inline-flex; align-items:center; gap:0.5rem; margin:0 0 0.75rem; padding:0.35rem 0.75rem; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:0.75rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase;">
-            Ruang pribadi karyawan
-        </p>
-        <h1 class="welcome-title" style="color:#0f172a;">{{ $greet }}, {{ Auth::user()->nama }}!</h1>
-        <p class="welcome-subtitle" style="color:#475569; max-width:680px; line-height:1.75;">
-            Bagaimana kondisi kerja Anda minggu ini? Check-in singkat membantu memahami pola energi, beban kerja, dan dukungan yang Anda rasakan tanpa menjadikannya penilaian performa.
-        </p>
-        <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <a href="{{ route('karyawan.deteksi.intro') }}" class="btn-cta" data-intro="Mulai check-in kerja singkat atau lanjutkan sesi yang tersimpan." data-step="2">Mulai Check-in Kerja</a>
-            <a href="{{ route('karyawan.history') }}" class="btn-nav btn-prev" style="text-decoration:none; border-color:#bfdbfe; color:#1d4ed8;">Lihat Riwayat Saya</a>
+<div class="quiet-page employee-dashboard">
+    <header class="quiet-hero" data-intro="Dashboard ini adalah ringkasan pribadi untuk check-in kerja dan rekomendasi dukungan." data-step="1">
+        <p class="quiet-kicker">Dashboard Pribadi</p>
+        <div class="quiet-hero-row">
+            <div>
+                <h1>{{ $greet }}, {{ Auth::user()->nama }}</h1>
+                <p>Ringkasan kondisi kerja Anda, riwayat check-in, dan langkah kecil yang bisa dilakukan minggu ini.</p>
+            </div>
+            <div class="quiet-actions">
+                <a href="{{ route('karyawan.deteksi.intro') }}" class="quiet-btn quiet-btn-primary" data-intro="Mulai check-in kerja singkat atau lanjutkan sesi tersimpan." data-step="2">Mulai Check-in</a>
+                <a href="{{ route('karyawan.history') }}" class="quiet-btn">Riwayat Saya</a>
+            </div>
         </div>
-    </div>
-</section>
+    </header>
 
-<div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; margin-top:1.5rem;">
-    <div class="content-card stat-card" style="background:#eff6ff; border-color:#bfdbfe;" data-intro="Jumlah check-in pribadi yang pernah Anda isi." data-step="3">
-        <div class="stat-icon" style="background:#dbeafe; color:#1d4ed8;">✓</div>
-        <div class="stat-info">
-            <div class="stat-value" style="color:#1e3a8a;">{{ $total_deteksi }}</div>
-            <div class="stat-label">Total Check-in</div>
-        </div>
-    </div>
-
-    <div class="content-card stat-card" style="background:#f8fafc; border-color:#e2e8f0;">
-        <div class="stat-icon" style="background:#ffffff; color:{{ $trendColor }};">◐</div>
-        <div class="stat-info">
-            <div class="stat-value" style="color:{{ $trendColor }}; font-size:1rem; line-height:1.35;">{{ $trendLabel }}</div>
-            <div class="stat-label">Perubahan Terakhir</div>
-        </div>
-    </div>
-
-    <div class="content-card stat-card" style="background:{{ $last_result->diagnosa->bg_light ?? '#f8fafc' }}; border-color:#e2e8f0;">
-        <div class="stat-icon" style="background:#ffffff; color:{{ $last_result->diagnosa->color ?? '#64748b' }};">◇</div>
-        <div class="stat-info">
-            <div class="stat-value" style="color:{{ $last_result->diagnosa->color ?? '#334155' }}; font-size:1rem; line-height:1.35;">{{ $lastLabel }}</div>
-            <div class="stat-label">Kondisi Terakhir</div>
-        </div>
-    </div>
-</div>
-
-@if($warning_flag)
-    <div class="content-card" style="background:#fff7ed; border-left:4px solid #f97316; padding:1.5rem; margin-top:1.5rem; display:flex; align-items:flex-start; gap:1rem; border-radius:16px;" data-intro="Jika ada perubahan cukup terasa, dashboard memberi pengingat yang tenang dan suportif." data-step="4">
-        <div style="background:#fed7aa; color:#9a3412; border-radius:999px; width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:900;">i</div>
+    <section class="quiet-metrics" aria-label="Ringkasan check-in">
         <div>
-            <h4 style="margin:0 0 0.35rem; color:#9a3412; font-weight:900;">Kondisi Minggu Ini Perlu Perhatian</h4>
-            <p style="margin:0; font-size:0.9rem; color:#7c2d12; line-height:1.65;">
-                Ada perubahan skor yang cukup terasa dibanding check-in sebelumnya. Ini bukan alarm performa. Gunakan sebagai pengingat untuk mengatur prioritas, mengambil jeda, atau mendiskusikan beban kerja jika kondisi berlanjut.
-            </p>
+            <span>Total Check-in</span>
+            <strong>{{ $total_deteksi }}</strong>
         </div>
-    </div>
-@endif
+        <div>
+            <span>Perubahan Terakhir</span>
+            <strong style="color:{{ $trendColor }};">{{ $trendLabel }}</strong>
+        </div>
+        <div>
+            <span>Kondisi Terakhir</span>
+            <strong>{{ $lastLabel }}</strong>
+        </div>
+        <div>
+            <span>Skor Sistem</span>
+            <strong>{{ $latestScore }}</strong>
+        </div>
+    </section>
 
-<div style="display:grid; grid-template-columns:1.4fr 1fr; gap:1.5rem; margin-top:1.5rem;">
-    <div style="display:flex; flex-direction:column; gap:1.5rem;">
-        <section class="content-card" style="padding:1.5rem;" data-intro="Grafik ini membantu melihat perubahan kondisi pribadi dari waktu ke waktu." data-step="5">
-            <h2 class="card-title" style="margin-bottom:0.75rem;">Riwayat Pribadi</h2>
-            <p style="margin:0 0 1rem; color:var(--color-gray-500); line-height:1.7; font-size:0.9rem;">
-                Pantau perubahan kondisi kerja Anda dari waktu ke waktu. Angka di sini adalah sinyal refleksi pribadi, bukan ranking atau penilaian performa.
-            </p>
-            @if(count($chart_dates) > 0)
-                <div id="longitudinalTrendChart" style="min-height:320px;"></div>
-            @else
-                <div style="padding:4rem 1rem; text-align:center; color:var(--color-gray-400); background:#f8fafc; border-radius:18px; border:1px dashed #cbd5e1;">
-                    <p style="margin:0 0 0.5rem; font-weight:900; color:#475569;">Belum ada grafik pribadi</p>
-                    <p style="margin:0;">Isi check-in pertama untuk mulai melihat perkembangan kondisi kerja Anda.</p>
-                </div>
-            @endif
+    @if($warning_flag)
+        <section class="quiet-note quiet-note-warning" data-intro="Jika ada perubahan cukup terasa, dashboard memberi pengingat yang tenang dan suportif." data-step="3">
+            <strong>Kondisi minggu ini perlu perhatian.</strong>
+            <span>Ada kenaikan skor yang cukup terasa dibanding check-in sebelumnya. Gunakan ini sebagai pengingat untuk mengatur prioritas atau mendiskusikan beban kerja jika berlanjut.</span>
         </section>
+    @endif
 
-        <section class="content-card" style="padding:1.5rem; background:#f8fafc; border-color:#e2e8f0;">
-            <h2 class="card-title" style="margin-bottom:0.75rem;">Transparansi Data</h2>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.5rem;">Yang Anda lihat</div>
-                    <ul style="margin:0; padding-left:1.1rem; color:#64748b; line-height:1.8; font-size:0.88rem;">
-                        <li>Riwayat pribadi</li>
-                        <li>Insight kondisi kerja</li>
-                        <li>Rekomendasi dukungan</li>
-                    </ul>
+    <div class="quiet-layout">
+        <main class="quiet-main">
+            <section class="quiet-section" data-intro="Grafik ini membantu melihat perubahan kondisi pribadi dari waktu ke waktu." data-step="4">
+                <div class="quiet-section-head">
+                    <div>
+                        <h2>Riwayat Pribadi</h2>
+                        <p>Perubahan skor dari waktu ke waktu. Angka ini dipakai sebagai sinyal refleksi, bukan nilai performa.</p>
+                    </div>
                 </div>
-                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.5rem;">Yang ditekankan sistem</div>
-                    <ul style="margin:0; padding-left:1.1rem; color:#64748b; line-height:1.8; font-size:0.88rem;">
-                        <li>Pola beban kerja</li>
-                        <li>Kebutuhan dukungan</li>
-                        <li>Perbaikan lingkungan kerja</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-    </div>
 
-    <div style="display:flex; flex-direction:column; gap:1.5rem;">
-        <section class="content-card" style="background:linear-gradient(135deg,#eff6ff,#f8fafc); border-color:#bfdbfe; padding:1.5rem;" data-intro="Saran kecil yang bisa dilakukan tanpa membuat proses terasa menghakimi." data-step="6">
-            <h3 class="card-title" style="margin-bottom:0.75rem;">Rekomendasi Kecil Minggu Ini</h3>
-            <div style="display:flex; flex-direction:column; gap:0.9rem; font-size:0.9rem; line-height:1.65; color:#475569;">
-                <div style="background:white; border:1px solid #dbeafe; border-radius:14px; padding:0.9rem;">
-                    <strong style="color:#1d4ed8; display:block; margin-bottom:0.25rem;">Atur prioritas</strong>
-                    Catat satu tugas yang paling menguras energi, lalu pilih langkah kecil pertama yang paling realistis.
-                </div>
-                <div style="background:white; border:1px solid #dbeafe; border-radius:14px; padding:0.9rem;">
-                    <strong style="color:#1d4ed8; display:block; margin-bottom:0.25rem;">Jaga ritme kerja</strong>
-                    Gunakan jeda pendek agar energi tidak turun drastis di tengah hari.
-                </div>
-                <div style="background:white; border:1px solid #dbeafe; border-radius:14px; padding:0.9rem;">
-                    <strong style="color:#1d4ed8; display:block; margin-bottom:0.25rem;">Minta dukungan bila perlu</strong>
-                    Jika beban kerja terasa berat berulang, diskusikan prioritas atau hambatan dengan pihak yang tepat.
-                </div>
-            </div>
-        </section>
+                @if(count($chart_dates) > 0)
+                    <div id="longitudinalTrendChart" class="quiet-chart"></div>
+                @else
+                    <div class="quiet-empty">
+                        <strong>Belum ada grafik pribadi</strong>
+                        <span>Isi check-in pertama untuk mulai melihat perkembangan kondisi kerja Anda.</span>
+                    </div>
+                @endif
+            </section>
 
-        <section class="content-card" style="padding:1.5rem;">
-            <h3 class="card-title" style="margin-bottom:0.75rem;">Konteks Kerja</h3>
-            <p style="margin:0 0 1rem; color:var(--color-gray-500); line-height:1.7; font-size:0.88rem;">
-                Data kerja pendukung ditampilkan sebagai konteks pribadi, bukan vonis. Sistem wellbeing yang baik tidak perlu berubah jadi CCTV pakai dasbor.
-            </p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                <div style="background:#f8fafc; padding:0.9rem; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:900; color:#2563eb;">{{ $hrisMetrics['total_hours'] }}h</div>
-                    <div style="font-size:0.72rem; color:#64748b; font-weight:700; margin-top:0.25rem;">Jam kerja bulan ini</div>
+            <section class="quiet-section">
+                <div class="quiet-section-head">
+                    <div>
+                        <h2>Transparansi Data</h2>
+                        <p>Bagian ini menjelaskan data yang Anda lihat dan bagaimana sistem memakainya.</p>
+                    </div>
                 </div>
-                <div style="background:#fff7ed; padding:0.9rem; border-radius:12px; border:1px solid #fed7aa; text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:900; color:#f97316;">{{ $hrisMetrics['overtime_hours'] }}h</div>
-                    <div style="font-size:0.72rem; color:#64748b; font-weight:700; margin-top:0.25rem;">Lembur bulan ini</div>
+
+                <div class="quiet-two-col">
+                    <div>
+                        <h3>Yang Anda lihat</h3>
+                        <ul>
+                            <li>Riwayat pribadi</li>
+                            <li>Insight kondisi kerja</li>
+                            <li>Rekomendasi dukungan</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Yang ditekankan sistem</h3>
+                        <ul>
+                            <li>Pola beban kerja</li>
+                            <li>Kebutuhan dukungan</li>
+                            <li>Perbaikan lingkungan kerja</li>
+                        </ul>
+                    </div>
                 </div>
-                <div style="background:#f8fafc; padding:0.9rem; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:900; color:#475569;">{{ $hrisMetrics['late_arrivals'] }}x</div>
-                    <div style="font-size:0.72rem; color:#64748b; font-weight:700; margin-top:0.25rem;">Keterlambatan</div>
-                </div>
-                <div style="background:#f0fdf4; padding:0.9rem; border-radius:12px; border:1px solid #bbf7d0; text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:900; color:#16a34a;">{{ $hrisMetrics['remaining_leaves'] }}</div>
-                    <div style="font-size:0.72rem; color:#64748b; font-weight:700; margin-top:0.25rem;">Sisa cuti</div>
-                </div>
-            </div>
-        </section>
+            </section>
+        </main>
+
+        <aside class="quiet-aside">
+            <section class="quiet-section" data-intro="Saran kecil yang bisa dilakukan tanpa membuat proses terasa menghakimi." data-step="5">
+                <h2>Rekomendasi Minggu Ini</h2>
+                <ol class="quiet-steps">
+                    <li>
+                        <strong>Atur prioritas</strong>
+                        <span>Catat satu tugas yang paling menguras energi, lalu pilih langkah kecil pertama.</span>
+                    </li>
+                    <li>
+                        <strong>Jaga ritme kerja</strong>
+                        <span>Gunakan jeda pendek agar energi tidak turun drastis di tengah hari.</span>
+                    </li>
+                    <li>
+                        <strong>Minta dukungan bila perlu</strong>
+                        <span>Diskusikan prioritas atau hambatan jika beban terasa berat berulang.</span>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="quiet-section">
+                <h2>Konteks Kerja</h2>
+                <dl class="quiet-data-list">
+                    <div><dt>Jam kerja bulan ini</dt><dd>{{ $hrisMetrics['total_hours'] }}h</dd></div>
+                    <div><dt>Lembur bulan ini</dt><dd>{{ $hrisMetrics['overtime_hours'] }}h</dd></div>
+                    <div><dt>Keterlambatan</dt><dd>{{ $hrisMetrics['late_arrivals'] }}x</dd></div>
+                    <div><dt>Sisa cuti</dt><dd>{{ $hrisMetrics['remaining_leaves'] }}</dd></div>
+                </dl>
+            </section>
+        </aside>
     </div>
 </div>
 @endsection
@@ -178,15 +162,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }],
             chart: {
                 type: 'area',
-                height: 320,
+                height: 280,
                 toolbar: { show: false },
                 zoom: { enabled: false },
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Poppins, sans-serif'
             },
             colors: ['#2563eb'],
             fill: {
                 type: 'gradient',
-                gradient: { shadeIntensity: 1, opacityFrom: 0.32, opacityTo: 0.04, stops: [0, 90, 100] }
+                gradient: { shadeIntensity: 1, opacityFrom: 0.18, opacityTo: 0.02, stops: [0, 90, 100] }
             },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 3 },
@@ -199,21 +183,19 @@ document.addEventListener('DOMContentLoaded', function() {
             yaxis: {
                 min: 0,
                 max: 100,
-                tickAmount: 5,
-                labels: {
-                    formatter: function(val) { return val.toFixed(0); },
-                    style: { colors: '#94a3b8', fontSize: '11px' }
-                }
+                tickAmount: 4,
+                labels: { style: { colors: '#94a3b8', fontSize: '11px' } }
             },
-            grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+            grid: { borderColor: '#eef2f7', strokeDashArray: 4 },
             tooltip: {
                 theme: 'light',
-                y: { formatter: function(val) { return val.toFixed(1) + ' skor keseimbangan'; } }
+                y: { formatter: (val) => val.toFixed(1) + ' skor' }
             },
-            markers: { size: 5, colors: ['#2563eb'], strokeColors: '#ffffff', strokeWidth: 2, hover: { size: 7 } }
+            markers: { size: 4, strokeWidth: 2, strokeColors: '#ffffff', hover: { size: 6 } }
         };
 
-        new ApexCharts(document.querySelector('#longitudinalTrendChart'), trendOptions).render();
+        const chart = new ApexCharts(document.querySelector('#longitudinalTrendChart'), trendOptions);
+        chart.render();
     @endif
 
     if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_dashboard')) {
@@ -233,11 +215,42 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 <style>
+    .quiet-page { max-width: 1180px; margin: 0 auto; }
+    .quiet-hero { padding: 0.75rem 0 1.5rem; border-bottom: 1px solid rgba(148,163,184,.18); }
+    .quiet-kicker { margin: 0 0 .65rem; color: #2563eb; font-size: .72rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .quiet-hero-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; }
+    .quiet-hero h1 { margin: 0; color: #0f172a; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.05; letter-spacing: -.06em; }
+    .quiet-hero p { max-width: 680px; margin: .8rem 0 0; color: #64748b; line-height: 1.75; }
+    .quiet-actions { display: flex; gap: .7rem; flex-wrap: wrap; flex-shrink: 0; }
+    .quiet-btn { display: inline-flex; align-items: center; justify-content: center; padding: .8rem 1.15rem; border-radius: 999px; color: #2563eb; background: transparent; text-decoration: none; font-weight: 900; border: none; }
+    .quiet-btn-primary { background: #2563eb; color: #ffffff; }
+    .quiet-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; padding: 1.35rem 0; border-bottom: 1px solid rgba(148,163,184,.18); }
+    .quiet-metrics span { display:block; color:#94a3b8; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.35rem; }
+    .quiet-metrics strong { display:block; color:#0f172a; font-size:1.35rem; line-height:1.25; font-weight:950; }
+    .quiet-note { margin: 1.25rem 0 0; padding: 1rem 0; display: flex; gap: .7rem; color:#7c2d12; border-bottom: 1px solid rgba(249,115,22,.22); line-height: 1.65; }
+    .quiet-note strong { flex-shrink: 0; color:#9a3412; }
+    .quiet-layout { display:grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .8fr); gap: 2.5rem; margin-top: 2rem; align-items:start; }
+    .quiet-main, .quiet-aside { display:flex; flex-direction:column; gap:2rem; }
+    .quiet-section { padding: 0 0 1.5rem; border-bottom: 1px solid rgba(148,163,184,.16); }
+    .quiet-section h2 { margin:0 0 .4rem; color:#0f172a; font-size:1.25rem; font-weight:950; letter-spacing:-.03em; }
+    .quiet-section h3 { margin:0 0 .5rem; color:#1e293b; font-size:.95rem; font-weight:900; }
+    .quiet-section p { margin:0; color:#64748b; line-height:1.7; font-size:.9rem; }
+    .quiet-chart { min-height: 280px; margin-top: 1rem; }
+    .quiet-empty { padding: 2.25rem 0; color:#64748b; display:flex; flex-direction:column; gap:.35rem; }
+    .quiet-two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-top:1rem; }
+    .quiet-two-col ul, .quiet-steps { margin:0; padding-left:1.15rem; color:#64748b; line-height:1.8; }
+    .quiet-steps { display:flex; flex-direction:column; gap:.75rem; }
+    .quiet-steps li span { display:block; color:#64748b; line-height:1.6; font-size:.88rem; }
+    .quiet-data-list { margin:1rem 0 0; display:flex; flex-direction:column; gap:.8rem; }
+    .quiet-data-list div { display:flex; justify-content:space-between; gap:1rem; padding-bottom:.8rem; border-bottom:1px solid rgba(148,163,184,.14); }
+    .quiet-data-list dt { color:#64748b; font-size:.85rem; }
+    .quiet-data-list dd { margin:0; color:#0f172a; font-weight:950; }
     @media (max-width: 960px) {
-        [style*="grid-template-columns:repeat(3"],
-        [style*="grid-template-columns:1.4fr 1fr"],
-        [style*="grid-template-columns:1fr 1fr"] {
-            grid-template-columns:1fr !important;
-        }
+        .quiet-hero-row, .quiet-layout { flex-direction: column; display:flex; align-items:stretch; }
+        .quiet-metrics, .quiet-two-col { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+        .quiet-metrics, .quiet-two-col { grid-template-columns:1fr; }
     }
 </style>
+@endsection
