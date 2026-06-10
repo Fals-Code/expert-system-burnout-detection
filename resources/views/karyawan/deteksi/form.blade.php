@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Survei Evaluasi Kenyamanan dan Kebugaran Lingkungan Kerja Karyawan – BurnoutXpert')
+@section('title', 'Survei Evaluasi Kenyamanan Lingkungan Kerja Karyawan – BurnoutXpert')
 
 @section('content')
 <style>
@@ -159,9 +159,9 @@
             <p style="font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.18em; color:#2563eb; margin-bottom:0.65rem;">
                 Survei Lingkungan Kerja
             </p>
-            <h1>Survei Evaluasi Kenyamanan dan Kebugaran Lingkungan Kerja Karyawan</h1>
+            <h1>Survei Evaluasi Kenyamanan Lingkungan Kerja Karyawan</h1>
             <p>
-                Jawablah setiap pernyataan sesuai kondisi yang benar-benar Anda alami. Tidak ada jawaban benar atau salah; data ini digunakan untuk membantu sistem memberi evaluasi yang lebih objektif.
+                Jawablah setiap pernyataan sesuai kondisi yang benar-benar Anda alami. Tidak ada jawaban benar atau salah; data ini digunakan untuk membantu sistem memberi evaluasi kerja yang lebih objektif sesuai hak akses yang berlaku.
             </p>
 
             @php
@@ -170,10 +170,10 @@
 
             <div class="progress-panel">
                 <div class="progress-row">
-                    <span>Progres survei</span>
-                    <span>{{ $progress }} dari {{ $total_gejala }} aspek</span>
+                    <span>Proses evaluasi sedang berjalan</span>
+                    <span>Jawab sesuai kondisi harian</span>
                 </div>
-                <div class="progress-track">
+                <div class="progress-track" aria-label="Progres pengisian survei">
                     <div class="progress-fill" style="width: {{ $progressPercent }}%;"></div>
                 </div>
             </div>
@@ -192,12 +192,12 @@
 
                         <div class="likert-grid">
                             @foreach([
+                                'Tidak'         => ['Tidak Pernah', '0 hari dalam satu minggu terakhir'],
+                                'Sangat Jarang' => ['Sangat Jarang', '1 hari atau lebih jarang'],
+                                'Jarang'        => ['Jarang', '1–2 hari dalam satu minggu terakhir'],
+                                'Kadang'        => ['Kadang-kadang', '3 hari atau pada kondisi tertentu'],
+                                'Sering'        => ['Sering', '4–5 hari dalam satu minggu terakhir'],
                                 'Sangat Sering' => ['Sangat Sering / Selalu', 'Hampir setiap hari dan sangat terasa'],
-                                'Sering'        => ['Sering', 'Beberapa kali dalam seminggu'],
-                                'Kadang'        => ['Kadang-kadang', 'Sesekali ketika kondisi tertentu'],
-                                'Jarang'        => ['Jarang', 'Hanya sesekali dan tidak dominan'],
-                                'Sangat Jarang' => ['Sangat Jarang', 'Hampir tidak pernah terjadi'],
-                                'Tidak'         => ['Tidak Pernah', 'Tidak saya alami belakangan ini'],
                             ] as $value => $meta)
                                 <label class="likert-option">
                                     <input type="radio" name="{{ $q->kode }}" value="{{ $value }}" required>
@@ -214,7 +214,7 @@
 
             <div class="survey-actions">
                 <p class="neutral-note">
-                    Data Anda bersifat rahasia. Gunakan jawaban yang paling dekat dengan pengalaman kerja Anda, bukan jawaban yang terlihat “aman” atau “ideal”. Karena ya, sistem pakar juga butuh data jujur agar tidak jadi cenayang murahan.
+                    Hasil evaluasi digunakan untuk membaca pola kerja secara lebih objektif. Gunakan jawaban yang paling dekat dengan kondisi nyata, bukan jawaban yang terlihat “aman” atau “ideal”. Karena ya, sistem pakar tetap butuh data jujur agar tidak berubah jadi mesin tebak-tebakan.
                 </p>
 
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
@@ -222,7 +222,7 @@
                         Simpan Progres
                     </button>
                     <button type="submit" class="btn-nav btn-result">
-                        Lihat Hasil Evaluasi
+                        Lihat Ringkasan Evaluasi
                     </button>
                 </div>
             </div>
