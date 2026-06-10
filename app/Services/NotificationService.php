@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Diagnosa;
+use App\Models\Konsultasi;
 use App\Models\Notification;
 use App\Models\User;
-use App\Models\Konsultasi;
-use App\Models\Diagnosa;
 
 class NotificationService
 {
@@ -27,12 +27,12 @@ class NotificationService
             $user->id,
             'Check-in Tersimpan',
             "Ringkasan check-in Anda sudah tersedia: **{$supportLabel}**. Skor sistem: {$score}.",
-            'informasi',
+            Notification::CATEGORY_INFORMATION,
             'check-circle',
             '#2563eb'
         );
 
-        if (in_array($diagnosa->tingkat, ['SEDANG', 'TINGGI', 'SANGAT TINGGI'])) {
+        if (in_array($diagnosa->tingkat, ['SEDANG', 'TINGGI', 'SANGAT TINGGI'], true)) {
             $hrdUsers = User::where('role', 'hrd')->get();
             $title = 'Karyawan Perlu Perhatian';
 
@@ -41,7 +41,7 @@ class NotificationService
                     $hrd->id,
                     $title,
                     "**{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") memiliki check-in terbaru: **{$supportLabel}**. Tinjau riwayat untuk melihat konteks dukungan.",
-                    'dukungan',
+                    Notification::CATEGORY_SUPPORT,
                     'info',
                     '#f97316'
                 );
@@ -70,12 +70,18 @@ class NotificationService
     /**
      * Dispatch a generic system notification to a user.
      */
-    public static function send(int $userId, string $title, string $message, string $category = 'informasi', ?string $icon = null, ?string $color = null): void
-    {
+    public static function send(
+        int $userId,
+        string $title,
+        string $message,
+        string $category = Notification::CATEGORY_INFORMATION,
+        ?string $icon = null,
+        ?string $color = null
+    ): void {
         Notification::create([
             'user_id' => $userId,
-            'category' => $category,
-            'title'   => $title,
+            'category' => Notification::normalizeCategory($category),
+            'title' => $title,
             'message' => $message,
             'icon' => $icon,
             'color' => $color,
@@ -97,7 +103,7 @@ class NotificationService
         if ($fonnteToken) {
             try {
                 \Illuminate\Support\Facades\Http::withHeaders([
-                    'Authorization' => $fonnteToken
+                    'Authorization' => $fonnteToken,
                 ])->post('https://api.fonnte.com/send', [
                     'target' => $toCleaned,
                     'message' => $message,
@@ -105,6 +111,7 @@ class NotificationService
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Gagal kirim WhatsApp via Fonnte ke {$toCleaned}: " . $e->getMessage());
             }
+
             return;
         }
 
@@ -116,13 +123,14 @@ class NotificationService
                 \Illuminate\Support\Facades\Http::asForm()
                     ->withBasicAuth($twilioSid, $twilioToken)
                     ->post("https://api.twilio.com/2010-04-01/Accounts/{$twilioSid}/Messages.json", [
-                        'To' => "whatsapp:+" . $toCleaned,
+                        'To' => 'whatsapp:+' . $toCleaned,
                         'From' => $twilioFrom,
                         'Body' => $message,
                     ]);
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Gagal kirim WhatsApp via Twilio ke {$toCleaned}: " . $e->getMessage());
             }
+
             return;
         }
 
