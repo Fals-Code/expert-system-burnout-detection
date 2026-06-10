@@ -1,0 +1,322 @@
+/* ============================================================
+   Ruang Check-in – Minimal UI Skin
+   Tujuan: lebih lapang, minim card, minim border, tetap mudah dibaca.
+   File ini sengaja dimuat paling akhir untuk merapikan UI lama tanpa
+   mengubah mesin sistem pakar / Backward Chaining.
+   ============================================================ */
+
+:root {
+    --quiet-bg: #fbfcfe;
+    --quiet-surface: #ffffff;
+    --quiet-line: rgba(148, 163, 184, 0.22);
+    --quiet-line-soft: rgba(148, 163, 184, 0.14);
+    --quiet-text: #0f172a;
+    --quiet-muted: #64748b;
+    --quiet-primary: #2563eb;
+    --quiet-primary-soft: #eff6ff;
+    --quiet-radius: 18px;
+    --quiet-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+}
+
+body {
+    background: var(--quiet-bg) !important;
+}
+
+.page-content {
+    padding: 0 2.25rem 2.5rem !important;
+}
+
+/* Topbar lebih bersih: tidak terasa seperti panel korporat */
+.topbar {
+    background: rgba(251, 252, 254, 0.86) !important;
+    border-bottom: 1px solid var(--quiet-line-soft) !important;
+    box-shadow: none !important;
+    margin-bottom: 1.35rem !important;
+}
+
+.topbar__title {
+    color: var(--quiet-text) !important;
+    font-weight: 850 !important;
+}
+
+.topbar__breadcrumb,
+.topbar__date,
+.topbar__user-role {
+    color: var(--quiet-muted) !important;
+}
+
+.notif-bell,
+.theme-toggle,
+#langSelector button {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.notif-bell:hover,
+.theme-toggle:hover,
+#langSelector button:hover {
+    background: var(--quiet-primary-soft) !important;
+    color: var(--quiet-primary) !important;
+}
+
+.topbar__avatar {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 999px !important;
+}
+
+/* Dropdown tetap jelas, tapi lebih tipis */
+.notif-dropdown,
+.user-dropdown,
+#langDropdown {
+    border: 1px solid var(--quiet-line) !important;
+    box-shadow: var(--quiet-shadow) !important;
+    border-radius: 18px !important;
+}
+
+.dropdown-header,
+.dropdown-footer {
+    background: #ffffff !important;
+    border-color: var(--quiet-line-soft) !important;
+}
+
+.dropdown-item {
+    border-bottom-color: var(--quiet-line-soft) !important;
+}
+
+.dropdown-item:hover {
+    background: #f8fafc !important;
+}
+
+/* Sidebar lebih minimal */
+.sidebar {
+    border-right: 1px solid var(--quiet-line-soft) !important;
+    box-shadow: none !important;
+}
+
+.sidebar-brand,
+.sidebar-user {
+    border-bottom-color: var(--quiet-line-soft) !important;
+}
+
+.nav-item {
+    border-radius: 12px !important;
+}
+
+.nav-item.active {
+    box-shadow: none !important;
+}
+
+.sidebar-footer > div {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* Card global: ubah dari kotak berat menjadi section ringan */
+.content-card,
+.card,
+.login-card,
+.profile-identity,
+.profile-tabs,
+.profile-tab-panel,
+.security-card,
+.table-container,
+.modal-content,
+.welcome-banner,
+.stat-card,
+.question-card,
+.survey-hero,
+.hrd-summary-card,
+.hrd-guidance-strip,
+.hrd-trend-card,
+.hrd-ethic-card,
+.hrd-compact-list-card,
+.hrd-history-item,
+.hrd-detail-box,
+.hrd-empty-state {
+    box-shadow: none !important;
+    border-color: var(--quiet-line-soft) !important;
+}
+
+.content-card,
+.card,
+.profile-tabs,
+.hrd-compact-list-card,
+.hrd-trend-card,
+.hrd-ethic-card {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Card yang tetap dibutuhkan dibuat subtle, bukan berlapis-lapis */
+.question-card,
+.login-card,
+.profile-identity,
+.stat-card,
+.hrd-summary-card,
+.hrd-history-item,
+.hrd-detail-box,
+.table-container,
+.modal-content {
+    background: #ffffff !important;
+    border: 1px solid var(--quiet-line-soft) !important;
+    border-radius: var(--quiet-radius) !important;
+    box-shadow: none !important;
+}
+
+/* Hero/intro jangan jadi kartu besar penuh border */
+.welcome-banner,
+.survey-hero,
+.profile-header,
+#startScreen {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#startScreen {
+    max-width: 620px !important;
+}
+
+#startScreen .question-text,
+.survey-hero h1,
+.welcome-title,
+.page-title,
+.login-card__title {
+    color: var(--quiet-text) !important;
+    letter-spacing: -0.04em !important;
+}
+
+/* Kurangi chip/card kecil yang terlalu ramai */
+#startScreen [style*="background:#f8fafc"],
+#startScreen [style*="background: #f8fafc"],
+.survey-hero [style*="background"],
+.profile-tabs [style*="background:#eff6ff"],
+.profile-tabs [style*="background:#f0fdf4"],
+.hrd-guidance-strip div,
+.hrd-ethic-list span,
+.trust-badge {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Form check-in: pilihan tetap jelas tanpa terasa kotak-kotak berlebihan */
+.likert-option {
+    border-color: var(--quiet-line-soft) !important;
+    box-shadow: none !important;
+}
+
+.likert-option:hover {
+    border-color: rgba(37, 99, 235, 0.22) !important;
+    background: #f8fafc !important;
+    box-shadow: none !important;
+}
+
+.progress-track {
+    background: #e5e7eb !important;
+}
+
+.progress-fill {
+    background: var(--quiet-primary) !important;
+}
+
+/* Dashboard/stat: jadi informasi ringkas, bukan kartu KPI berat */
+.stat-card {
+    border: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+}
+
+.stat-icon {
+    box-shadow: none !important;
+}
+
+/* HRD history compact */
+.hrd-summary-grid,
+.hrd-history-layout,
+.hrd-history-list {
+    gap: 0.85rem !important;
+}
+
+.hrd-summary-card,
+.hrd-history-item {
+    border-color: var(--quiet-line-soft) !important;
+}
+
+.hrd-detail-panel {
+    background: #fbfdff !important;
+    border-top-color: var(--quiet-line-soft) !important;
+}
+
+.hrd-chip,
+.hrd-area-chip,
+.hrd-empty-chip {
+    border-color: transparent !important;
+    background: #f8fafc !important;
+}
+
+/* Notifikasi: list ringan */
+.content-card[style*="border-left"] {
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--quiet-line-soft) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding-left: 0.85rem !important;
+    padding-right: 0 !important;
+}
+
+/* Button lebih flat */
+.btn-cta,
+.btn-nav,
+.btn-result,
+.btn-login,
+.btn-save,
+.btn-action {
+    box-shadow: none !important;
+    border-radius: 999px !important;
+}
+
+.btn-cta:hover,
+.btn-nav:hover,
+.btn-result:hover,
+.btn-login:hover,
+.btn-save:hover,
+.btn-action:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: none !important;
+}
+
+/* Tabel: border cukup antar baris */
+.premium-table th {
+    background: transparent !important;
+    border-bottom: 1px solid var(--quiet-line) !important;
+}
+
+.premium-table td {
+    border-bottom-color: var(--quiet-line-soft) !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .page-content {
+        padding: 0 1rem 1.5rem !important;
+    }
+
+    .topbar {
+        margin-bottom: 1rem !important;
+    }
+
+    .content-card,
+    .question-card,
+    .login-card,
+    .hrd-summary-card,
+    .hrd-history-item {
+        border-radius: 16px !important;
+    }
+}
