@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Gejala;
 use App\Models\Diagnosa;
+use App\Models\Aturan;
 use App\Services\ExpertSystemService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +34,6 @@ class DeteksiController extends Controller
      */
     public function index()
     {
-        // Jika belum ada session deteksi, inisialisasi
         if (!Session::has('deteksi_answers')) {
             Session::put('deteksi_answers', []);
         }
@@ -42,31 +42,34 @@ class DeteksiController extends Controller
         $answeredCodes = array_keys($answers);
         $totalGejalaCount = Gejala::count();
 
-        // TRUE BACKWARD CHAINING: Cek apakah hipotesis sudah terbukti sebelum lanjut tanya
+        /**
+         * TRUE BACKWARD CHAINING:
+         * Sistem boleh berhenti prematur hanya jika:
+         * - Ada hasil rule yang valid.
+         * - CF melewati threshold dinamis rule.
+         * - Tetap melewati batas early stop aman.
+         * - Jumlah jawaban minimum sudah cukup.
+         */
         if (!empty($answers)) {
             $currentResult = $this->expertSystem->solve($answers);
-            // Hanya berhenti prematur jika sistem SANGAT YAKIN (CF >= 0.85)
-            if ($currentResult['cf'] >= 0.85 && $currentResult['cf'] > 0) {
-                return $this->processResult(); 
+
+            if ($this->shouldStopEarly($currentResult, $answers)) {
+                return $this->processResult();
             }
         }
 
-        // Ambil gejala berikutnya berdasarkan logika Backward Chaining
         $nextCodes = $this->expertSystem->getNextSymptoms($answeredCodes);
 
-        // Jika tidak ada lagi gejala yang perlu ditanyakan, proses hasil
         if (empty($nextCodes) && !empty($answeredCodes)) {
             return $this->processResult();
         }
 
         $questions = Gejala::whereIn('kode', $nextCodes)->get();
 
-        // Jika benar-benar kosong (baru mulai), ambil beberapa gejala pertama
         if ($questions->isEmpty()) {
             $questions = Gejala::take(4)->get();
         }
 
-        // Terapkan bahasa empati yang hangat pada pertanyaan secara dinamis
         foreach ($questions as $q) {
             $q->nama = $this->expertSystem->getEmpatheticPhrasing($q->kode, $q->nama);
         }
@@ -76,12 +79,53 @@ class DeteksiController extends Controller
             'question_codes' => $questions->pluck('kode')->toArray(),
             'progress' => count($answeredCodes),
             'total_gejala' => $totalGejalaCount,
-            'progress_percent' => $totalGejalaCount > 0 ? round((count($answeredCodes) / $totalGejalaCount) * 100) : 0,
+            'progress_percent' => $totalGejalaCount > 0
+                ? round((count($answeredCodes) / $totalGejalaCount) * 100)
+                : 0,
             'options' => [
                 'Ya' => 'Ya, Sering Merasakan',
-                'Tidak' => 'Tidak Pernah'
-            ]
+                'Tidak' => 'Tidak Pernah',
+            ],
         ]);
+    }
+
+    /**
+     * Menentukan apakah proses deteksi boleh dihentikan lebih awal.
+     *
+     * Catatan:
+     * - min_threshold tetap dibaca dinamis dari tabel aturan.
+     * - Early stop tidak boleh terlalu rendah agar satu-dua jawaban
+     *   tidak langsung menghasilkan vonis final.
+     */
+    private function shouldStopEarly(array $result, array $answers): bool
+    {
+        $cf = (float) ($result['cf'] ?? 0.0);
+        $ruleCode = data_get($result, 'tracing.rule_kode');
+
+        if (!$ruleCode || $cf <= 0) {
+            return false;
+        }
+
+        $minThreshold = Aturan::query()
+            ->where('kode', $ruleCode)
+            ->where('is_active', true)
+            ->value('min_threshold');
+
+        $dynamicRuleThreshold = (float) ($minThreshold ?? 0.25);
+
+        /**
+         * min_threshold = batas validasi rule.
+         * earlyStopThreshold = batas aman untuk menghentikan sesi sebelum semua gejala selesai.
+         */
+        $earlyStopThreshold = max($dynamicRuleThreshold, 0.85);
+
+        /**
+         * Minimal jawaban agar sistem tidak terlalu cepat mengambil keputusan.
+         */
+        $minimumAnsweredSymptoms = 4;
+
+        return count($answers) >= $minimumAnsweredSymptoms
+            && $cf >= $earlyStopThreshold;
     }
 
     /**
