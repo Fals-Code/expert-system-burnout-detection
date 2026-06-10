@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ringkasan Evaluasi Kerja – BurnoutXpert')
+@section('title', 'Ringkasan Check-in Kerja – BurnoutXpert')
 
 @section('content')
 @php
@@ -48,7 +48,7 @@
         'badge' => 'background:#475569; color:#ffffff;',
         'soft' => 'background:#f1f5f9; color:#334155; border-color:#e2e8f0;',
         'label' => 'Ringkasan Evaluasi',
-        'title' => 'Ringkasan Evaluasi Kerja',
+        'title' => 'Ringkasan Check-in Kerja',
         'icon' => 'i',
     ];
 @endphp
@@ -58,15 +58,15 @@
         <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.5rem;">
             <div>
                 <h1 style="margin:0 0 0.5rem; color:var(--color-primary); font-size:2rem; font-weight:900; letter-spacing:-0.03em;">
-                    Ringkasan Evaluasi Kerja
+                    Ringkasan Check-in Kerja
                 </h1>
                 <p style="margin:0; color:var(--color-gray-500); line-height:1.7; max-width:760px;">
-                    Ringkasan ini membantu Anda memahami area kerja yang sudah stabil dan area yang mungkin membutuhkan dukungan. Hasil dibaca dari catatan evaluasi yang sudah tersimpan, sehingga refresh halaman tidak menghitung ulang dari awal.
+                    Ringkasan ini membantu Anda memahami area kerja yang sudah stabil dan area yang mungkin membutuhkan dukungan. Hasil ini adalah indikasi awal berbasis jawaban check-in, bukan diagnosis medis atau penilaian performa.
                 </p>
             </div>
 
             <a href="{{ route('karyawan.deteksi.reset') }}" style="display:inline-flex; align-items:center; gap:0.5rem; background:#0f172a; color:white; padding:0.85rem 1.15rem; border-radius:999px; text-decoration:none; font-weight:900; box-shadow:0 10px 20px rgba(15,23,42,0.16);">
-                Isi Evaluasi Ulang
+                Isi Check-in Ulang
             </a>
         </div>
 
@@ -87,9 +87,12 @@
                         {{ $theme['title'] }}
                     </h2>
 
-                    <div style="font-size:3rem; font-weight:950; line-height:1; margin-bottom:1rem;">
+                    <div style="font-size:3rem; font-weight:950; line-height:1; margin-bottom:0.65rem;">
                         Skor Keseimbangan: {{ $confidence }}
                     </div>
+                    <p style="margin:0 0 1rem; max-width:760px; line-height:1.7; font-weight:700; opacity:0.88;">
+                        Angka ini membantu membaca pola jawaban, bukan nilai diri atau performa kerja Anda.
+                    </p>
 
                     <p style="margin:0; max-width:760px; line-height:1.8; font-weight:600;">
                         {{ $diagnosis->deskripsi ?? 'Deskripsi evaluasi belum tersedia di database.' }}
@@ -116,6 +119,27 @@
                 </div>
             </section>
         </div>
+
+        <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem; background:#f8fafc; border-color:#e2e8f0;">
+            <h3 class="card-title" style="margin-bottom:0.75rem;">Pilihan Dukungan Ringan</h3>
+            <p style="margin:0 0 1rem; color:var(--color-gray-500); line-height:1.7; font-size:0.92rem;">
+                Anda tidak harus menindaklanjuti semuanya. Pilih satu langkah kecil yang paling realistis untuk kondisi minggu ini.
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem;">
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
+                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Atur prioritas kerja</div>
+                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Catat satu tugas yang paling menguras energi, lalu urutkan ulang prioritas harian.</p>
+                </div>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
+                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Diskusikan beban kerja</div>
+                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Bicarakan hambatan atau deadline yang terasa berat jika kondisi ini berlanjut.</p>
+                </div>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
+                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Pulihkan energi</div>
+                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Ambil jeda singkat, tidur cukup, dan batasi tambahan pekerjaan yang belum mendesak.</p>
+                </div>
+            </div>
+        </section>
 
         <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
             <h3 class="card-title" style="margin-bottom:1rem;">Area yang Perlu Dukungan</h3>
@@ -156,13 +180,13 @@
 
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
             <a href="{{ route('karyawan.deteksi.reset') }}" class="btn-action" style="background:#0f172a; color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Isi Evaluasi Ulang
+                Isi Check-in Ulang
             </a>
             <a href="{{ route('karyawan.laporan.download', ['id' => $konsultasi->id]) }}" class="btn-action" target="_blank" style="background:var(--color-primary); color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
                 Unduh Ringkasan
             </a>
-            <a href="{{ route('karyawan.dashboard') }}" class="btn-action" style="background:#f1f5f9; color:#334155; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Dashboard
+            <a href="{{ route('karyawan.history') }}" class="btn-action" style="background:#f1f5f9; color:#334155; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
+                Lihat Riwayat Check-in
             </a>
         </div>
     </main>
@@ -170,7 +194,8 @@
 
 <style>
     @media (max-width: 768px) {
-        [style*="grid-template-columns:2fr 1fr"] { grid-template-columns:1fr !important; }
+        [style*="grid-template-columns:2fr 1fr"],
+        [style*="grid-template-columns:repeat(3"] { grid-template-columns:1fr !important; }
         .result-container { padding-left:1rem !important; padding-right:1rem !important; }
     }
 </style>
