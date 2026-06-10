@@ -23,7 +23,7 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Halaman intro deteksi
+     * Halaman intro check-in kerja.
      */
     public function intro()
     {
@@ -32,7 +32,7 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Tampilkan halaman deteksi (Wizard)
+     * Tampilkan halaman check-in kerja (Wizard).
      */
     public function index()
     {
@@ -117,14 +117,14 @@ class DeteksiController extends Controller
     }
 
     /**
-     * Menyimpan sesi deteksi secara persisten ke database.
+     * Menyimpan sesi check-in secara persisten ke database.
      */
     public function saveSession(Request $request)
     {
         $answers = Session::get('deteksi_answers', []);
 
         if (empty($answers)) {
-            return redirect()->route('karyawan.dashboard')->with('info', 'Tidak ada progres deteksi yang perlu disimpan.');
+            return redirect()->route('karyawan.dashboard')->with('info', 'Belum ada progres check-in yang perlu disimpan.');
         }
 
         \App\Models\DeteksiSession::updateOrCreate(
@@ -137,11 +137,11 @@ class DeteksiController extends Controller
 
         Session::forget('deteksi_answers');
 
-        return redirect()->route('karyawan.dashboard')->with('success', 'Sesi deteksi Anda berhasil disimpan secara aman! Anda dapat melanjutkannya kapan saja.');
+        return redirect()->route('karyawan.dashboard')->with('success', 'Progres check-in berhasil disimpan. Anda dapat melanjutkannya kapan saja.');
     }
 
     /**
-     * Memulihkan sesi deteksi yang tersimpan secara persisten.
+     * Memulihkan sesi check-in yang tersimpan secara persisten.
      */
     public function resumeSession(Request $request)
     {
@@ -150,10 +150,10 @@ class DeteksiController extends Controller
         if ($savedSession) {
             Session::put('deteksi_answers', $savedSession->answers);
             $savedSession->delete();
-            return redirect()->route('karyawan.deteksi')->with('success', 'Sesi deteksi Anda berhasil dipulihkan.');
+            return redirect()->route('karyawan.deteksi')->with('success', 'Progres check-in berhasil dipulihkan.');
         }
 
-        return redirect()->route('karyawan.deteksi')->with('error', 'Tidak ada sesi tersimpan.');
+        return redirect()->route('karyawan.deteksi')->with('error', 'Tidak ada sesi check-in tersimpan.');
     }
 
     /**
@@ -201,7 +201,7 @@ class DeteksiController extends Controller
         if (empty($answers)) {
             return redirect()
                 ->route('karyawan.deteksi')
-                ->with('error', 'Belum ada jawaban yang dapat dianalisis. Silakan isi survei terlebih dahulu.');
+                ->with('error', 'Belum ada jawaban yang dapat dianalisis. Silakan isi check-in terlebih dahulu.');
         }
 
         $result = $this->expertSystem->solve($answers);
@@ -238,7 +238,7 @@ class DeteksiController extends Controller
         $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
 
         if (!$konsultasi) {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Data hasil deteksi tidak ditemukan.');
+            return redirect()->route('karyawan.dashboard')->with('error', 'Data hasil check-in tidak ditemukan.');
         }
 
         abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
@@ -273,7 +273,7 @@ class DeteksiController extends Controller
 
         return redirect()
             ->route('karyawan.deteksi')
-            ->with('info', 'Sesi lama sudah dibersihkan. Silakan mulai survei baru dari awal.');
+            ->with('info', 'Sesi lama sudah dibersihkan. Silakan mulai check-in baru dari awal.');
     }
 
     /**
