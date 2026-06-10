@@ -44,22 +44,10 @@
     </header>
 
     <section class="quiet-metrics" aria-label="Ringkasan check-in">
-        <div>
-            <span>Total Check-in</span>
-            <strong>{{ $total_deteksi }}</strong>
-        </div>
-        <div>
-            <span>Perubahan Terakhir</span>
-            <strong style="color:{{ $trendColor }};">{{ $trendLabel }}</strong>
-        </div>
-        <div>
-            <span>Kondisi Terakhir</span>
-            <strong>{{ $lastLabel }}</strong>
-        </div>
-        <div>
-            <span>Skor Sistem</span>
-            <strong>{{ $latestScore }}</strong>
-        </div>
+        <div><span>Total Check-in</span><strong>{{ $total_deteksi }}</strong></div>
+        <div><span>Perubahan Terakhir</span><strong style="color:{{ $trendColor }};">{{ $trendLabel }}</strong></div>
+        <div><span>Kondisi Terakhir</span><strong>{{ $lastLabel }}</strong></div>
+        <div><span>Skor Sistem</span><strong>{{ $latestScore }}</strong></div>
     </section>
 
     @if($warning_flag)
@@ -122,18 +110,9 @@
             <section class="quiet-section" data-intro="Saran kecil yang bisa dilakukan tanpa membuat proses terasa menghakimi." data-step="5">
                 <h2>Rekomendasi Minggu Ini</h2>
                 <ol class="quiet-steps">
-                    <li>
-                        <strong>Atur prioritas</strong>
-                        <span>Catat satu tugas yang paling menguras energi, lalu pilih langkah kecil pertama.</span>
-                    </li>
-                    <li>
-                        <strong>Jaga ritme kerja</strong>
-                        <span>Gunakan jeda pendek agar energi tidak turun drastis di tengah hari.</span>
-                    </li>
-                    <li>
-                        <strong>Minta dukungan bila perlu</strong>
-                        <span>Diskusikan prioritas atau hambatan jika beban terasa berat berulang.</span>
-                    </li>
+                    <li><strong>Atur prioritas</strong><span>Catat satu tugas yang paling menguras energi, lalu pilih langkah kecil pertama.</span></li>
+                    <li><strong>Jaga ritme kerja</strong><span>Gunakan jeda pendek agar energi tidak turun drastis di tengah hari.</span></li>
+                    <li><strong>Minta dukungan bila perlu</strong><span>Diskusikan prioritas atau hambatan jika beban terasa berat berulang.</span></li>
                 </ol>
             </section>
 
@@ -156,67 +135,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     @if(count($chart_dates) > 0)
         const trendOptions = {
-            series: [{
-                name: 'Skor Keseimbangan',
-                data: {!! json_encode($chart_scores) !!}
-            }],
-            chart: {
-                type: 'area',
-                height: 280,
-                toolbar: { show: false },
-                zoom: { enabled: false },
-                fontFamily: 'Poppins, sans-serif'
-            },
+            series: [{ name: 'Skor Keseimbangan', data: {!! json_encode($chart_scores) !!} }],
+            chart: { type: 'area', height: 280, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'Poppins, sans-serif' },
             colors: ['#2563eb'],
-            fill: {
-                type: 'gradient',
-                gradient: { shadeIntensity: 1, opacityFrom: 0.18, opacityTo: 0.02, stops: [0, 90, 100] }
-            },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.18, opacityTo: 0.02, stops: [0, 90, 100] } },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 3 },
-            xaxis: {
-                categories: {!! json_encode($chart_dates) !!},
-                axisBorder: { show: false },
-                axisTicks: { show: false },
-                labels: { style: { colors: '#94a3b8', fontSize: '11px' } }
-            },
-            yaxis: {
-                min: 0,
-                max: 100,
-                tickAmount: 4,
-                labels: { style: { colors: '#94a3b8', fontSize: '11px' } }
-            },
+            xaxis: { categories: {!! json_encode($chart_dates) !!}, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#94a3b8', fontSize: '11px' } } },
+            yaxis: { min: 0, max: 100, tickAmount: 4, labels: { style: { colors: '#94a3b8', fontSize: '11px' } } },
             grid: { borderColor: '#eef2f7', strokeDashArray: 4 },
-            tooltip: {
-                theme: 'light',
-                y: { formatter: (val) => val.toFixed(1) + ' skor' }
-            },
+            tooltip: { theme: 'light', y: { formatter: (val) => val.toFixed(1) + ' skor' } },
             markers: { size: 4, strokeWidth: 2, strokeColors: '#ffffff', hover: { size: 6 } }
         };
-
-        const chart = new ApexCharts(document.querySelector('#longitudinalTrendChart'), trendOptions);
-        chart.render();
+        new ApexCharts(document.querySelector('#longitudinalTrendChart'), trendOptions).render();
     @endif
 
     if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_dashboard')) {
         setTimeout(() => {
-            introJs().setOptions({
-                nextLabel: 'Lanjut',
-                prevLabel: 'Kembali',
-                doneLabel: 'Mengerti',
-                showStepNumbers: true,
-                showBullets: true,
-                overlayOpacity: 0.6
-            }).start();
+            introJs().setOptions({ nextLabel: 'Lanjut', prevLabel: 'Kembali', doneLabel: 'Mengerti', showStepNumbers: true, showBullets: true, overlayOpacity: 0.6 }).start();
         }, 1200);
     }
 });
 </script>
 @endpush
 
+@push('styles')
 <style>
     .quiet-page { max-width: 1180px; margin: 0 auto; }
-    .quiet-hero { padding: 0.75rem 0 1.5rem; border-bottom: 1px solid rgba(148,163,184,.18); }
+    .quiet-hero { padding: .75rem 0 1.5rem; border-bottom: 1px solid rgba(148,163,184,.18); }
     .quiet-kicker { margin: 0 0 .65rem; color: #2563eb; font-size: .72rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
     .quiet-hero-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; }
     .quiet-hero h1 { margin: 0; color: #0f172a; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.05; letter-spacing: -.06em; }
@@ -245,12 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .quiet-data-list div { display:flex; justify-content:space-between; gap:1rem; padding-bottom:.8rem; border-bottom:1px solid rgba(148,163,184,.14); }
     .quiet-data-list dt { color:#64748b; font-size:.85rem; }
     .quiet-data-list dd { margin:0; color:#0f172a; font-weight:950; }
-    @media (max-width: 960px) {
-        .quiet-hero-row, .quiet-layout { flex-direction: column; display:flex; align-items:stretch; }
-        .quiet-metrics, .quiet-two-col { grid-template-columns:1fr 1fr; }
-    }
-    @media (max-width: 640px) {
-        .quiet-metrics, .quiet-two-col { grid-template-columns:1fr; }
-    }
+    @media (max-width: 960px) { .quiet-hero-row, .quiet-layout { flex-direction: column; display:flex; align-items:stretch; } .quiet-metrics, .quiet-two-col { grid-template-columns:1fr 1fr; } }
+    @media (max-width: 640px) { .quiet-metrics, .quiet-two-col { grid-template-columns:1fr; } }
 </style>
-@endsection
+@endpush
