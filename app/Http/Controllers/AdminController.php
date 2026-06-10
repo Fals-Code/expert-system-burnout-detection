@@ -7,11 +7,29 @@ use App\Models\User;
 use App\Models\Gejala;
 use App\Models\Aturan;
 use App\Models\AuditLog;
+use App\Models\Diagnosa;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->boolean('refresh_knowledge_base')) {
+            $this->forgetKnowledgeBaseCache();
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'REFRESH_KNOWLEDGE_CACHE',
+                'entity' => 'KnowledgeBase',
+                'desc' => 'Admin menyegarkan cache basis pengetahuan sistem pakar dari dashboard.',
+            ]);
+
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('success', 'Basis pengetahuan berhasil disegarkan. Perubahan bobot pakar dan threshold terbaru sudah dapat digunakan.');
+        }
+
         $total_users = User::count();
         $total_gejala = Gejala::count();
         $total_aturan = Aturan::count();
@@ -35,13 +53,15 @@ class AdminController extends Controller
             ->unique('user_id');
 
         $riskDistribution = [
+            'TIDAK BURNOUT' => 0,
             'RENDAH' => 0,
             'SEDANG' => 0,
             'TINGGI' => 0,
             'SANGAT TINGGI' => 0,
         ];
+
         foreach ($latestConsultations as $c) {
-            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'RENDAH');
+            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'TIDAK BURNOUT');
             if (array_key_exists($tingkat, $riskDistribution)) {
                 $riskDistribution[$tingkat]++;
             }
@@ -79,7 +99,7 @@ class AdminController extends Controller
         // 4. Early Warning High-Risk Employees
         $earlyAlerts = [];
         foreach ($latestConsultations as $c) {
-            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'RENDAH');
+            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'TIDAK BURNOUT');
             if ($tingkat === 'TINGGI' || $tingkat === 'SANGAT TINGGI') {
                 $earlyAlerts[] = [
                     'nama' => $c->user?->nama ?? 'Karyawan',
@@ -112,5 +132,19 @@ class AdminController extends Controller
     {
         $logs = AuditLog::with('user')->orderBy('created_at', 'desc')->get();
         return view('admin.logs', compact('logs'));
+    }
+
+    private function forgetKnowledgeBaseCache(): void
+    {
+        Cache::forget('aturan_active_rules_base64');
+        Cache::forget('diagnosa_ordered_base64');
+        Cache::forget('diagnosa_default_rendah_base64');
+        Cache::forget('diagnosa_default_tidak_burnout_base64');
+
+        Diagnosa::query()
+            ->pluck('id')
+            ->each(function ($id) {
+                Cache::forget("aturan_by_diagnosa_{$id}_base64");
+            });
     }
 }
