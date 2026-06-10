@@ -53,7 +53,7 @@ class NotificationService
                 }
 
                 if ($hrd->no_telp) {
-                    $waMessage = "[Ruang Check-in]\n\n" .
+                    $waMessage = "[Sanctuary Hub]\n\n" .
                                  "Halo {$hrd->nama},\n" .
                                  "Ada check-in karyawan yang perlu ditinjau dengan pendekatan suportif:\n\n" .
                                  "Nama: {$user->nama}\n" .
