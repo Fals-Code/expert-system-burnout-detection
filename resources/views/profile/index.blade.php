@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profil & Privasi – Ruang Check-in')
+@section('title', 'Profil & Privasi – Sanctuary Hub')
 
 @section('content')
 @php
@@ -40,7 +40,7 @@
         <p style="display:inline-flex;align-items:center;margin:0 0 .6rem;padding:.35rem .75rem;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-size:.75rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;">
             Profil & Privasi
         </p>
-        <h1 style="margin-bottom:.5rem;">Ruang Akun Pribadi</h1>
+        <h1 style="margin-bottom:.5rem;">Akun Pribadi</h1>
         <p style="max-width:760px;color:#64748b;line-height:1.7;">
             Kelola informasi akun, keamanan login, dan pahami bagaimana data check-in Anda digunakan. Halaman ini dibuat sebagai ruang kendali pribadi, bukan tempat memberi label kondisi Anda. Hebat, akun pun akhirnya punya sedikit martabat.
         </p>
