@@ -427,7 +427,7 @@ Gunakan alur berikut saat presentasi:
 
 ## 👥 Contributor
 
-**Kelompok 8 Universitas Airlangga**  
+**Ahmad Mathlaul Falah**  
 Program Studi D4 Teknik Informatika  
 Proyek Sistem Pakar Deteksi Burnout Karyawan
 
