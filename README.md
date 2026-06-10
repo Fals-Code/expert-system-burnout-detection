@@ -1,213 +1,445 @@
-# 🔥 BurnoutXpert – Sistem Pakar Deteksi Burnout Karyawan
+# 🔥 BurnoutXpert
 
-> Aplikasi berbasis web untuk mendeteksi tingkat burnout karyawan menggunakan metode **Backward Chaining** dan **Certainty Factor (CF)**, dibangun dengan framework **Laravel 11**.
+> **Sistem Pakar berbasis web untuk mendeteksi tingkat burnout karyawan secara dini** dengan metode **Backward Chaining**, **Certainty Factor**, directional evidence, dan pengamanan data hasil diagnosis.
 
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-
----
-
-## 📋 Deskripsi
-
-BurnoutXpert adalah sistem pakar yang dirancang untuk membantu perusahaan mendeteksi tingkat burnout karyawan secara dini. Sistem ini menggunakan:
-
-- **Backward Chaining** – Metode inferensi goal-driven yang menguji hipotesis dari tingkat burnout tertinggi ke terendah
-- **Certainty Factor (CF)** – Mengukur tingkat keyakinan diagnosis berdasarkan jawaban pengguna dan bobot pakar
-- **Knowledge Base berbasis MBI** – Gejala-gejala disusun berdasarkan Maslach Burnout Inventory (Maslach, Jackson & Leiter, 1996)
-
-### Referensi Ilmiah
-
-| Sumber                                                                                                                       | Keterangan                           |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Maslach, C., Jackson, S.E. & Leiter, M.P. (1996). _Maslach Burnout Inventory Manual_ (3rd ed.). CPP.                         | Instrumen standar pengukuran burnout |
-| Maslach, C. & Leiter, M.P. (2016). _Understanding the burnout experience_. World Psychiatry, 15(2), 103-111.                 | Teori 3 dimensi burnout              |
-| Shortliffe, E.H. & Buchanan, B.G. (1975). _A model of inexact reasoning in medicine_. Mathematical Biosciences, 23, 351-379. | Certainty Factor model               |
+<p align="left">
+  <img src="https://img.shields.io/badge/PHP-8.3+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.3+">
+  <img src="https://img.shields.io/badge/Laravel-Framework-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel Framework">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/MySQL%2FMariaDB-Database-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL MariaDB">
+  <img src="https://img.shields.io/badge/PHPUnit-Feature_Testing-6C3?style=for-the-badge&logo=php&logoColor=white" alt="PHPUnit">
+</p>
 
 ---
 
-## ✨ Fitur Utama
+## 📌 Table of Contents
 
-### 🧠 Sistem Pakar
-
-- Backward Chaining + Certainty Factor (CF Combine)
-- 12 gejala berbasis MBI (4 kategori: Emosional, Perilaku, Kognitif, Fisik)
-- 8 rules dengan 4 tingkat diagnosis
-- Explanation Facility (penjelasan bahasa natural)
-- Tracing kalkulasi transparan
-
-### 👥 Multi-Role System
-
-| Role         | Akses                                                      |
-| ------------ | ---------------------------------------------------------- |
-| **Admin**    | CRUD Knowledge Base, manajemen user, audit log             |
-| **HRD**      | Dashboard monitoring, laporan per divisi, riwayat karyawan |
-| **Karyawan** | Deteksi burnout (wizard), riwayat + grafik tren, unduh PDF |
-
-### 🎨 UI/UX
-
-- Dark mode toggle
-- Responsive design
-- ApexCharts analytics
-- SweetAlert2 confirmations
-- Progressive Web App (PWA)
-- Animated page transitions
-
-### 🔒 Keamanan
-
-- CSRF protection
-- Password hashing (bcrypt)
-- Role-based access control (middleware)
-- Login rate limiting (5x per 2 menit)
-- Audit logging
-
-### 🛠️ Perubahan Terbaru
-
-- Memperbaiki duplikasi method dan syntax error di `app/Services/ExpertSystemService.php`
-- Menghilangkan warning properti dinamis Eloquent dengan menambah docblock model
-- Memperbaiki konstruktor model default menggunakan `Diagnosa::make()` untuk fallback hasil diagnosis
-- Menjaga stabilitas notifikasi dan controller pada `NotificationService` dan `NotificationController`
+- [Project Overview](#-project-overview)
+- [Alur Logika Sistem Pakar](#-alur-logika-sistem-pakar)
+- [Core Features](#-core-features)
+- [Security & Reliability Engineering](#-security--reliability-engineering)
+- [Directory Structure](#-directory-structure)
+- [Installation Guide](#-installation-guide)
+- [Cache Management](#-cache-management)
+- [Automated Testing Protocol](#-automated-testing-protocol)
+- [Contributor](#-contributor)
 
 ---
 
-## 🚀 Instalasi
+## 🧠 Project Overview
+
+**BurnoutXpert** adalah aplikasi web berbasis **Laravel + Blade** yang dirancang untuk membantu perusahaan melakukan deteksi dini terhadap kondisi burnout karyawan. Sistem ini tidak hanya menyimpan hasil survei, tetapi juga menjalankan proses inferensi berbasis **Sistem Pakar** untuk menghasilkan diagnosis yang dapat ditelusuri kembali melalui rule, bobot pakar, dan nilai Certainty Factor.
+
+Aplikasi ini menggunakan pendekatan kuesioner yang dibuat lebih netral secara psikologis melalui judul:
+
+> **“Survei Evaluasi Kenyamanan dan Kebugaran Lingkungan Kerja Karyawan”**
+
+Tujuannya adalah mengurangi **response bias**, yaitu kecenderungan pengguna menjawab seolah-olah sedang diarahkan menuju diagnosis tertentu. Karena ya, bahkan manusia bisa bias hanya karena judul halaman. Teknologi hebat, psikologi tetap licik.
+
+### Hasil Diagnosis
+
+| Kode | Diagnosis | Makna |
+|---|---|---|
+| **D01** | **Tidak Burnout / Sehat** | Tidak ditemukan pola gejala burnout yang signifikan. |
+| **D02** | **Burnout Tinggi** | Gejala burnout kuat dan memerlukan tindak lanjut cepat. |
+| **D03** | **Burnout Sedang** | Gejala mulai terlihat dan perlu dikendalikan. |
+| **D04** | **Burnout Rendah** | Indikasi ringan, tetap perlu pemantauan. |
+
+---
+
+## 🔎 Alur Logika Sistem Pakar
+
+BurnoutXpert menggunakan metode **Backward Chaining**, yaitu proses inferensi yang dimulai dari hipotesis diagnosis, lalu menelusuri gejala yang mendukung atau melemahkan hipotesis tersebut.
+
+Engine utama berada pada:
+
+```text
+app/Services/ExpertSystemService.php
+```
+
+### 1. Backward Chaining
+
+Sistem mengevaluasi rule aktif dari basis pengetahuan, lalu mencocokkan jawaban karyawan dengan gejala pada setiap aturan.
+
+```text
+Hipotesis Diagnosis → Evaluasi Rule → Cocokkan Gejala → Hitung CF → Pilih Diagnosis Terkuat
+```
+
+### 2. Certainty Factor Combine
+
+Setiap jawaban pengguna dikonversi menjadi nilai **CF User**, lalu dikalikan dengan bobot pakar pada rule.
+
+```text
+CF Sub = CF User × Bobot Pakar
+CF Final = CF Combine Gejala × CF Pakar Rule
+```
+
+### 3. Directional Evidence Matrix
+
+BurnoutXpert memakai penalaran dua arah agar rule sehat tidak keliru naik saat user menjawab “Ya” pada gejala burnout.
+
+| Evidence Direction | Logika | Contoh |
+|---|---|---|
+| **PRESENT_SUPPORTS** | Gejala yang dialami mendukung diagnosis. | User menjawab “Ya” pada gejala kelelahan → mendukung Burnout Tinggi. |
+| **ABSENT_SUPPORTS** | Gejala yang tidak dialami mendukung diagnosis. | User menjawab “Tidak” pada gejala kelelahan → mendukung Tidak Burnout. |
+
+Dengan model ini, **D01 / Tidak Burnout** tidak dihitung dari banyaknya gejala buruk yang dialami, tetapi dari **absennya gejala burnout utama**. Akhirnya sistem pakar tidak bersikap seperti manusia denial.
+
+### 4. Dynamic Early Stop
+
+Sistem memiliki mekanisme **Dynamic Early Stop** untuk menghentikan proses inferensi lebih cepat jika diagnosis sudah cukup kuat.
+
+Prinsipnya:
+
+- Rule harus valid.
+- Nilai CF harus melewati threshold dinamis.
+- Jumlah jawaban minimum harus terpenuhi.
+- Early stop tidak boleh terlalu agresif agar hasil tidak prematur.
+
+---
+
+## ✨ Core Features
+
+### 👤 Karyawan
+
+| Fitur | Deskripsi |
+|---|---|
+| **Survei evaluasi netral** | Judul dan wording form dibuat tidak terlalu eksplisit menyebut burnout agar mengurangi bias jawaban. |
+| **Deteksi otomatis** | Jawaban diproses oleh engine Backward Chaining + Certainty Factor. |
+| **Hasil diagnosis historis** | Halaman hasil membaca record `Konsultasi` yang sudah fixed, bukan menghitung ulang saat refresh. |
+| **Anti-IDOR** | Karyawan hanya dapat melihat hasil konsultasinya sendiri. |
+| **Laporan PDF** | Hasil dapat dicetak/diunduh sebagai laporan. |
+| **Lakukan Deteksi Ulang** | Tombol reset membersihkan session lama dan mengarahkan user ke survei baru. |
+
+### 🛠️ Admin
+
+| Fitur | Deskripsi |
+|---|---|
+| **Dashboard statistik** | Menampilkan ringkasan user, gejala, aturan, dan log aktivitas. |
+| **Manajemen basis pengetahuan** | Admin dapat mengelola data gejala, diagnosis, aturan, bobot pakar, dan threshold. |
+| **Refresh Basis Pengetahuan** | Tombol sekali klik untuk membersihkan cache knowledge base yang disimpan 24 jam. |
+| **Audit Log** | Aktivitas admin seperti refresh cache dicatat agar proses demo dan operasional dapat dilacak. |
+
+### 🧱 Arsitektur Keamanan & Reliability
+
+| Area | Implementasi |
+|---|---|
+| **Validasi input** | `StoreDeteksiRequest` memvalidasi `gejala_id[]` dengan rule `exists:gejala,id`. |
+| **Atomic persistence** | Penyimpanan hasil diagnosis memakai `DB::transaction()` agar data konsultasi, tracing, dan pivot gejala tidak setengah tersimpan. |
+| **Anti-IDOR** | Controller memakai `abort_if($konsultasi->user_id !== Auth::id(), 403)`. |
+| **Eager loading** | Relasi seperti `diagnosa` dan `gejala` di-load dengan `with()` untuk menghindari N+1 query. |
+| **Cache invalidation** | Admin dapat membersihkan cache rule, diagnosa, dan aturan per diagnosis melalui dashboard. |
+| **Tracing** | Setiap hasil menyimpan detail rule, CF pakar, CF gejala, dan kontribusi gejala. |
+
+---
+
+## 🧩 Directory Structure
+
+Struktur berikut menyoroti folder dan file yang paling penting untuk memahami proyek.
+
+```text
+BurnoutXpert/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AdminController.php
+│   │   │   ├── KaryawanController.php
+│   │   │   └── DeteksiController.php
+│   │   └── Requests/
+│   │       └── StoreDeteksiRequest.php
+│   ├── Models/
+│   │   ├── Aturan.php
+│   │   ├── Diagnosa.php
+│   │   ├── Gejala.php
+│   │   └── Konsultasi.php
+│   └── Services/
+│       └── ExpertSystemService.php
+│
+├── database/
+│   ├── migrations/
+│   │   ├── *_create_burnout_xpert_tables.php
+│   │   ├── *_enhance_expert_system_tables.php
+│   │   └── *_add_evidence_direction_to_aturan_gejala_table.php
+│   └── seeders/
+│
+├── resources/
+│   └── views/
+│       ├── admin/
+│       │   └── dashboard.blade.php
+│       └── karyawan/
+│           └── deteksi/
+│               ├── form.blade.php
+│               ├── hasil.blade.php
+│               └── report.blade.php
+│
+├── routes/
+│   └── web.php
+│
+├── tests/
+│   └── Feature/
+│       └── DiagnosisTest.php
+│
+├── composer.json
+├── package.json
+├── phpunit.xml
+└── README.md
+```
+
+### File Kunci
+
+| File | Fungsi |
+|---|---|
+| `ExpertSystemService.php` | Engine inferensi Backward Chaining, Certainty Factor, directional evidence, explanation facility. |
+| `DeteksiController.php` | Mengatur flow survei, proses diagnosis, transaction, hasil, reset deteksi ulang. |
+| `StoreDeteksiRequest.php` | Validasi input gejala agar ID dan kode gejala valid. |
+| `DiagnosisTest.php` | Feature test untuk menguji diagnosis sehat dan burnout tinggi. |
+| `admin/dashboard.blade.php` | Dashboard admin dan tombol refresh basis pengetahuan. |
+| `karyawan/deteksi/form.blade.php` | Form survei evaluasi kerja dengan wording netral. |
+| `karyawan/deteksi/hasil.blade.php` | Halaman hasil diagnosis berbasis record historis `Konsultasi`. |
+
+---
+
+## ⚙️ Installation Guide
 
 ### Prasyarat
 
-- PHP ≥ 8.2
-- Composer
-- MySQL / MariaDB
-- Node.js ≥ 18 (opsional, untuk asset compilation)
+| Komponen | Versi yang Disarankan |
+|---|---|
+| PHP | 8.3+ |
+| Composer | Versi terbaru stabil |
+| Node.js | 18+ atau 20+ |
+| Database | MySQL / MariaDB |
+| Package manager frontend | npm |
 
-### Langkah Instalasi
+### 1. Clone Repository
 
 ```bash
-# 1. Clone repository
 git clone https://github.com/Fals-Code/expert-system-burnout-detection.git
 cd expert-system-burnout-detection
+```
 
-# 2. Install dependensi PHP
+### 2. Install Dependency Backend
+
+```bash
 composer install
+```
 
-# 3. Copy environment file
+### 3. Install Dependency Frontend
+
+```bash
+npm install
+```
+
+### 4. Siapkan Environment
+
+```bash
 cp .env.example .env
-
-# 4. Generate application key
 php artisan key:generate
+```
 
-# 5. Konfigurasi database di .env
-#    Ubah sesuai kredensial MySQL Anda:
-#    DB_DATABASE=burnoutxpert
-#    DB_USERNAME=root
-#    DB_PASSWORD=
+Konfigurasi database di `.env`:
 
-# 6. Jalankan migrasi database
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=burnoutxpert
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+> Sesuaikan `DB_USERNAME` dan `DB_PASSWORD` dengan konfigurasi lokal. Komputer dosen tidak akan menebak kredensial database kamu, meski kadang manusia berharap begitu.
+
+### 5. Migrasi dan Seeder
+
+```bash
+php artisan migrate --seed
+```
+
+Jika ingin menjalankan migrasi tanpa seed:
+
+```bash
 php artisan migrate
+```
 
-# 7. Seed data Knowledge Base + User demo
-php artisan db:seed
+### 6. Build Asset Frontend
 
-# 8. Jalankan server development
+Untuk produksi atau demo stabil:
+
+```bash
+npm run build
+```
+
+Untuk development:
+
+```bash
+npm run dev
+```
+
+### 7. Jalankan Server Lokal
+
+```bash
 php artisan serve
 ```
 
-### Akun Demo
+Akses aplikasi melalui:
 
-| Role     | Email                     | Password |
-| -------- | ------------------------- | -------- |
-| Admin    | admin@burnoutxpert.com    | password |
-| HRD      | hrd@burnoutxpert.com      | password |
-| Karyawan | karyawan@burnoutxpert.com | password |
-
-> ⚠️ Ganti password default setelah login pertama kali!
-
----
-
-## 📁 Struktur Proyek
-
-```
-├── app/
-│   ├── Http/Controllers/
-│   │   ├── Auth/LoginController.php     # Autentikasi + rate limiting
-│   │   ├── Admin/                       # CRUD Knowledge Base + Users
-│   │   ├── Hrd/ReportController.php     # Laporan & monitoring
-│   │   ├── DeteksiController.php        # Wizard deteksi burnout
-│   │   ├── KaryawanController.php       # Dashboard + riwayat
-│   │   └── ProfileController.php        # Profil + ubah sandi
-│   ├── Models/
-│   │   ├── Gejala.php                   # 12 gejala MBI-based
-│   │   ├── Diagnosa.php                 # 4 level burnout
-│   │   ├── Aturan.php                   # 8 rules inferensi
-│   │   └── Konsultasi.php               # Hasil deteksi
-│   └── Services/
-│       ├── ExpertSystemService.php      # Engine BC + CF + Explanation
-│       └── NotificationService.php      # Notifikasi sistem
-├── database/
-│   ├── migrations/                      # Schema database
-│   └── seeders/
-│       └── BurnoutKnowledgeBaseSeeder.php  # Knowledge base MBI
-├── resources/views/
-│   ├── admin/                           # Views admin
-│   ├── hrd/                             # Views HRD + reports
-│   ├── karyawan/                        # Views karyawan + deteksi
-│   ├── errors/                          # Custom error pages (403/404/500)
-│   └── layouts/                         # Template layouts
-├── tests/Unit/
-│   └── ExpertSystemServiceTest.php      # 19 unit tests (58 assertions)
-└── public/
-    ├── manifest.json                    # PWA manifest
-    ├── sw.js                            # Service Worker
-    └── assets/css/                      # Stylesheets
+```text
+http://127.0.0.1:8000
 ```
 
 ---
 
-## 🧪 Testing
+## ♻️ Cache Management
+
+BurnoutXpert menyimpan beberapa bagian basis pengetahuan selama 24 jam agar proses inferensi tidak melakukan query berulang.
+
+Cache utama yang digunakan:
+
+| Cache Key | Kegunaan |
+|---|---|
+| `aturan_active_rules_base64` | Menyimpan rule aktif beserta relasi diagnosis dan gejala. |
+| `diagnosa_ordered_base64` | Menyimpan urutan diagnosis untuk inferensi. |
+| `diagnosa_default_tidak_burnout_base64` | Menyimpan fallback diagnosis sehat. |
+| `aturan_by_diagnosa_{id}_base64` | Menyimpan rule aktif per diagnosis. |
+
+### Refresh dari Dashboard Admin
+
+Admin dapat membuka dashboard lalu menekan tombol:
+
+```text
+Refresh Basis Pengetahuan
+```
+
+Tombol ini memanggil logic `Cache::forget()` untuk membersihkan cache basis pengetahuan tanpa perlu membuka terminal.
+
+### Refresh Manual dari Terminal
 
 ```bash
-# Jalankan semua tests
+php artisan optimize:clear
+```
+
+Gunakan ini setelah perubahan konfigurasi besar, perubahan environment, atau saat Laravel mulai bertingkah seperti menyimpan dendam di cache.
+
+---
+
+## 🧪 Automated Testing Protocol
+
+BurnoutXpert memiliki pengujian otomatis untuk memastikan perubahan knowledge base tidak merusak hasil inferensi.
+
+Test utama:
+
+```text
+tests/Feature/DiagnosisTest.php
+```
+
+### Tujuan Test
+
+| Test Case | Ekspektasi |
+|---|---|
+| Karyawan sehat | Sistem menampilkan **Tidak Burnout** dan rule **R01**. |
+| Gejala burnout tinggi | Sistem menampilkan **Burnout Tinggi** dan tidak jatuh ke D01. |
+
+### Teknik Runtime Route Injection
+
+`DiagnosisTest` menggunakan teknik **Runtime Route Injection** pada `setUp()` untuk membuat endpoint testing `POST /diagnosis` tanpa harus mengubah route produksi.
+
+Keuntungan pendekatan ini:
+
+- Test fokus pada integritas engine diagnosis.
+- Route produksi tetap bersih.
+- Payload `gejala_id[]` dapat disimulasikan langsung.
+- Feature test bisa memverifikasi hasil Blade dengan `assertSeeText()`.
+
+### Jalankan Test Spesifik
+
+```bash
+php artisan test --filter=DiagnosisTest
+```
+
+### Jalankan Semua Test
+
+```bash
 php artisan test
+```
 
-# Jalankan hanya unit test expert system
-php artisan test --filter=ExpertSystemServiceTest
+### Jika Cache Mengganggu Test
 
-# Expected output: 19 tests, 58 assertions — PASSED
+```bash
+php artisan optimize:clear
+php artisan test --filter=DiagnosisTest
 ```
 
 ---
 
-## 📊 Knowledge Base
+## 🔐 Security Notes
 
-### Dimensi Gejala (MBI-Based)
+### Anti-IDOR Protection
 
-| Dimensi                         | Kode    | Gejala                                                  | Bobot     |
-| ------------------------------- | ------- | ------------------------------------------------------- | --------- |
-| Emotional Exhaustion            | G01-G04 | Terkuras emosional, kelelahan, beban berat, mudah marah | 0.60-0.80 |
-| Depersonalization               | G05-G07 | Sinisme, tidak peduli, isolasi diri                     | 0.70-0.90 |
-| Reduced Personal Accomplishment | G08-G10 | Tidak berdampak, sulit konsentrasi, tidak puas          | 0.60-0.70 |
-| Fisik                           | G11-G12 | Sakit kepala/pencernaan, gangguan tidur                 | 0.55-0.60 |
+Halaman hasil diagnosis dilindungi agar satu karyawan tidak dapat membaca hasil milik karyawan lain hanya dengan mengganti ID URL.
 
-### Rules Inferensi
+```php
+abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
+```
 
-| Rule | Diagnosa      | CF Pakar | Gejala             |
-| ---- | ------------- | -------- | ------------------ |
-| R01  | Sangat Tinggi | 0.95     | G01, G02, G05, G06 |
-| R02  | Sangat Tinggi | 0.90     | G01, G04, G07, G12 |
-| R03  | Tinggi        | 0.85     | G01, G03, G08, G09 |
-| R04  | Tinggi        | 0.80     | G05, G06, G07, G11 |
-| R05  | Sedang        | 0.75     | G01, G11, G12      |
-| R06  | Sedang        | 0.70     | G08, G09, G10, G04 |
-| R07  | Rendah        | 0.60     | G04, G10           |
-| R08  | Rendah        | 0.55     | G11, G12, G02      |
+### Database Transaction
+
+Penyimpanan hasil diagnosis memakai transaction:
+
+```php
+$konsultasi = DB::transaction(function () use ($result, $answers) {
+    return $this->expertSystem->saveResult(Auth::id(), $result, $answers);
+});
+```
+
+Jika proses attach pivot gejala gagal, seluruh penyimpanan akan rollback.
+
+### Validasi Bertingkat
+
+`StoreDeteksiRequest` memastikan:
+
+```php
+'gejala_id' => ['sometimes', 'array'],
+'gejala_id.*' => ['integer', 'exists:gejala,id'],
+```
+
+Dengan ini, payload gejala palsu seperti `99999` tidak akan masuk ke engine.
 
 ---
 
-## 📄 Lisensi
+## 🧭 Recommended Demo Flow
 
-Proyek ini dikembangkan untuk keperluan akademis – UAS Mata Kuliah **Kecerdasan Buatan**, Program Studi D4 Teknik Informatika.
+Gunakan alur berikut saat presentasi:
+
+| Langkah | Aksi |
+|---|---|
+| 1 | Login sebagai Admin. |
+| 2 | Buka dashboard admin dan tunjukkan statistik sistem. |
+| 3 | Ubah bobot pakar atau threshold pada basis pengetahuan. |
+| 4 | Klik **Refresh Basis Pengetahuan**. |
+| 5 | Login sebagai Karyawan. |
+| 6 | Isi survei evaluasi kerja dengan skenario sehat atau burnout tinggi. |
+| 7 | Tunjukkan hasil diagnosis, rule dominan, CF, tracing, dan rekomendasi. |
+| 8 | Klik **Lakukan Deteksi Ulang** untuk membuktikan state lama dibersihkan. |
+| 9 | Jalankan `php artisan test --filter=DiagnosisTest` untuk menunjukkan validasi otomatis. |
+
+---
+
+## 👥 Contributor
+
+**Kelompok 8 Universitas Airlangga**  
+Program Studi D4 Teknik Informatika  
+Proyek Sistem Pakar Deteksi Burnout Karyawan
+
+---
+
+## 📄 License
+
+Proyek ini dikembangkan untuk keperluan akademik dan demonstrasi rekayasa perangkat lunak berbasis sistem pakar.
 
 ---
 
 <p align="center">
-  <strong>BurnoutXpert</strong> · Dibuat menggunakan Laravel 11
+  <strong>BurnoutXpert</strong><br>
+  Laravel · Blade · Tailwind CSS · MySQL/MariaDB · Backward Chaining · Certainty Factor
 </p>
