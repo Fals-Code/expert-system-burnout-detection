@@ -226,8 +226,12 @@ class DeteksiController extends Controller
 
         // Generate Explanation Facility
         $tracing = $konsultasi->tracing ?? [];
+        $currentResult = [
+            'tracing' => is_array($tracing) ? $tracing : [],
+        ];
+
         $explanation = $this->expertSystem->generateExplanation(
-            is_array($tracing) ? $tracing : [],
+            $currentResult['tracing'] ?? [],
             $konsultasi->diagnosa,
             $konsultasi->cf_final
         );
@@ -235,7 +239,7 @@ class DeteksiController extends Controller
         return view('karyawan.deteksi.hasil', [
             'konsultasi'  => $konsultasi,
             'confidence'  => number_format($konsultasi->cf_final * 100, 1),
-            'tracing'     => $tracing,
+            'tracing'     => $currentResult['tracing'] ?? [], // Pastikan baris ini ada di Controller
             'explanation' => $explanation,
         ]);
     }
