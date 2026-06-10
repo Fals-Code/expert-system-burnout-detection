@@ -21,15 +21,23 @@
 }
 
 .sidebar-brand__icon {
-    width: 40px; height: 40px;
-    background: rgba(244,132,95,0.18);
-    border: 1px solid rgba(244,132,95,0.35);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
-.sidebar-brand__icon svg { color: #F4845F; }
+.sidebar-brand__icon img {
+    width: 42px;
+    height: 42px;
+    display: block;
+}
 
 .sidebar-brand__text {
     font-size: 1.2rem;
@@ -38,7 +46,7 @@
     letter-spacing: -0.02em;
 }
 
-.sidebar-brand__text span { color: #F4845F; }
+.sidebar-brand__text span { color: #7DD3FC; }
 
 .sidebar-user {
     display: flex;
@@ -51,7 +59,7 @@
 .avatar {
     width: 42px; height: 42px;
     border-radius: 50%;
-    background: var(--avatar-bg, linear-gradient(135deg, #F4845F 0%, #E06840 100%));
+    background: var(--avatar-bg, linear-gradient(135deg, #2563EB 0%, #14B8A6 100%));
     display: flex; align-items: center; justify-content: center;
     font-size: 1rem; font-weight: 700; color: #fff;
     flex-shrink: 0;
@@ -65,7 +73,7 @@
 }
 .sidebar-user__role {
     font-size: 0.7rem; font-weight: 600;
-    color: var(--role-color, #F79B7D);
+    color: var(--role-color, #93C5FD);
     text-transform: uppercase; letter-spacing: 0.06em;
 }
 
@@ -101,9 +109,9 @@
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(244,132,95,0.22) 0%, rgba(244,132,95,0.10) 100%);
+    background: linear-gradient(135deg, rgba(37,99,235,0.24) 0%, rgba(20,184,166,0.12) 100%);
     color: #fff;
-    border: 1px solid rgba(244,132,95,0.3);
+    border: 1px solid rgba(125,211,252,0.28);
 }
 
 .nav-item.active::before {
@@ -111,11 +119,11 @@
     position: absolute; left: 0; top: 50%;
     transform: translateY(-50%);
     width: 3px; height: 60%;
-    background: #F4845F;
+    background: #7DD3FC;
     border-radius: 0 3px 3px 0;
 }
 
-.nav-item.active svg { color: #F4845F; }
+.nav-item.active svg { color: #7DD3FC; }
 
 .sidebar-footer {
     padding: 1rem 0.75rem 1.5rem;
