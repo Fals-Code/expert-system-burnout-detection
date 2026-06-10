@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk – Ruang Check-in')
+@section('title', 'Masuk – Sanctuary Hub')
 
 @section('content')
     <div class="bg-decoration">
@@ -12,11 +12,11 @@
         <div class="bg-circle bg-circle--3"></div>
     </div>
 
-    <a href="{{ url('/') }}" class="brand-logo" aria-label="Ruang Check-in">
+    <a href="{{ url('/') }}" class="brand-logo" aria-label="Sanctuary Hub">
         <div class="brand-logo__icon" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;background:#dbeafe;color:#1d4ed8;border-radius:14px;font-weight:900;box-shadow:0 10px 22px rgba(37,99,235,.16);">
             ✓
         </div>
-        <span class="brand-logo__text">Ruang<span class="brand-logo__accent">Check-in</span></span>
+        <span class="brand-logo__text">Sanctuary<span class="brand-logo__accent">Hub</span></span>
     </a>
 
     <main class="login-wrapper" role="main">
@@ -133,7 +133,7 @@
         </div>
 
         <footer class="login-footer" role="contentinfo">
-            <p>&copy; {{ date('Y') }} Ruang Check-in &mdash; Sistem pakar berbasis Backward Chaining</p>
+            <p>&copy; {{ date('Y') }} Sanctuary Hub &mdash; Sistem pakar berbasis Backward Chaining</p>
         </footer>
     </main>
 @endsection
