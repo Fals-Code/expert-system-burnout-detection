@@ -9,9 +9,17 @@ return new class extends Migration
 {
     /**
      * Update master knowledge base after D01 became Tidak Burnout / Healthy State.
+     *
+     * This migration is intentionally guarded because automated tests run migrations
+     * on an empty in-memory SQLite database before seeders are executed.
      */
     public function up(): void
     {
+        if (!$this->canApplyKnowledgeBaseUpdate()) {
+            $this->flushExpertSystemCache();
+            return;
+        }
+
         $now = now();
 
         DB::transaction(function () use ($now) {
@@ -29,6 +37,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('diagnosa') || !DB::table('diagnosa')->where('id', 1)->exists()) {
+            $this->flushExpertSystemCache();
+            return;
+        }
+
         DB::transaction(function () {
             DB::table('diagnosa')->where('id', 1)->update([
                 'nama' => 'Tidak Burnout (Kondisi Sehat)',
@@ -42,6 +55,33 @@ return new class extends Migration
         });
 
         $this->flushExpertSystemCache();
+    }
+
+    private function canApplyKnowledgeBaseUpdate(): bool
+    {
+        if (!Schema::hasTable('diagnosa') || !Schema::hasTable('aturan') || !Schema::hasTable('gejala') || !Schema::hasTable('aturan_gejala')) {
+            return false;
+        }
+
+        $requiredDiagnosaIds = [1, 2, 3, 4];
+        $diagnosaCount = DB::table('diagnosa')
+            ->whereIn('id', $requiredDiagnosaIds)
+            ->count();
+
+        if ($diagnosaCount !== count($requiredDiagnosaIds)) {
+            return false;
+        }
+
+        $requiredGejalaIds = [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        ];
+
+        $gejalaCount = DB::table('gejala')
+            ->whereIn('id', $requiredGejalaIds)
+            ->count();
+
+        return $gejalaCount === count($requiredGejalaIds);
     }
 
     private function updateDiagnosaMaster($now): void
@@ -88,7 +128,7 @@ return new class extends Migration
                     'is_active' => $isActive,
                     'deskripsi' => $deskripsi,
                     'min_threshold' => $minThreshold,
-                    'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
+                    'created_at' => $now,
                     'updated_at' => $now,
                     'deleted_at' => null,
                 ]
@@ -141,6 +181,10 @@ return new class extends Migration
         Cache::forget('diagnosa_ordered_base64');
         Cache::forget('diagnosa_default_rendah_base64');
         Cache::forget('diagnosa_default_tidak_burnout_base64');
+
+        if (!Schema::hasTable('diagnosa')) {
+            return;
+        }
 
         DB::table('diagnosa')
             ->pluck('id')
