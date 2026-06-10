@@ -22,6 +22,52 @@ body {
     background: var(--quiet-bg) !important;
 }
 
+/* Auth/login dibuat lebih bersih, bukan dark-gradient drama pembukaan film. */
+.login-body {
+    background: #fbfcfe !important;
+    overflow-y: auto !important;
+}
+
+.login-body .shape,
+.login-body .bg-circle,
+.login-body .bg-decoration {
+    display: none !important;
+}
+
+.login-wrapper {
+    max-width: 420px !important;
+}
+
+.brand-logo__text {
+    color: var(--quiet-text) !important;
+}
+
+.brand-logo__accent {
+    color: var(--quiet-primary) !important;
+}
+
+.login-card {
+    background: #ffffff !important;
+    border: 1px solid var(--quiet-line-soft) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    padding: 2rem !important;
+}
+
+.login-card::before,
+.btn-login::before {
+    display: none !important;
+}
+
+.login-card__icon {
+    animation: none !important;
+    box-shadow: none !important;
+}
+
+.login-footer {
+    color: var(--quiet-muted) !important;
+}
+
 .page-content {
     padding: 0 2.25rem 2.5rem !important;
 }
@@ -204,6 +250,19 @@ body {
     box-shadow: none !important;
 }
 
+/* Form/input lebih flat */
+.form-input {
+    border-width: 1px !important;
+    border-color: var(--quiet-line-soft) !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.form-input:focus {
+    border-color: rgba(37, 99, 235, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08) !important;
+}
+
 /* Form check-in: pilihan tetap jelas tanpa terasa kotak-kotak berlebihan */
 .likert-option {
     border-color: var(--quiet-line-soft) !important;
@@ -280,6 +339,12 @@ body {
 .btn-action {
     box-shadow: none !important;
     border-radius: 999px !important;
+}
+
+.btn-login {
+    background: var(--quiet-primary) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
 }
 
 .btn-cta:hover,
