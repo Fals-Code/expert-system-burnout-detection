@@ -167,6 +167,39 @@
     </div>
 </header>
 
+<style>
+    .topbar__user {
+        position: relative;
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 280px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--color-gray-100);
+        display: none;
+        overflow: hidden;
+        z-index: 9999;
+        animation: slideDown 0.25s ease;
+    }
+
+    .user-dropdown.active,
+    .user-dropdown.show,
+    .notif-dropdown.active,
+    .notif-dropdown.show {
+        display: block !important;
+    }
+
+    .notif-dropdown,
+    .user-dropdown {
+        pointer-events: auto;
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const bellBtn = document.getElementById('globalBellBtn');
@@ -220,18 +253,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (bellBtn && bellDropdown) {
         bellBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             bellDropdown.classList.toggle('active');
-            if (userDropdown) userDropdown.classList.remove('active');
+            bellDropdown.classList.toggle('show', bellDropdown.classList.contains('active'));
+            if (userDropdown) {
+                userDropdown.classList.remove('active', 'show');
+            }
         });
     }
 
     if (userBtn && userDropdown) {
         userBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             userDropdown.classList.toggle('active');
-            if (bellDropdown) bellDropdown.classList.remove('active');
+            userDropdown.classList.toggle('show', userDropdown.classList.contains('active'));
+            if (bellDropdown) {
+                bellDropdown.classList.remove('active', 'show');
+            }
         });
+    }
+
+    if (bellDropdown) {
+        bellDropdown.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    if (userDropdown) {
+        userDropdown.addEventListener('click', (e) => e.stopPropagation());
     }
 
     window.addEventListener('click', function(e) {
@@ -241,10 +290,10 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.classList.remove('active');
         }
         if (userDropdown && !e.target.closest('#userMenuBtn')) {
-            userDropdown.classList.remove('active');
+            userDropdown.classList.remove('active', 'show');
         }
         if (bellDropdown && !e.target.closest('#globalBellBtn') && !e.target.closest('#globalBellDropdown')) {
-            bellDropdown.classList.remove('active');
+            bellDropdown.classList.remove('active', 'show');
         }
     });
 });
