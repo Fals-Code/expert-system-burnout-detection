@@ -69,7 +69,7 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('category', ['informasi', 'peringatan', 'pengingat'])->default('informasi');
+            $table->string('category', 32)->default('informasi');
             $table->string('title');
             $table->text('message');
             $table->boolean('is_read')->default(false);
