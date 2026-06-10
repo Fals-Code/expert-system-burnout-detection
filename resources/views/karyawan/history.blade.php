@@ -32,18 +32,9 @@
         </section>
     @else
         <section class="quiet-history-summary">
-            <div>
-                <span>Total Check-in</span>
-                <strong>{{ count($history) }}x</strong>
-            </div>
-            <div>
-                <span>Terakhir Diisi</span>
-                <strong>{{ $latest->created_at->translatedFormat('d M Y') }}</strong>
-            </div>
-            <div>
-                <span>Kondisi Terakhir</span>
-                <strong>{{ $latestLabel }}</strong>
-            </div>
+            <div><span>Total Check-in</span><strong>{{ count($history) }}x</strong></div>
+            <div><span>Terakhir Diisi</span><strong>{{ $latest->created_at->translatedFormat('d M Y') }}</strong></div>
+            <div><span>Kondisi Terakhir</span><strong>{{ $latestLabel }}</strong></div>
         </section>
 
         <section class="quiet-history-section" data-intro="Daftar ini menampilkan catatan check-in pribadi Anda. Klik satu baris untuk melihat ringkasan dan area yang muncul." data-step="3">
@@ -113,40 +104,10 @@
         </section>
     @endif
 </div>
-@endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const items = document.querySelectorAll('.quiet-history-item');
-    items.forEach((item) => {
-        item.addEventListener('toggle', function() {
-            if (!this.open) return;
-            items.forEach((other) => {
-                if (other !== this) other.removeAttribute('open');
-            });
-        });
-    });
-
-    if (window.OnboardingHelper && window.OnboardingHelper.shouldShow('karyawan_history')) {
-        setTimeout(() => {
-            introJs().setOptions({
-                nextLabel: 'Lanjut',
-                prevLabel: 'Kembali',
-                doneLabel: 'Mengerti',
-                showStepNumbers: true,
-                showBullets: true,
-                overlayOpacity: 0.6
-            }).start();
-        }, 1200);
-    }
-});
-</script>
-@endpush
 
 <style>
     .quiet-history-page { max-width: 980px; margin: 0 auto; }
-    .quiet-history-header { display:flex; justify-content:space-between; gap:1.5rem; align-items:flex-end; padding:0.75rem 0 1.5rem; border-bottom:1px solid rgba(148,163,184,.18); }
+    .quiet-history-header { display:flex; justify-content:space-between; gap:1.5rem; align-items:flex-end; padding:.75rem 0 1.5rem; border-bottom:1px solid rgba(148,163,184,.18); }
     .quiet-kicker { margin:0 0 .6rem; color:#2563eb; font-size:.72rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
     .quiet-history-header h1 { margin:0; color:#0f172a; font-size:clamp(2rem,4vw,3rem); line-height:1.05; letter-spacing:-.06em; }
     .quiet-history-header p { margin:.75rem 0 0; color:#64748b; line-height:1.75; max-width:660px; }
@@ -177,10 +138,22 @@ document.addEventListener('DOMContentLoaded', function() {
     .quiet-tag-list { margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:.45rem; }
     .quiet-tag-list li { color:#475569; background:#f8fafc; border-radius:999px; padding:.3rem .65rem; font-size:.76rem; font-weight:800; }
     .quiet-link { grid-column:1/-1; color:#2563eb; font-weight:900; text-decoration:none; font-size:.86rem; }
-    @media (max-width: 760px) {
-        .quiet-history-header { flex-direction:column; align-items:flex-start; }
-        .quiet-history-summary, .quiet-history-detail { grid-template-columns:1fr; }
-        .quiet-history-item summary { align-items:flex-start; flex-direction:column; }
-    }
+    @media (max-width: 760px) { .quiet-history-header { flex-direction:column; align-items:flex-start; } .quiet-history-summary, .quiet-history-detail { grid-template-columns:1fr; } .quiet-history-item summary { align-items:flex-start; flex-direction:column; } }
 </style>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const items = document.querySelectorAll('.quiet-history-item');
+    items.forEach((item) => {
+        item.addEventListener('toggle', function() {
+            if (!this.open) return;
+            items.forEach((other) => {
+                if (other !== this) other.removeAttribute('open');
+            });
+        });
+    });
+});
+</script>
+@endpush
