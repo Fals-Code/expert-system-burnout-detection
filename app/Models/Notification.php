@@ -18,6 +18,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Notification extends Model
 {
+    public const CATEGORY_INFORMATION = 'informasi';
+    public const CATEGORY_WARNING = 'peringatan';
+    public const CATEGORY_REMINDER = 'pengingat';
+    public const CATEGORY_SUPPORT = 'dukungan';
+
+    public const CATEGORIES = [
+        self::CATEGORY_INFORMATION,
+        self::CATEGORY_WARNING,
+        self::CATEGORY_REMINDER,
+        self::CATEGORY_SUPPORT,
+    ];
+
     protected $table = 'notifications';
 
     protected $fillable = [
@@ -34,6 +46,13 @@ class Notification extends Model
     protected $casts = [
         'is_read' => 'boolean',
     ];
+
+    public static function normalizeCategory(?string $category): string
+    {
+        return in_array($category, self::CATEGORIES, true)
+            ? $category
+            : self::CATEGORY_INFORMATION;
+    }
 
     public function user(): BelongsTo
     {
