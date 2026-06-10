@@ -28,7 +28,7 @@
         <div class="topbar__title-group">
             <h1 class="topbar__title" style="text-transform:none;">{{ $friendlyTitle }}</h1>
             <nav class="topbar__breadcrumb">
-                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">Ruang Check-in</a>
+                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">Sanctuary Hub</a>
                 @if($role === 'karyawan')
                     › <span style="color: var(--color-primary); font-weight: 600;">{{ $friendlyTitle }}</span>
                 @else
@@ -138,7 +138,7 @@
 
             <div class="user-dropdown" id="userMenuDropdown">
                 <div class="dropdown-header">
-                    <h3>Ruang Akun</h3>
+                    <h3>Akun</h3>
                 </div>
                 <div class="dropdown-list">
                     <a href="{{ route('profile') }}" class="dropdown-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;">
