@@ -3,162 +3,127 @@
 @section('title', 'Admin Dashboard – BurnoutXpert')
 
 @section('content')
-    <h1 class="page-title">Ringkasan Infrastruktur Sistem</h1>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+        <div>
+            <h1 class="page-title" style="margin-bottom:0.25rem;">Ringkasan Infrastruktur Sistem</h1>
+            <p style="margin:0; color:var(--color-gray-500); font-size:0.9rem;">Pantau ringkasan sistem, tren, dan basis pengetahuan dari satu halaman.</p>
+        </div>
 
-    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 1rem;">
-        <div class="content-card stat-card" style="border-bottom: 4px solid #3b82f6;">
-            <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            </div>
+        <form method="GET" action="{{ route('admin.dashboard') }}">
+            <input type="hidden" name="refresh_knowledge_base" value="1">
+            <button type="submit" class="btn-nav" style="display:inline-flex; align-items:center; gap:0.5rem; border:none; background:#0f172a; color:white; padding:0.8rem 1.1rem; border-radius:12px; font-weight:800; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.16);">
+                Refresh Basis Pengetahuan
+            </button>
+        </form>
+    </div>
+
+    @if (session('success'))
+        <div style="margin-top:1rem; background:#ecfdf5; border:1px solid #bbf7d0; color:#166534; padding:1rem 1.25rem; border-radius:14px; font-weight:700;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="stats-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1.25rem; margin-top:1rem;">
+        <div class="content-card stat-card" style="border-bottom:4px solid #3b82f6;">
             <div class="stat-value">{{ $total_users }}</div>
             <div class="stat-label">Total Pengguna</div>
         </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #10b981;">
-            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-            </div>
+        <div class="content-card stat-card" style="border-bottom:4px solid #10b981;">
             <div class="stat-value">{{ $total_gejala }}</div>
             <div class="stat-label">Basis Gejala</div>
         </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #8b5cf6;">
-            <div class="stat-icon" style="background: #f5f3ff; color: #8b5cf6;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
-            </div>
+        <div class="content-card stat-card" style="border-bottom:4px solid #8b5cf6;">
             <div class="stat-value">{{ $total_aturan }}</div>
             <div class="stat-label">Total Aturan</div>
         </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #64748b;">
-            <div class="stat-icon" style="background: #f8fafc; color: #64748b;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
+        <div class="content-card stat-card" style="border-bottom:4px solid #64748b;">
             <div class="stat-value">{{ $total_logs }}</div>
             <div class="stat-label">Log Aktivitas</div>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-        <!-- Left: Division Average & Stress Trend Charts -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Chart 1: Average Stress per Division -->
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; margin-top:1.5rem;">
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
             <div class="content-card">
-                <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg>
-                    {{ __('Rata-rata Stress per Divisi') }} (%)
-                </h2>
+                <h2 class="card-title">Rata-rata Stress per Divisi (%)</h2>
                 <div id="divisionStressChart"></div>
             </div>
 
-            <!-- Chart 2: Monthly Stress Trend Line -->
             <div class="content-card">
-                <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    Tren Rata-rata Stress Bulanan (Last 6 Months)
-                </h2>
+                <h2 class="card-title">Tren Rata-rata Stress Bulanan</h2>
                 <div id="monthlyStressChart"></div>
             </div>
-        </div>
 
-        <!-- Right: Burnout Risk Distribution & System Info -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Chart 3: Donut Risk Distribution -->
             <div class="content-card">
-                <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v10l8-8"></path></svg>
-                    {{ __('Distribusi Risiko Burnout') }}
-                </h2>
-                <div id="riskDistributionChart" style="min-height: 250px;"></div>
-            </div>
-
-            <!-- System Info -->
-            <div class="content-card">
-                <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                    Informasi Lingkungan
-                </h2>
-                <div style="font-size: 0.9rem; line-height: 2.5;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color: var(--color-gray-500);">Versi PHP</span>
-                        <span style="font-weight: 700;">{{ PHP_VERSION }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color: var(--color-gray-500);">Laravel Framework</span>
-                        <span style="font-weight: 700; color: #f43f5e;">v{{ app()->version() }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color: var(--color-gray-500);">Basis Data</span>
-                        <span style="font-weight: 700; color: #10b981;">Database Engine</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color: var(--color-gray-500);">Server Time</span>
-                        <span style="font-weight: 700;">{{ now()->format('H:i T') }}</span>
-                    </div>
+                <h2 class="card-title">Karyawan Berisiko Tinggi</h2>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #e2e8f0; text-align:left;">
+                                <th style="padding:0.5rem; color:var(--color-gray-500);">Nama</th>
+                                <th style="padding:0.5rem; color:var(--color-gray-500);">Divisi</th>
+                                <th style="padding:0.5rem; color:var(--color-gray-500);">Status</th>
+                                <th style="padding:0.5rem; color:var(--color-gray-500); text-align:right;">Stress Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($earlyAlerts as $alert)
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:0.6rem 0.5rem; font-weight:700;">{{ $alert['nama'] }}</td>
+                                    <td style="padding:0.6rem 0.5rem; color:var(--color-gray-600);">{{ $alert['divisi'] }}</td>
+                                    <td style="padding:0.6rem 0.5rem;">{{ $alert['tingkat'] }}</td>
+                                    <td style="padding:0.6rem 0.5rem; text-align:right; font-weight:700; color:#dc2626;">{{ $alert['score'] }}%</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--color-gray-400);">Tidak ada karyawan berisiko tinggi saat ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Early Alerts and Audit Logs grid -->
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-        <!-- Early Alerts (High Risk Employees) -->
-        <div class="content-card">
-            <h2 class="card-title" style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                {{ __('Karyawan Berisiko Tinggi (Early Warning)') }}
-            </h2>
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid #e2e8f0; text-align: left;">
-                            <th style="padding: 0.5rem; color: var(--color-gray-500);">Nama</th>
-                            <th style="padding: 0.5rem; color: var(--color-gray-500);">Divisi</th>
-                            <th style="padding: 0.5rem; color: var(--color-gray-500);">Status</th>
-                            <th style="padding: 0.5rem; color: var(--color-gray-500); text-align: right;">Stress Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($earlyAlerts as $alert)
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 0.6rem 0.5rem; font-weight: 700;">{{ $alert['nama'] }}</td>
-                            <td style="padding: 0.6rem 0.5rem; color: var(--color-gray-600);">{{ $alert['divisi'] }}</td>
-                            <td style="padding: 0.6rem 0.5rem;">
-                                <span style="background: {{ $alert['color'] }}15; color: {{ $alert['color'] }}; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">
-                                    {{ $alert['tingkat'] }}
-                                </span>
-                            </td>
-                            <td style="padding: 0.6rem 0.5rem; text-align: right; font-weight: 700; color: #dc2626;">{{ $alert['score'] }}%</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 2rem; color: var(--color-gray-400);">Tidak ada karyawan berisiko tinggi saat ini.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <div class="content-card">
+                <h2 class="card-title">Distribusi Risiko Burnout</h2>
+                <div id="riskDistributionChart" style="min-height:250px;"></div>
             </div>
-        </div>
 
-        <!-- Audit Logs -->
-        <div class="content-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    Log Aktivitas Terbaru
-                </h2>
-                <a href="{{ route('admin.logs') }}" class="btn-nav" style="font-size: 0.75rem; padding: 0.25rem 0.75rem; text-decoration: none;">Lihat Semua</a>
+            <div class="content-card">
+                <h2 class="card-title">Informasi Lingkungan</h2>
+                <div style="font-size:0.9rem; line-height:2.5;">
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0;"><span style="color:var(--color-gray-500);">Versi PHP</span><span style="font-weight:700;">{{ PHP_VERSION }}</span></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0;"><span style="color:var(--color-gray-500);">Laravel Framework</span><span style="font-weight:700; color:#f43f5e;">v{{ app()->version() }}</span></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0;"><span style="color:var(--color-gray-500);">Server Time</span><span style="font-weight:700;">{{ now()->format('H:i T') }}</span></div>
+                </div>
             </div>
-            <div class="log-list">
+
+            <div class="content-card" style="border:1px solid #bfdbfe; background:#eff6ff;">
+                <h2 class="card-title" style="color:#1d4ed8;">Kontrol Basis Pengetahuan</h2>
+                <p style="font-size:0.85rem; color:#475569; line-height:1.7; margin:0 0 1rem 0;">
+                    Gunakan tombol ini setelah mengubah bobot pakar, aturan, atau ambang batas agar engine membaca data terbaru tanpa membuka terminal saat demo.
+                </p>
+                <form method="GET" action="{{ route('admin.dashboard') }}">
+                    <input type="hidden" name="refresh_knowledge_base" value="1">
+                    <button type="submit" style="width:100%; background:#2563eb; color:white; border:none; border-radius:12px; padding:0.85rem 1rem; font-weight:900; cursor:pointer;">
+                        Refresh Basis Pengetahuan
+                    </button>
+                </form>
+            </div>
+
+            <div class="content-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="card-title" style="margin:0;">Log Aktivitas Terbaru</h2>
+                    <a href="{{ route('admin.logs') }}" class="btn-nav" style="font-size:0.75rem; padding:0.25rem 0.75rem; text-decoration:none;">Lihat Semua</a>
+                </div>
                 @forelse($logs as $l)
-                <div style="padding: 0.75rem 1rem; border-radius: 12px; background: #f8fafc; margin-bottom: 0.5rem; border-left: 3px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">{{ $l->user->nama ?? 'System' }}</div>
-                        <div style="font-size: 0.8rem; color: var(--color-gray-600);">{{ $l->desc }}</div>
+                    <div style="padding:0.75rem 1rem; border-radius:12px; background:#f8fafc; margin-bottom:0.5rem; border-left:3px solid #e2e8f0;">
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--color-primary);">{{ $l->user->nama ?? 'System' }}</div>
+                        <div style="font-size:0.8rem; color:var(--color-gray-600);">{{ $l->desc }}</div>
+                        <div style="font-size:0.75rem; color:var(--color-gray-400); margin-top:0.25rem;">{{ $l->created_at->diffForHumans() }}</div>
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--color-gray-400); text-align: right;">
-                        {{ $l->created_at->diffForHumans() }}
-                    </div>
-                </div>
                 @empty
-                <div style="text-align: center; padding: 3rem; color: var(--color-gray-400);">Belum ada aktivitas tercatat.</div>
+                    <div style="text-align:center; padding:3rem; color:var(--color-gray-400);">Belum ada aktivitas tercatat.</div>
                 @endforelse
             </div>
         </div>
@@ -168,12 +133,8 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 1. Division Average Stress Chart (Bar)
-        const divStressOptions = {
-            series: [{
-                name: 'Rerata Stress (%)',
-                data: {!! json_encode($divisionAverages) !!}
-            }],
+        new ApexCharts(document.querySelector('#divisionStressChart'), {
+            series: [{ name: 'Rerata Stress (%)', data: {!! json_encode($divisionAverages) !!} }],
             chart: { type: 'bar', height: 320, toolbar: { show: false } },
             plotOptions: { bar: { borderRadius: 6, columnWidth: '40%', distributed: true } },
             xaxis: { categories: {!! json_encode($divisionLabels) !!} },
@@ -181,70 +142,38 @@
             dataLabels: { enabled: false },
             legend: { show: false },
             yaxis: { max: 100, labels: { formatter: (v) => v + '%' } }
-        };
-        const divChart = new ApexCharts(document.querySelector("#divisionStressChart"), divStressOptions);
-        divChart.render();
+        }).render();
 
-        // 2. Monthly Stress Trend Chart (Line)
-        const monthlyOptions = {
-            series: [{
-                name: 'Rerata Stress Global (%)',
-                data: {!! json_encode($trendAverages) !!}
-            }],
+        new ApexCharts(document.querySelector('#monthlyStressChart'), {
+            series: [{ name: 'Rerata Stress Global (%)', data: {!! json_encode($trendAverages) !!} }],
             chart: { type: 'line', height: 320, toolbar: { show: false } },
             stroke: { curve: 'smooth', width: 3 },
             xaxis: { categories: {!! json_encode($trendMonths) !!} },
             colors: ['#dc2626'],
             markers: { size: 5 },
             yaxis: { max: 100, labels: { formatter: (v) => v + '%' } }
-        };
-        const monthlyChart = new ApexCharts(document.querySelector("#monthlyStressChart"), monthlyOptions);
-        monthlyChart.render();
+        }).render();
 
-        // 3. Burnout Risk Distribution Chart (Donut)
-        const riskOptions = {
+        new ApexCharts(document.querySelector('#riskDistributionChart'), {
             series: {!! json_encode(array_values($riskDistribution)) !!},
             labels: {!! json_encode(array_keys($riskDistribution)) !!},
             chart: { type: 'donut', height: 260 },
-            colors: ['#16a34a', '#ca8a04', '#ea580c', '#dc2626'],
+            colors: ['#16a34a', '#ca8a04', '#f97316', '#ea580c', '#dc2626'],
             legend: { position: 'bottom' },
             dataLabels: { enabled: true }
-        };
-        const riskChart = new ApexCharts(document.querySelector("#riskDistributionChart"), riskOptions);
-        riskChart.render();
+        }).render();
     });
 </script>
 @endpush
 
 <style>
-    .stat-card {
-        padding: 1.5rem;
-        transition: transform 0.3s ease;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-    .stat-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-    }
-    .stat-value {
-        font-size: 1.75rem;
-        font-weight: 900;
-        line-height: 1;
-        margin-bottom: 0.25rem;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        color: var(--color-gray-500);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .stat-card { padding:1.5rem; transition:transform 0.3s ease; }
+    .stat-card:hover { transform:translateY(-5px); }
+    .stat-value { font-size:1.75rem; font-weight:900; line-height:1; margin-bottom:0.25rem; }
+    .stat-label { font-size:0.75rem; color:var(--color-gray-500); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns:repeat(2, 1fr) !important; } }
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns:1fr !important; }
+        [style*="grid-template-columns:2fr 1fr"] { grid-template-columns:1fr !important; }
     }
 </style>
