@@ -39,13 +39,7 @@ class DiagnosisTest extends TestCase
         $this->seedExpertKnowledgeBase();
     }
 
-    /**
-     * Test kondisi sehat:
-     * - Request POST ke /diagnosis membawa gejala_id kosong.
-     * - Artinya tidak ada gejala burnout yang dipilih user.
-     * - Karena rule D01 memakai ABSENT_SUPPORTS, hasil harus Tidak Burnout.
-     */
-    public function test_healthy_employee_receives_tidak_burnout_with_r01_rule(): void
+    public function test_healthy_employee_receives_stable_work_balance_with_r01_rule(): void
     {
         $user = User::factory()->create([
             'role' => 'karyawan',
@@ -57,7 +51,7 @@ class DiagnosisTest extends TestCase
             ]);
 
         $response->assertStatus(200);
-        $response->assertSeeText('Tidak Burnout');
+        $response->assertSeeText('Kondisi Kerja Anda Tampak Stabil');
         $response->assertSeeText('R01');
 
         $latestConsultation = Konsultasi::query()
@@ -70,13 +64,7 @@ class DiagnosisTest extends TestCase
         $this->assertSame($this->healthyDiagnosis->id, (int) $latestConsultation->diagnosa_id);
     }
 
-    /**
-     * Test kondisi burnout tinggi:
-     * - Request POST ke /diagnosis membawa gejala_id burnout tinggi.
-     * - Rule D02 harus menang.
-     * - Hasil tidak boleh jatuh ke ID 1 / Tidak Burnout.
-     */
-    public function test_high_burnout_symptoms_receives_burnout_tinggi_and_not_tidak_burnout(): void
+    public function test_high_burnout_symptoms_receives_support_summary_and_not_healthy_diagnosis(): void
     {
         $user = User::factory()->create([
             'role' => 'karyawan',
@@ -92,8 +80,8 @@ class DiagnosisTest extends TestCase
             ]);
 
         $response->assertStatus(200);
-        $response->assertSeeText('Burnout Tinggi');
-        $response->assertDontSeeText('Tidak Burnout');
+        $response->assertSeeText('Kondisi Anda Membutuhkan Perhatian Ekstra');
+        $response->assertDontSeeText('Kondisi Kerja Anda Tampak Stabil');
 
         $latestConsultation = Konsultasi::query()
             ->where('user_id', $user->id)
@@ -106,15 +94,6 @@ class DiagnosisTest extends TestCase
         $this->assertNotSame($this->healthyDiagnosis->id, (int) $latestConsultation->diagnosa_id);
     }
 
-    /**
-     * Route khusus testing.
-     *
-     * Kenapa dibuat di test?
-     * Karena repo saat ini belum punya route POST /diagnosis.
-     * Route asli aplikasi sekarang adalah POST /karyawan/deteksi, tetapi route itu
-     * menyimpan session lalu redirect. Untuk kebutuhan assertStatus(200) langsung
-     * pada halaman Blade, route testing ini langsung memproses service dan render view.
-     */
     private function registerDiagnosisTestingRoute(): void
     {
         Route::middleware(['web', 'auth'])->post('/diagnosis', function (
@@ -132,13 +111,6 @@ class DiagnosisTest extends TestCase
                 ->pluck('kode')
                 ->toArray();
 
-            /**
-             * Konversi gejala_id[] menjadi format jawaban yang dipakai engine:
-             * ['G01' => 'Ya', 'G02' => 'Tidak', ...]
-             *
-             * - Gejala yang masuk gejala_id dianggap "Ya".
-             * - Gejala lain dianggap "Tidak".
-             */
             $answers = [];
 
             Gejala::query()
@@ -175,14 +147,6 @@ class DiagnosisTest extends TestCase
         });
     }
 
-    /**
-     * Seed basis pengetahuan minimal khusus test.
-     *
-     * Struktur ini mengikuti perubahan konsep terbaru:
-     * - ID 1 = Tidak Burnout.
-     * - Rule ID 1 / D01 memakai ABSENT_SUPPORTS.
-     * - Rule burnout tinggi memakai PRESENT_SUPPORTS.
-     */
     private function seedExpertKnowledgeBase(): void
     {
         $this->healthyDiagnosis = Diagnosa::query()->create([
@@ -253,15 +217,6 @@ class DiagnosisTest extends TestCase
             'bobot' => 0.80,
         ]);
 
-        /**
-         * R01 = rule sehat.
-         * Karena gejala yang dipakai adalah gejala stres/burnout,
-         * evidence_direction harus ABSENT_SUPPORTS.
-         *
-         * Artinya:
-         * - User menjawab Tidak pada G01/G02/G03 => mendukung Tidak Burnout.
-         * - User menjawab Ya pada G01/G02/G03 => tidak mendukung Tidak Burnout.
-         */
         $healthyRule = Aturan::query()->create([
             'kode' => 'R01',
             'diagnosa_id' => $this->healthyDiagnosis->id,
@@ -287,10 +242,6 @@ class DiagnosisTest extends TestCase
             ],
         ]);
 
-        /**
-         * R02 = rule burnout tinggi.
-         * Gejala burnout yang muncul secara positif mendukung diagnosis burnout tinggi.
-         */
         $highBurnoutRule = Aturan::query()->create([
             'kode' => 'R02',
             'diagnosa_id' => $this->highBurnoutDiagnosis->id,
