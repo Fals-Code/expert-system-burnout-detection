@@ -1,42 +1,44 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Evaluasi Lingkungan Kerja – BurnoutXpert')
+@section('title', 'Ringkasan Evaluasi Kerja – BurnoutXpert')
 
 @section('content')
 @php
     $diagnosis = $konsultasi->diagnosa;
     $diagnosisId = (int) ($diagnosis->id ?? 0);
     $ruleCode = data_get($tracing ?? [], 'rule_kode', '-');
-    $cfPakarRule = data_get($tracing ?? [], 'cf_pakar_rule');
-    $cfCombine = data_get($tracing ?? [], 'cf_combine_gejala');
 
     $themes = [
         1 => [
             'wrapper' => 'background:#f0fdf4; color:#166534; border-color:#bbf7d0;',
             'badge' => 'background:#16a34a; color:#ffffff;',
             'soft' => 'background:#dcfce7; color:#166534; border-color:#bbf7d0;',
-            'label' => 'Kondisi Sehat',
+            'label' => 'Keseimbangan Stabil',
+            'title' => 'Kondisi Kerja Anda Tampak Stabil',
             'icon' => '✓',
         ],
         2 => [
-            'wrapper' => 'background:#fef2f2; color:#991b1b; border-color:#fecaca;',
-            'badge' => 'background:#dc2626; color:#ffffff;',
-            'soft' => 'background:#fee2e2; color:#991b1b; border-color:#fecaca;',
-            'label' => 'Peringatan Tinggi',
-            'icon' => '!',
-        ],
-        3 => [
             'wrapper' => 'background:#fff7ed; color:#9a3412; border-color:#fed7aa;',
             'badge' => 'background:#f97316; color:#ffffff;',
             'soft' => 'background:#ffedd5; color:#9a3412; border-color:#fed7aa;',
-            'label' => 'Peringatan Sedang',
-            'icon' => '!',
+            'label' => 'Butuh Dukungan Ekstra',
+            'title' => 'Kondisi Anda Membutuhkan Perhatian Ekstra',
+            'icon' => 'i',
+        ],
+        3 => [
+            'wrapper' => 'background:#fffbeb; color:#92400e; border-color:#fde68a;',
+            'badge' => 'background:#f59e0b; color:#ffffff;',
+            'soft' => 'background:#fef3c7; color:#92400e; border-color:#fde68a;',
+            'label' => 'Perlu Pemantauan',
+            'title' => 'Beberapa Area Perlu Dipantau',
+            'icon' => 'i',
         ],
         4 => [
-            'wrapper' => 'background:#fefce8; color:#854d0e; border-color:#fde68a;',
-            'badge' => 'background:#eab308; color:#ffffff;',
-            'soft' => 'background:#fef3c7; color:#854d0e; border-color:#fde68a;',
-            'label' => 'Peringatan Ringan',
+            'wrapper' => 'background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;',
+            'badge' => 'background:#2563eb; color:#ffffff;',
+            'soft' => 'background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;',
+            'label' => 'Perhatian Ringan',
+            'title' => 'Ada Area Ringan yang Perlu Perhatian',
             'icon' => 'i',
         ],
     ];
@@ -45,7 +47,8 @@
         'wrapper' => 'background:#f8fafc; color:#334155; border-color:#e2e8f0;',
         'badge' => 'background:#475569; color:#ffffff;',
         'soft' => 'background:#f1f5f9; color:#334155; border-color:#e2e8f0;',
-        'label' => 'Hasil Evaluasi',
+        'label' => 'Ringkasan Evaluasi',
+        'title' => 'Ringkasan Evaluasi Kerja',
         'icon' => 'i',
     ];
 @endphp
@@ -55,15 +58,15 @@
         <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.5rem;">
             <div>
                 <h1 style="margin:0 0 0.5rem; color:var(--color-primary); font-size:2rem; font-weight:900; letter-spacing:-0.03em;">
-                    Hasil Evaluasi Lingkungan Kerja
+                    Ringkasan Evaluasi Kerja
                 </h1>
-                <p style="margin:0; color:var(--color-gray-500); line-height:1.7;">
-                    Halaman ini membaca data historis dari record konsultasi yang sudah tersimpan, sehingga refresh halaman tidak menghitung ulang diagnosis dari awal.
+                <p style="margin:0; color:var(--color-gray-500); line-height:1.7; max-width:760px;">
+                    Ringkasan ini membantu Anda memahami area kerja yang sudah stabil dan area yang mungkin membutuhkan dukungan. Hasil dibaca dari catatan evaluasi yang sudah tersimpan, sehingga refresh halaman tidak menghitung ulang dari awal.
                 </p>
             </div>
 
             <a href="{{ route('karyawan.deteksi.reset') }}" style="display:inline-flex; align-items:center; gap:0.5rem; background:#0f172a; color:white; padding:0.85rem 1.15rem; border-radius:999px; text-decoration:none; font-weight:900; box-shadow:0 10px 20px rgba(15,23,42,0.16);">
-                Lakukan Deteksi Ulang
+                Isi Evaluasi Ulang
             </a>
         </div>
 
@@ -81,15 +84,15 @@
                     </div>
 
                     <h2 style="margin:0 0 0.75rem; font-size:2rem; font-weight:950; line-height:1.2;">
-                        {{ $diagnosis->nama ?? 'Diagnosis tidak tersedia' }}
+                        {{ $theme['title'] }}
                     </h2>
 
-                    <div style="font-size:3.75rem; font-weight:950; line-height:1; margin-bottom:1rem;">
-                        {{ $confidence }}%
+                    <div style="font-size:3rem; font-weight:950; line-height:1; margin-bottom:1rem;">
+                        Skor Keseimbangan: {{ $confidence }}
                     </div>
 
                     <p style="margin:0; max-width:760px; line-height:1.8; font-weight:600;">
-                        {{ $diagnosis->deskripsi ?? 'Deskripsi diagnosis belum tersedia di database.' }}
+                        {{ $diagnosis->deskripsi ?? 'Deskripsi evaluasi belum tersedia di database.' }}
                     </p>
                 </div>
             </div>
@@ -97,32 +100,28 @@
 
         <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
             <section class="content-card" style="padding:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Saran dari Basis Pengetahuan</h3>
+                <h3 class="card-title" style="margin-bottom:1rem;">Rekomendasi Dukungan</h3>
                 <div style="color:var(--color-gray-700); line-height:1.8; font-size:0.95rem;">
-                    {!! nl2br(e($diagnosis->saran ?? 'Saran belum tersedia di database.')) !!}
+                    {!! nl2br(e($diagnosis->saran ?? 'Rekomendasi belum tersedia di database.')) !!}
                 </div>
             </section>
 
             <section class="content-card" style="padding:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Rule Dominan</h3>
+                <h3 class="card-title" style="margin-bottom:1rem;">Kode Evaluasi</h3>
                 <div style="border:1px solid; {{ $theme['soft'] }} border-radius:16px; padding:1rem;">
                     <div style="font-size:2rem; font-weight:950; margin-bottom:0.25rem;">{{ $ruleCode }}</div>
-                    @if ($cfPakarRule !== null)
-                        <div style="font-size:0.85rem; font-weight:700;">CF Pakar: {{ number_format((float) $cfPakarRule, 2) }}</div>
-                    @endif
-                    @if ($cfCombine !== null)
-                        <div style="font-size:0.85rem; font-weight:700;">CF Gejala: {{ number_format((float) $cfCombine, 4) }}</div>
-                    @endif
-                    <div style="font-size:0.85rem; font-weight:700; margin-top:0.25rem;">CF Final: {{ number_format((float) $konsultasi->cf_final, 4) }}</div>
+                    <div style="font-size:0.85rem; font-weight:700; line-height:1.7;">
+                        Kode ini dipakai untuk penelusuran internal sistem, bukan label kondisi personal.
+                    </div>
                 </div>
             </section>
         </div>
 
         <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
-            <h3 class="card-title" style="margin-bottom:1rem;">Rincian Jawaban dan Kontribusi Gejala</h3>
+            <h3 class="card-title" style="margin-bottom:1rem;">Area yang Perlu Dukungan</h3>
 
             @if (!isset($tracing['gejala_details']) || count($tracing['gejala_details']) === 0)
-                <p style="color:var(--color-gray-400); margin:0;">Tidak ada rincian gejala yang tercatat.</p>
+                <p style="color:var(--color-gray-400); margin:0;">Tidak ada rincian area yang tercatat.</p>
             @else
                 <div style="display:flex; flex-direction:column; gap:0.75rem;">
                     @foreach ($tracing['gejala_details'] as $detail)
@@ -130,12 +129,11 @@
                             <div>
                                 <div style="font-weight:800; color:var(--color-gray-800);">{{ $detail['gejala'] ?? '-' }}</div>
                                 <div style="font-size:0.82rem; color:var(--color-gray-500); margin-top:0.25rem;">
-                                    Kode: {{ $detail['kode'] ?? '-' }} | Arah Evidence: {{ $detail['evidence_direction'] ?? 'PRESENT_SUPPORTS' }}
+                                    Jawaban Anda membantu sistem membaca pola kerja harian dengan lebih akurat.
                                 </div>
                             </div>
                             <div style="text-align:right; white-space:nowrap;">
                                 <div style="font-weight:900; color:var(--color-primary);">{{ $detail['user_ans'] ?? '-' }}</div>
-                                <div style="font-size:0.82rem; color:var(--color-gray-500);">CF: {{ number_format((float) ($detail['cf_sub'] ?? 0), 4) }}</div>
                             </div>
                         </div>
                     @endforeach
@@ -145,7 +143,7 @@
 
         @if(isset($explanation))
             <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Penjelasan Sistem Pakar</h3>
+                <h3 class="card-title" style="margin-bottom:1rem;">Catatan Ringkas Sistem</h3>
                 @php
                     $parsedSummary = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary'] ?? '');
                     $parsedSummary = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummary);
@@ -153,23 +151,15 @@
                 <div style="line-height:1.8; color:var(--color-gray-700); margin-bottom:1rem;">
                     {!! $parsedSummary !!}
                 </div>
-
-                @if(!empty($explanation['reasoning_chain']))
-                    <ol style="margin:0; padding-left:1.2rem; line-height:1.8; color:var(--color-gray-600);">
-                        @foreach($explanation['reasoning_chain'] as $reason)
-                            <li>{{ $reason }}</li>
-                        @endforeach
-                    </ol>
-                @endif
             </section>
         @endif
 
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
             <a href="{{ route('karyawan.deteksi.reset') }}" class="btn-action" style="background:#0f172a; color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Lakukan Deteksi Ulang
+                Isi Evaluasi Ulang
             </a>
             <a href="{{ route('karyawan.laporan.download', ['id' => $konsultasi->id]) }}" class="btn-action" target="_blank" style="background:var(--color-primary); color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Unduh Laporan
+                Unduh Ringkasan
             </a>
             <a href="{{ route('karyawan.dashboard') }}" class="btn-action" style="background:#f1f5f9; color:#334155; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
                 Dashboard
