@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk – Ruang Check-in Karyawan')
+@section('title', 'Masuk – Ruang Check-in')
 
 @section('content')
     <div class="bg-decoration">
@@ -12,7 +12,7 @@
         <div class="bg-circle bg-circle--3"></div>
     </div>
 
-    <a href="{{ url('/') }}" class="brand-logo" aria-label="Ruang Check-in Karyawan">
+    <a href="{{ url('/') }}" class="brand-logo" aria-label="Ruang Check-in">
         <div class="brand-logo__icon" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;background:#dbeafe;color:#1d4ed8;border-radius:14px;font-weight:900;box-shadow:0 10px 22px rgba(37,99,235,.16);">
             ✓
         </div>
@@ -23,20 +23,12 @@
         <div class="login-card" id="loginCard">
             <div class="login-card__header">
                 <div class="login-card__icon" aria-hidden="true" style="background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;border-radius:24px;font-size:1.6rem;font-weight:900;">
-                    ◐
+                    ✓
                 </div>
-                <p style="display:inline-flex;align-items:center;justify-content:center;margin:0 auto .65rem;padding:.35rem .75rem;border-radius:999px;background:#ecfdf5;color:#047857;font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;">
-                    Employee Wellbeing Check-in
-                </p>
-                <h1 class="login-card__title">Ruang Check-in Karyawan</h1>
+                <h1 class="login-card__title">Masuk</h1>
                 <p class="login-card__subtitle animate-delay-1">
-                    Masuk untuk melihat check-in kerja, riwayat pribadi, dan rekomendasi dukungan. Sistem ini membantu membaca kondisi kerja, bukan untuk menilai performa individu.
+                    Akses check-in kerja, riwayat pribadi, dan notifikasi dukungan.
                 </p>
-            </div>
-
-            <div style="background:#f8fafc;border:1px solid #dbeafe;border-radius:18px;padding:1rem;margin-bottom:1.25rem;color:#475569;font-size:.82rem;line-height:1.7;">
-                <strong style="display:block;color:#1e293b;margin-bottom:.25rem;">Privasi dan rasa aman</strong>
-                Jawaban check-in digunakan untuk memahami pola kerja dan kebutuhan dukungan. Untuk karyawan, hasil ditampilkan sebagai insight pribadi dan saran ringan.
             </div>
 
             @if ($errors->any())
@@ -50,7 +42,7 @@
                 @csrf
 
                 <div class="form-group animate-delay-3" id="emailGroup">
-                    <label class="form-label" for="email">Alamat Email</label>
+                    <label class="form-label" for="email">Email</label>
                     <div class="input-wrapper">
                         <input
                             type="email"
@@ -74,7 +66,7 @@
                             id="password"
                             name="password"
                             class="form-input form-input--password"
-                            placeholder="Masukkan kata sandi Anda"
+                            placeholder="Masukkan kata sandi"
                             autocomplete="current-password"
                             required
                             aria-required="true"
@@ -101,7 +93,7 @@
                 </div>
 
                 <button type="submit" class="btn-login animate-delay-4" id="btnLogin">
-                    <span class="btn-login__text">Masuk ke Ruang Check-in</span>
+                    <span class="btn-login__text">Masuk</span>
                     <span class="btn-login__loader" aria-hidden="true"></span>
                     <span class="btn-login__arrow" aria-hidden="true">→</span>
                 </button>
@@ -109,7 +101,7 @@
 
             <div class="demo-credentials">
                 <button class="demo-credentials__toggle" id="demoToggle" aria-expanded="false" aria-controls="demoPanel">
-                    Lihat Akun Demo
+                    Akun Demo
                     <span class="demo-credentials__chevron" aria-hidden="true">⌄</span>
                 </button>
                 <div class="demo-credentials__panel" id="demoPanel" aria-hidden="true">
@@ -141,8 +133,7 @@
         </div>
 
         <footer class="login-footer" role="contentinfo">
-            <p>&copy; {{ date('Y') }} Ruang Check-in Karyawan &mdash; Sistem pakar berbasis Backward Chaining</p>
-            <p>Dibuat untuk keperluan akademik &mdash; Kecerdasan Buatan D4 TI</p>
+            <p>&copy; {{ date('Y') }} Ruang Check-in &mdash; Sistem pakar berbasis Backward Chaining</p>
         </footer>
     </main>
 @endsection
