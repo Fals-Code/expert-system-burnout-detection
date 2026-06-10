@@ -5,121 +5,130 @@
 @section('content')
 <style>
     .survey-shell {
-        max-width: 900px;
+        max-width: 860px;
         margin: 0 auto;
-        padding: 1rem 0 2.25rem;
+        padding: 0.5rem 0 2rem;
     }
     .survey-hero {
-        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 65%, #ecfdf5 100%);
-        border: 1px solid #dbeafe;
-        border-radius: 22px;
-        padding: 1.4rem;
-        margin-bottom: 1.25rem;
-        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0 0 1.25rem;
+        margin-bottom: 1.1rem;
+        box-shadow: none;
     }
     .survey-hero h1 {
-        margin: 0 0 0.35rem;
-        color: var(--color-primary);
-        font-size: clamp(1.45rem, 3vw, 2rem);
-        line-height: 1.2;
-        font-weight: 900;
-        letter-spacing: -0.03em;
+        margin: 0 0 0.25rem;
+        color: #0f172a;
+        font-size: clamp(1.7rem, 3vw, 2.25rem);
+        line-height: 1.15;
+        font-weight: 950;
+        letter-spacing: -0.05em;
     }
     .survey-hero p {
         margin: 0;
         color: var(--color-gray-500);
         max-width: 680px;
-        line-height: 1.65;
+        line-height: 1.6;
         font-size: 0.92rem;
     }
     .progress-panel {
-        margin-top: 1rem;
+        margin-top: 1.1rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.85rem;
     }
     .progress-track {
         flex: 1;
-        height: 8px;
+        height: 7px;
         border-radius: 999px;
         overflow: hidden;
-        background: #e2e8f0;
+        background: #e5e7eb;
     }
     .progress-fill {
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, #3b82f6, #10b981);
+        background: #2563eb;
     }
     .progress-label {
         color: #64748b;
-        font-size: 0.78rem;
-        font-weight: 800;
+        font-size: 0.74rem;
+        font-weight: 900;
         white-space: nowrap;
     }
     .question-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.9rem;
     }
-    .question-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 22px;
-        padding: 1.4rem;
-        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.045);
+    .survey-shell .question-card {
+        min-height: auto !important;
+        display: block !important;
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        padding: 1.25rem 1.4rem 1.35rem;
+        box-shadow: none;
+        backdrop-filter: none;
     }
     .question-text {
-        margin: 0 0 1.1rem;
+        margin: 0 0 0.95rem;
         color: #1e293b;
-        font-size: 1.08rem;
-        line-height: 1.55;
+        font-size: 1rem;
+        line-height: 1.45;
         font-weight: 900;
         letter-spacing: -0.02em;
+        text-align: left;
     }
     .likert-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: 0.55rem;
     }
     .likert-option {
         display: flex;
-        align-items: flex-start;
-        gap: 0.65rem;
-        padding: 0.85rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
+        align-items: center;
+        gap: 0.55rem;
+        min-height: 52px;
+        padding: 0.62rem 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 13px;
         cursor: pointer;
         background: #ffffff;
-        transition: all 0.2s ease;
+        transition: background 0.18s ease, border-color 0.18s ease;
     }
     .likert-option:hover {
-        border-color: #cbd5e1;
+        border-color: rgba(37, 99, 235, 0.28);
         background: #f8fafc;
-        transform: translateY(-1px);
+        transform: none;
+    }
+    .likert-option:has(input:checked) {
+        border-color: #2563eb;
+        background: #eff6ff;
     }
     .likert-option input {
         flex-shrink: 0;
-        width: 1rem;
-        height: 1rem;
-        margin-top: 0.1rem;
+        width: 0.95rem;
+        height: 0.95rem;
+        margin: 0;
         accent-color: #2563eb;
     }
     .likert-label {
         display: block;
         font-weight: 900;
         color: #1e293b;
-        font-size: 0.88rem;
-        line-height: 1.35;
+        font-size: 0.85rem;
+        line-height: 1.2;
     }
     .likert-desc {
         display: block;
-        margin-top: 0.15rem;
+        margin-top: 0.12rem;
         color: #94a3b8;
-        font-size: 0.74rem;
-        line-height: 1.35;
+        font-size: 0.7rem;
+        line-height: 1.25;
     }
     .survey-actions {
-        margin-top: 1.25rem;
+        margin-top: 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -128,15 +137,17 @@
     }
     .neutral-note {
         color: var(--color-gray-500);
-        font-size: 0.82rem;
-        line-height: 1.55;
+        font-size: 0.8rem;
+        line-height: 1.5;
         max-width: 520px;
     }
     @media (max-width: 768px) {
-        .survey-hero, .question-card { padding: 1.1rem; }
-        .progress-panel { align-items: flex-start; flex-direction: column; gap: 0.65rem; }
+        .survey-shell { padding: 0.25rem 0 1.5rem; }
+        .survey-shell .question-card { padding: 1rem; border-radius: 16px; }
+        .progress-panel { align-items: flex-start; flex-direction: column; gap: 0.55rem; }
         .progress-track { width: 100%; flex: unset; }
         .likert-grid { grid-template-columns: 1fr; }
+        .likert-option { min-height: 50px; }
         .survey-actions { align-items: stretch; flex-direction: column; }
         .survey-actions button { width: 100%; justify-content: center; }
     }
