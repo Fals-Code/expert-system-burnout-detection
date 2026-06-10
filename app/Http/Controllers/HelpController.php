@@ -2,28 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class HelpController extends Controller
 {
     public function index()
     {
         $faqs = [
             [
-                'q' => 'Apa itu BurnoutXpert?',
-                'a' => 'Sistem pakar berbasis web yang dirancang untuk mendeteksi tingkat kelelahan kerja (burnout) pada karyawan menggunakan metode Backward Chaining dan Certainty Factor.'
+                'q' => 'Apa itu Sanctuary Hub?',
+                'a' => 'Sanctuary Hub adalah sistem check-in kerja berbasis sistem pakar yang membantu membaca pola beban kerja, energi, dan kebutuhan dukungan karyawan.'
             ],
             [
-                'q' => 'Bagaimana cara melakukan deteksi?',
-                'a' => 'Klik menu "Mulai Deteksi" di sidebar, lalu jawab setiap pertanyaan gejala yang muncul sesuai dengan kondisi yang Anda rasakan akhir-akhir ini.'
+                'q' => 'Bagaimana cara mengisi check-in?',
+                'a' => 'Buka menu Check-in Kerja, jawab pertanyaan singkat sesuai kondisi 7 hari terakhir, lalu lihat ringkasan hasil pribadi.'
             ],
             [
-                'q' => 'Apakah hasil deteksi ini akurat?',
-                'a' => 'Sistem menggunakan basis pengetahuan dari pakar psikologi. Namun, hasil ini bersifat skrining awal. Untuk diagnosa medis yang mendalam, silakan hubungi tenaga profesional.'
+                'q' => 'Apakah ini penilaian performa?',
+                'a' => 'Bukan. Check-in dipakai sebagai bahan refleksi dan dukungan kerja, bukan sebagai ranking atau hukuman individu.'
             ],
             [
-                'q' => 'Siapa yang bisa melihat hasil deteksi saya?',
-                'a' => 'Hasil deteksi Anda dapat dipantau oleh HRD untuk keperluan evaluasi kesehatan mental di tempat kerja secara kolektif maupun individual.'
+                'q' => 'Siapa yang dapat melihat data saya?',
+                'a' => 'Anda melihat riwayat pribadi. HRD menggunakan data untuk membaca kebutuhan dukungan dan konteks kerja sesuai hak akses sistem.'
             ]
         ];
 
