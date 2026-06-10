@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Notifikasi – Ruang Check-in')
+@section('title', 'Notifikasi – Sanctuary Hub')
 
 @section('content')
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
