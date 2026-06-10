@@ -1,56 +1,46 @@
 @extends('layouts.app')
 
-@section('title', 'Check-in Kondisi Kerja – BurnoutXpert')
+@section('title', 'Check-in Kerja – Ruang Check-in')
 
 @section('content')
 <style>
     .survey-shell {
-        max-width: 980px;
+        max-width: 900px;
         margin: 0 auto;
-        padding: 1rem 0 2.5rem;
+        padding: 1rem 0 2.25rem;
     }
     .survey-hero {
-        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 55%, #ecfdf5 100%);
+        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 65%, #ecfdf5 100%);
         border: 1px solid #dbeafe;
-        border-radius: 24px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+        border-radius: 22px;
+        padding: 1.4rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
     }
     .survey-hero h1 {
-        margin: 0 0 0.75rem;
+        margin: 0 0 0.35rem;
         color: var(--color-primary);
-        font-size: clamp(1.6rem, 3vw, 2.35rem);
+        font-size: clamp(1.45rem, 3vw, 2rem);
         line-height: 1.2;
         font-weight: 900;
         letter-spacing: -0.03em;
     }
     .survey-hero p {
         margin: 0;
-        color: var(--color-gray-600);
-        max-width: 760px;
-        line-height: 1.75;
-        font-size: 0.98rem;
+        color: var(--color-gray-500);
+        max-width: 680px;
+        line-height: 1.65;
+        font-size: 0.92rem;
     }
     .progress-panel {
-        margin-top: 1.5rem;
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 1rem;
-    }
-    .progress-row {
+        margin-top: 1rem;
         display: flex;
-        justify-content: space-between;
         align-items: center;
         gap: 1rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.85rem;
-        font-weight: 800;
-        color: var(--color-gray-600);
     }
     .progress-track {
-        height: 9px;
+        flex: 1;
+        height: 8px;
         border-radius: 999px;
         overflow: hidden;
         background: #e2e8f0;
@@ -60,80 +50,44 @@
         border-radius: 999px;
         background: linear-gradient(90deg, #3b82f6, #10b981);
     }
-    .trust-badges {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-    .trust-badge {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.55rem;
-        padding: 0.85rem;
-        border: 1px solid #dbeafe;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.78);
-        color: #334155;
-        font-size: 0.8rem;
-        line-height: 1.5;
-        font-weight: 750;
+    .progress-label {
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 800;
+        white-space: nowrap;
     }
     .question-list {
-        max-width: 896px;
-        margin: 0 auto;
-        padding: 0.5rem 1rem 0;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1rem;
     }
     .question-card {
         background: white;
-        border: 1px solid #f1f5f9;
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 1.4rem;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.045);
     }
     .question-text {
-        margin: 0 0 0.85rem;
+        margin: 0 0 1.1rem;
         color: #1e293b;
-        font-size: 1.2rem;
+        font-size: 1.08rem;
         line-height: 1.55;
         font-weight: 900;
         letter-spacing: -0.02em;
-        text-align: center;
-    }
-    .why-note {
-        margin: 0 auto 1.35rem;
-        max-width: 680px;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        background: #f8fafc;
-        padding: 0.75rem 0.9rem;
-        color: #64748b;
-        font-size: 0.8rem;
-        line-height: 1.6;
-    }
-    .why-note summary {
-        cursor: pointer;
-        font-weight: 900;
-        color: #334155;
-    }
-    .why-note p {
-        margin: 0.45rem 0 0;
     }
     .likert-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
+        gap: 0.75rem;
     }
     .likert-option {
         display: flex;
         align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1rem;
+        gap: 0.65rem;
+        padding: 0.85rem;
         border: 1px solid #e2e8f0;
-        border-radius: 18px;
+        border-radius: 16px;
         cursor: pointer;
         background: #ffffff;
         transition: all 0.2s ease;
@@ -142,40 +96,30 @@
         border-color: #cbd5e1;
         background: #f8fafc;
         transform: translateY(-1px);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
     }
     .likert-option input {
         flex-shrink: 0;
         width: 1rem;
         height: 1rem;
-        margin-top: 0.15rem;
-        accent-color: #ea580c;
+        margin-top: 0.1rem;
+        accent-color: #2563eb;
     }
     .likert-label {
         display: block;
         font-weight: 900;
         color: #1e293b;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         line-height: 1.35;
     }
     .likert-desc {
         display: block;
-        margin-top: 0.18rem;
+        margin-top: 0.15rem;
         color: #94a3b8;
-        font-size: 0.76rem;
-        line-height: 1.4;
-    }
-    .answer-control-note {
-        margin: 1rem 0 0;
-        color: #64748b;
-        font-size: 0.8rem;
-        line-height: 1.6;
-        text-align: center;
+        font-size: 0.74rem;
+        line-height: 1.35;
     }
     .survey-actions {
-        max-width: 896px;
-        margin: 1.5rem auto 0;
-        padding: 0 1rem;
+        margin-top: 1.25rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -185,16 +129,15 @@
     .neutral-note {
         color: var(--color-gray-500);
         font-size: 0.82rem;
-        line-height: 1.6;
-        max-width: 560px;
+        line-height: 1.55;
+        max-width: 520px;
     }
     @media (max-width: 768px) {
-        .survey-hero, .question-card { padding: 1.25rem; }
-        .trust-badges { grid-template-columns: 1fr; }
-        .question-list { padding: 0.5rem 0.75rem 0; }
-        .question-text { font-size: 1.05rem; text-align: left; }
+        .survey-hero, .question-card { padding: 1.1rem; }
+        .progress-panel { align-items: flex-start; flex-direction: column; gap: 0.65rem; }
+        .progress-track { width: 100%; flex: unset; }
         .likert-grid { grid-template-columns: 1fr; }
-        .survey-actions { flex-direction: column; align-items: stretch; padding: 0 0.75rem; }
+        .survey-actions { align-items: stretch; flex-direction: column; }
         .survey-actions button { width: 100%; justify-content: center; }
     }
 </style>
@@ -202,32 +145,18 @@
 <div class="main-wrapper" style="margin-left: 0; padding: 0;">
     <main class="survey-shell">
         <section class="survey-hero">
-            <p style="font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.18em; color:#2563eb; margin-bottom:0.65rem;">
-                Check-in Kerja
-            </p>
-            <h1>Check-in Kondisi Kerja Mingguan</h1>
-            <p>
-                Jawablah setiap pernyataan sesuai kondisi yang paling mendekati dalam 7 hari terakhir. Tidak ada jawaban benar atau salah; hasil ini dipakai sebagai indikasi awal untuk memahami pola beban kerja dan dukungan, bukan diagnosis atau penilaian performa.
-            </p>
+            <h1>Check-in Kerja</h1>
+            <p>Jawab sesuai kondisi 7 hari terakhir. Tidak ada jawaban benar atau salah.</p>
 
             @php
                 $progressPercent = $total_gejala > 0 ? min(round(($progress / $total_gejala) * 100), 100) : 0;
             @endphp
 
             <div class="progress-panel">
-                <div class="progress-row">
-                    <span>Proses check-in sedang berjalan</span>
-                    <span>Bisa disimpan dan dilanjutkan nanti</span>
-                </div>
                 <div class="progress-track" aria-label="Progres pengisian check-in">
                     <div class="progress-fill" style="width: {{ $progressPercent }}%;"></div>
                 </div>
-                <div class="trust-badges" aria-label="Prinsip penggunaan data check-in">
-                    <div class="trust-badge">✓ Tidak digunakan untuk penilaian performa individu</div>
-                    <div class="trust-badge">✓ Fokus pada pola kerja dan kebutuhan dukungan</div>
-                    <div class="trust-badge">✓ Anda bisa menyimpan progres dan lanjut nanti</div>
-                    <div class="trust-badge">✓ Hasil adalah indikasi awal, bukan diagnosis medis</div>
-                </div>
+                <span class="progress-label">Proses berjalan</span>
             </div>
         </section>
 
@@ -242,19 +171,14 @@
                             {{ $q->nama }}
                         </h2>
 
-                        <details class="why-note">
-                            <summary>Kenapa pertanyaan ini ditanyakan?</summary>
-                            <p>Pertanyaan ini membantu membaca pola energi, beban, dan dukungan kerja. Jawaban Anda tidak dipakai untuk memberi label personal atau menilai performa.</p>
-                        </details>
-
                         <div class="likert-grid">
                             @foreach([
-                                'Tidak'         => ['Tidak Pernah', '0 hari dalam satu minggu terakhir'],
+                                'Tidak'         => ['Tidak Pernah', '0 hari'],
                                 'Sangat Jarang' => ['Sangat Jarang', '1 hari atau lebih jarang'],
-                                'Jarang'        => ['Jarang', '1–2 hari dalam satu minggu terakhir'],
-                                'Kadang'        => ['Kadang-kadang', '3 hari atau pada kondisi tertentu'],
-                                'Sering'        => ['Sering', '4–5 hari dalam satu minggu terakhir'],
-                                'Sangat Sering' => ['Sangat Sering / Selalu', 'Hampir setiap hari dan sangat terasa'],
+                                'Jarang'        => ['Jarang', '1–2 hari'],
+                                'Kadang'        => ['Kadang-kadang', '3 hari'],
+                                'Sering'        => ['Sering', '4–5 hari'],
+                                'Sangat Sering' => ['Sangat Sering', 'Hampir setiap hari'],
                             ] as $value => $meta)
                                 <label class="likert-option">
                                     <input type="radio" name="{{ $q->kode }}" value="{{ $value }}" required>
@@ -265,25 +189,19 @@
                                 </label>
                             @endforeach
                         </div>
-
-                        <p class="answer-control-note">
-                            Belum nyaman menjawab sekarang? Gunakan tombol <strong>Simpan Progres</strong>, lalu lanjutkan saat lebih siap. Tidak perlu memaksakan jawaban asal-asalan, manusia sudah cukup menderita oleh spreadsheet.
-                        </p>
                     </section>
                 @endforeach
             </div>
 
             <div class="survey-actions">
-                <p class="neutral-note">
-                    Jawaban yang paling membantu adalah jawaban yang paling dekat dengan kondisi nyata. Anda tidak sedang diuji; check-in ini dibuat untuk membantu membaca pola kerja dan area dukungan yang mungkin dibutuhkan.
-                </p>
+                <p class="neutral-note">Jawaban digunakan untuk membaca pola kerja dan kebutuhan dukungan.</p>
 
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
                     <button type="button" class="btn-nav btn-prev" onclick="handleSaveLater()" style="border-color: var(--color-primary); color: var(--color-primary); font-weight: 800;">
-                        Simpan Progres
+                        Simpan
                     </button>
                     <button type="submit" class="btn-nav btn-result">
-                        Lanjutkan Check-in
+                        Lanjut
                     </button>
                 </div>
             </div>
@@ -313,7 +231,7 @@
         });
 
         if (typeof showLoader === 'function') {
-            showLoader('Menyimpan progres check-in...');
+            showLoader('Menyimpan...');
         }
 
         saveForm.submit();
@@ -321,7 +239,7 @@
 
     function handleSubmit() {
         if (typeof showLoader === 'function') {
-            showLoader('Menyimpan jawaban check-in...');
+            showLoader('Menyimpan jawaban...');
         }
 
         return true;
