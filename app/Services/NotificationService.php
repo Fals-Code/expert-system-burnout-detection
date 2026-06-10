@@ -10,54 +10,57 @@ use App\Models\Diagnosa;
 class NotificationService
 {
     /**
-     * Dispatch notifications after a diagnostic session completes.
-     * - Karyawan: confirmation of their result
-     * - HRD: alert if burnout level is Moderate, High, or Severe (SEDANG, TINGGI, SANGAT TINGGI)
+     * Dispatch notifications after a check-in session completes.
      */
     public static function dispatchAfterDeteksi(Konsultasi $konsultasi, User $user, Diagnosa $diagnosa): void
     {
-        // 1. Notifikasi untuk karyawan yang baru saja menyelesaikan deteksi
+        $score = number_format($konsultasi->cf_final * 100, 1);
+        $supportLabel = match ((int) $diagnosa->id) {
+            1 => 'Keseimbangan Stabil',
+            2 => 'Butuh Dukungan Ekstra',
+            3 => 'Perlu Pemantauan',
+            4 => 'Perhatian Ringan',
+            default => 'Ringkasan Check-in',
+        };
+
         self::send(
             $user->id,
-            'Hasil Deteksi Tersimpan',
-            "Deteksi burnout Anda telah selesai. Hasil: **{$diagnosa->nama}** dengan tingkat keyakinan " . number_format($konsultasi->cf_final * 100, 1) . "%. Lihat riwayat Anda untuk detail lengkap.",
+            'Check-in Tersimpan',
+            "Ringkasan check-in Anda sudah tersedia: **{$supportLabel}**. Skor sistem: {$score}.",
             'informasi',
             'check-circle',
             '#2563eb'
         );
 
-        // 2. Kirim peringatan ke semua tim HRD jika terdeteksi burnout Sedang, Tinggi, atau Sangat Tinggi
         if (in_array($diagnosa->tingkat, ['SEDANG', 'TINGGI', 'SANGAT TINGGI'])) {
             $hrdUsers = User::where('role', 'hrd')->get();
-            $levelName = $diagnosa->tingkat === 'SEDANG' ? 'Sedang' : ($diagnosa->tingkat === 'TINGGI' ? 'Tinggi' : 'Sangat Tinggi');
-            $title = "⚠️ Peringatan Burnout {$levelName}";
+            $title = 'Karyawan Perlu Perhatian';
 
             foreach ($hrdUsers as $hrd) {
                 self::send(
                     $hrd->id,
                     $title,
-                    "Karyawan **{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") terdeteksi dengan tingkat burnout **{$diagnosa->tingkat}** ({$diagnosa->nama}). Segera lakukan tindak lanjut.",
-                    'peringatan',
-                    'alert-triangle',
-                    '#dc2626'
+                    "**{$user->nama}** (" . ($user->divisi->nama ?? 'N/A') . ") memiliki check-in terbaru: **{$supportLabel}**. Tinjau riwayat untuk melihat konteks dukungan.",
+                    'dukungan',
+                    'info',
+                    '#f97316'
                 );
 
-                // Kirim Email (Asinkron via ShouldQueue agar tidak blocking)
                 try {
                     \Illuminate\Support\Facades\Mail::to($hrd->email)->send(new \App\Mail\BurnoutAlert($konsultasi));
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error("Gagal kirim email ke {$hrd->email}: " . $e->getMessage());
                 }
 
-                // Kirim WhatsApp (Mendukung Twilio / Fonnte)
                 if ($hrd->no_telp) {
-                    $waMessage = "[🚨 ALERT BURNOUTXPERT]\n\n" .
+                    $waMessage = "[Ruang Check-in]\n\n" .
                                  "Halo {$hrd->nama},\n" .
-                                 "Sistem mendeteksi tingkat burnout: *{$diagnosa->tingkat}* ({$diagnosa->nama}) pada karyawan:\n\n" .
+                                 "Ada check-in karyawan yang perlu ditinjau dengan pendekatan suportif:\n\n" .
                                  "Nama: {$user->nama}\n" .
                                  "Divisi: " . ($user->divisi->nama ?? 'N/A') . "\n" .
-                                 "Nilai CF: " . number_format($konsultasi->cf_final * 100, 1) . "%\n\n" .
-                                 "Mohon segera tinjau dashboard HRD untuk detail dan rekomendasi pemulihan.";
+                                 "Ringkasan: {$supportLabel}\n" .
+                                 "Skor Sistem: {$score}\n\n" .
+                                 "Silakan buka dashboard HRD untuk melihat konteks dan area dukungan.";
                     self::sendWhatsApp($hrd->no_telp, $waMessage);
                 }
             }
@@ -85,7 +88,6 @@ class NotificationService
      */
     public static function sendWhatsApp(string $to, string $message): void
     {
-        // Bersihkan nomor telepon ke format internasional standar
         $toCleaned = preg_replace('/[^0-9]/', '', $to);
         if (str_starts_with($toCleaned, '0')) {
             $toCleaned = '62' . substr($toCleaned, 1);
