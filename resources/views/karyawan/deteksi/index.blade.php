@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mulai Check-in – Ruang Check-in')
+@section('title', 'Mulai Check-in – Sanctuary Hub')
 
 @section('content')
 <main class="wizard-container">
