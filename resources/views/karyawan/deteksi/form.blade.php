@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Survei Evaluasi Kenyamanan Lingkungan Kerja Karyawan – BurnoutXpert')
+@section('title', 'Check-in Kondisi Kerja – BurnoutXpert')
 
 @section('content')
 <style>
@@ -60,6 +60,25 @@
         border-radius: 999px;
         background: linear-gradient(90deg, #3b82f6, #10b981);
     }
+    .trust-badges {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    .trust-badge {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        padding: 0.85rem;
+        border: 1px solid #dbeafe;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.78);
+        color: #334155;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        font-weight: 750;
+    }
     .question-list {
         max-width: 896px;
         margin: 0 auto;
@@ -76,13 +95,32 @@
         box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
     }
     .question-text {
-        margin: 0 0 1.5rem;
+        margin: 0 0 0.85rem;
         color: #1e293b;
         font-size: 1.2rem;
         line-height: 1.55;
         font-weight: 900;
         letter-spacing: -0.02em;
         text-align: center;
+    }
+    .why-note {
+        margin: 0 auto 1.35rem;
+        max-width: 680px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: #f8fafc;
+        padding: 0.75rem 0.9rem;
+        color: #64748b;
+        font-size: 0.8rem;
+        line-height: 1.6;
+    }
+    .why-note summary {
+        cursor: pointer;
+        font-weight: 900;
+        color: #334155;
+    }
+    .why-note p {
+        margin: 0.45rem 0 0;
     }
     .likert-grid {
         display: grid;
@@ -127,6 +165,13 @@
         font-size: 0.76rem;
         line-height: 1.4;
     }
+    .answer-control-note {
+        margin: 1rem 0 0;
+        color: #64748b;
+        font-size: 0.8rem;
+        line-height: 1.6;
+        text-align: center;
+    }
     .survey-actions {
         max-width: 896px;
         margin: 1.5rem auto 0;
@@ -145,6 +190,7 @@
     }
     @media (max-width: 768px) {
         .survey-hero, .question-card { padding: 1.25rem; }
+        .trust-badges { grid-template-columns: 1fr; }
         .question-list { padding: 0.5rem 0.75rem 0; }
         .question-text { font-size: 1.05rem; text-align: left; }
         .likert-grid { grid-template-columns: 1fr; }
@@ -157,11 +203,11 @@
     <main class="survey-shell">
         <section class="survey-hero">
             <p style="font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.18em; color:#2563eb; margin-bottom:0.65rem;">
-                Survei Lingkungan Kerja
+                Check-in Kerja
             </p>
-            <h1>Survei Evaluasi Kenyamanan Lingkungan Kerja Karyawan</h1>
+            <h1>Check-in Kondisi Kerja Mingguan</h1>
             <p>
-                Jawablah setiap pernyataan sesuai kondisi yang benar-benar Anda alami. Tidak ada jawaban benar atau salah; data ini digunakan untuk membantu sistem memberi evaluasi kerja yang lebih objektif sesuai hak akses yang berlaku.
+                Jawablah setiap pernyataan sesuai kondisi yang paling mendekati dalam 7 hari terakhir. Tidak ada jawaban benar atau salah; hasil ini dipakai sebagai indikasi awal untuk memahami pola beban kerja dan dukungan, bukan diagnosis atau penilaian performa.
             </p>
 
             @php
@@ -170,11 +216,17 @@
 
             <div class="progress-panel">
                 <div class="progress-row">
-                    <span>Proses evaluasi sedang berjalan</span>
-                    <span>Jawab sesuai kondisi harian</span>
+                    <span>Proses check-in sedang berjalan</span>
+                    <span>Bisa disimpan dan dilanjutkan nanti</span>
                 </div>
-                <div class="progress-track" aria-label="Progres pengisian survei">
+                <div class="progress-track" aria-label="Progres pengisian check-in">
                     <div class="progress-fill" style="width: {{ $progressPercent }}%;"></div>
+                </div>
+                <div class="trust-badges" aria-label="Prinsip penggunaan data check-in">
+                    <div class="trust-badge">✓ Tidak digunakan untuk penilaian performa individu</div>
+                    <div class="trust-badge">✓ Fokus pada pola kerja dan kebutuhan dukungan</div>
+                    <div class="trust-badge">✓ Anda bisa menyimpan progres dan lanjut nanti</div>
+                    <div class="trust-badge">✓ Hasil adalah indikasi awal, bukan diagnosis medis</div>
                 </div>
             </div>
         </section>
@@ -189,6 +241,11 @@
                             <span style="color:var(--color-primary); font-weight:900;">{{ $index + 1 }}.</span>
                             {{ $q->nama }}
                         </h2>
+
+                        <details class="why-note">
+                            <summary>Kenapa pertanyaan ini ditanyakan?</summary>
+                            <p>Pertanyaan ini membantu membaca pola energi, beban, dan dukungan kerja. Jawaban Anda tidak dipakai untuk memberi label personal atau menilai performa.</p>
+                        </details>
 
                         <div class="likert-grid">
                             @foreach([
@@ -208,13 +265,17 @@
                                 </label>
                             @endforeach
                         </div>
+
+                        <p class="answer-control-note">
+                            Belum nyaman menjawab sekarang? Gunakan tombol <strong>Simpan Progres</strong>, lalu lanjutkan saat lebih siap. Tidak perlu memaksakan jawaban asal-asalan, manusia sudah cukup menderita oleh spreadsheet.
+                        </p>
                     </section>
                 @endforeach
             </div>
 
             <div class="survey-actions">
                 <p class="neutral-note">
-                    Hasil evaluasi digunakan untuk membaca pola kerja secara lebih objektif. Gunakan jawaban yang paling dekat dengan kondisi nyata, bukan jawaban yang terlihat “aman” atau “ideal”. Karena ya, sistem pakar tetap butuh data jujur agar tidak berubah jadi mesin tebak-tebakan.
+                    Jawaban yang paling membantu adalah jawaban yang paling dekat dengan kondisi nyata. Anda tidak sedang diuji; check-in ini dibuat untuk membantu membaca pola kerja dan area dukungan yang mungkin dibutuhkan.
                 </p>
 
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
@@ -222,7 +283,7 @@
                         Simpan Progres
                     </button>
                     <button type="submit" class="btn-nav btn-result">
-                        Lihat Ringkasan Evaluasi
+                        Lanjutkan Check-in
                     </button>
                 </div>
             </div>
@@ -252,7 +313,7 @@
         });
 
         if (typeof showLoader === 'function') {
-            showLoader('Menyimpan progres survei...');
+            showLoader('Menyimpan progres check-in...');
         }
 
         saveForm.submit();
@@ -260,7 +321,7 @@
 
     function handleSubmit() {
         if (typeof showLoader === 'function') {
-            showLoader('Menganalisis data evaluasi...');
+            showLoader('Menyimpan jawaban check-in...');
         }
 
         return true;
