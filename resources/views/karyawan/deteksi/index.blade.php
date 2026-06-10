@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Deteksi Burnout – BurnoutXpert')
+@section('title', 'Evaluasi Kenyamanan Kerja – BurnoutXpert')
 
 @section('content')
 <main class="wizard-container">
     <!-- Welcome Step -->
-    <div id="startScreen" class="question-card" style="text-align: center;" data-intro="Ini adalah halaman persiapan sebelum memulai deteksi burnout. Di sini Anda bisa memulai sesi baru atau melanjutkan sesi yang tersimpan." data-step="1">
+    <div id="startScreen" class="question-card" style="text-align: center;" data-intro="Ini adalah halaman persiapan sebelum memulai evaluasi kenyamanan kerja. Di sini Anda bisa memulai sesi baru atau melanjutkan sesi yang tersimpan." data-step="1">
         <div class="step active" style="opacity: 1; transform: none;">
             <div class="finish-icon-wrapper" style="margin-bottom: 2rem;">
                 <div class="pulse-ring"></div>
@@ -13,9 +13,9 @@
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                 </svg>
             </div>
-            <h1 class="question-text" style="margin-bottom: 1rem;">Mulai Deteksi Burnout</h1>
-            <p style="color: var(--color-gray-500); line-height: 1.6; margin-bottom: 2.5rem; max-width: 500px; margin-left: auto; margin-right: auto;">
-                Sistem pakar kami akan menganalisis kondisi kesehatan mental Anda melalui serangkaian pertanyaan klinis. Mohon jawab dengan jujur untuk hasil yang paling akurat.
+            <h1 class="question-text" style="margin-bottom: 1rem;">Mulai Evaluasi Kenyamanan Kerja</h1>
+            <p style="color: var(--color-gray-500); line-height: 1.6; margin-bottom: 2.5rem; max-width: 560px; margin-left: auto; margin-right: auto;">
+                Sistem pakar kami akan mengevaluasi tingkat kebugaran dan kenyamanan lingkungan kerja Anda melalui serangkaian indikator harian. Mohon jawab dengan jujur untuk hasil evaluasi yang paling akurat.
             </p>
 
             @if(isset($savedSession))
@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <h4 style="margin: 0; color: var(--color-gray-800); font-weight: 800; font-size: 0.95rem;">Sesi Tersimpan Ditemukan!</h4>
-                        <p style="margin: 0.25rem 0 0 0; color: var(--color-gray-500); font-size: 0.85rem;">Anda memiliki progres deteksi burnout yang disimpan pada {{ $savedSession->updated_at->format('d M Y, H:i') }} ({{ count($savedSession->answers) }} gejala terjawab).</p>
+                        <p style="margin: 0.25rem 0 0 0; color: var(--color-gray-500); font-size: 0.85rem;">Anda memiliki progres evaluasi kenyamanan kerja yang disimpan pada {{ $savedSession->updated_at->format('d M Y, H:i') }} ({{ count($savedSession->answers) }} indikator terjawab).</p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
@@ -43,8 +43,8 @@
                 </div>
             </div>
             @else
-            <a href="{{ route('karyawan.deteksi') }}" class="btn-nav btn-result" style="margin: 0 auto; padding: 1.25rem 3rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; max-width: max-content;" data-intro="Klik tombol ini untuk memulai proses deteksi burnout. Anda akan menjawab serangkaian pertanyaan klinis." data-step="2">
-                Mulai Analisis Sekarang
+            <a href="{{ route('karyawan.deteksi') }}" class="btn-nav btn-result" style="margin: 0 auto; padding: 1.25rem 3rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; max-width: max-content;" data-intro="Klik tombol ini untuk memulai proses evaluasi kenyamanan kerja. Anda akan menjawab serangkaian indikator harian." data-step="2">
+                Mulai Evaluasi Sekarang
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
