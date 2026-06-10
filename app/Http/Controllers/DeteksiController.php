@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreDeteksiRequest;
-use App\Models\Gejala;
 use App\Models\Aturan;
+use App\Models\Gejala;
 use App\Models\Konsultasi;
 use App\Services\ExpertSystemService;
 use App\Services\NotificationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class DeteksiController extends Controller
@@ -28,6 +29,7 @@ class DeteksiController extends Controller
     public function intro()
     {
         $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+
         return view('karyawan.deteksi.index', compact('savedSession'));
     }
 
@@ -36,7 +38,7 @@ class DeteksiController extends Controller
      */
     public function index()
     {
-        if (!Session::has('deteksi_answers')) {
+        if (! Session::has('deteksi_answers')) {
             Session::put('deteksi_answers', []);
         }
 
@@ -52,7 +54,7 @@ class DeteksiController extends Controller
          * - Tetap melewati batas early stop aman.
          * - Jumlah jawaban minimum sudah cukup.
          */
-        if (!empty($answers)) {
+        if (! empty($answers)) {
             $currentResult = $this->expertSystem->solve($answers);
 
             if ($this->shouldStopEarly($currentResult, $answers)) {
@@ -62,7 +64,7 @@ class DeteksiController extends Controller
 
         $nextCodes = $this->expertSystem->getNextSymptoms($answeredCodes);
 
-        if (empty($nextCodes) && !empty($answeredCodes)) {
+        if (empty($nextCodes) && ! empty($answeredCodes)) {
             return $this->processResult();
         }
 
@@ -99,7 +101,7 @@ class DeteksiController extends Controller
         $cf = (float) ($result['cf'] ?? 0.0);
         $ruleCode = data_get($result, 'tracing.rule_kode');
 
-        if (!$ruleCode || $cf <= 0) {
+        if (! $ruleCode || $cf <= 0) {
             return false;
         }
 
@@ -131,7 +133,7 @@ class DeteksiController extends Controller
             ['user_id' => Auth::id()],
             [
                 'answers' => $answers,
-                'current_step_codes' => []
+                'current_step_codes' => [],
             ]
         );
 
@@ -150,6 +152,7 @@ class DeteksiController extends Controller
         if ($savedSession) {
             Session::put('deteksi_answers', $savedSession->answers);
             $savedSession->delete();
+
             return redirect()->route('karyawan.deteksi')->with('success', 'Progres check-in berhasil dipulihkan.');
         }
 
@@ -214,11 +217,28 @@ class DeteksiController extends Controller
             return $this->expertSystem->saveResult(Auth::id(), $result, $answers);
         });
 
-        NotificationService::dispatchAfterDeteksi($konsultasi, Auth::user(), $result['diagnosa']);
-
+        /**
+         * Tandai hasil sebagai selesai sebelum mengirim notifikasi.
+         * Dengan begitu, kegagalan layanan notifikasi tidak membuat browser
+         * mengulang penyimpanan konsultasi yang sama saat halaman direfresh.
+         */
         Session::put('last_result_id', $konsultasi->id);
         Session::forget('deteksi_answers');
         Session::forget('bc_engine.current_hypothesis');
+
+        try {
+            NotificationService::dispatchAfterDeteksi(
+                $konsultasi,
+                Auth::user(),
+                $result['diagnosa']
+            );
+        } catch (\Throwable $exception) {
+            Log::error('Gagal mengirim notifikasi setelah check-in tersimpan.', [
+                'konsultasi_id' => $konsultasi->id,
+                'user_id' => Auth::id(),
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         return redirect()->route('karyawan.hasil');
     }
@@ -231,13 +251,13 @@ class DeteksiController extends Controller
     {
         $id = $request->id ?? Session::get('last_result_id');
 
-        if (!$id) {
+        if (! $id) {
             return redirect()->route('karyawan.dashboard');
         }
 
         $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
 
-        if (!$konsultasi) {
+        if (! $konsultasi) {
             return redirect()->route('karyawan.dashboard')->with('error', 'Data hasil check-in tidak ditemukan.');
         }
 
@@ -255,9 +275,9 @@ class DeteksiController extends Controller
         );
 
         return view('karyawan.deteksi.hasil', [
-            'konsultasi'  => $konsultasi,
-            'confidence'  => number_format($konsultasi->cf_final * 100, 1),
-            'tracing'     => $currentResult['tracing'] ?? [],
+            'konsultasi' => $konsultasi,
+            'confidence' => number_format($konsultasi->cf_final * 100, 1),
+            'tracing' => $currentResult['tracing'] ?? [],
             'explanation' => $explanation,
         ]);
     }
@@ -283,7 +303,7 @@ class DeteksiController extends Controller
     {
         $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
 
-        if (!$konsultasi) {
+        if (! $konsultasi) {
             return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
         }
 
