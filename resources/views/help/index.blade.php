@@ -39,6 +39,7 @@
 </div>
 @endsection
 
+@push('styles')
 <style>
     .support-page { max-width: 840px; margin: 0 auto; }
     .support-header { padding: .75rem 0 1.5rem; border-bottom: 1px solid rgba(148,163,184,.18); }
@@ -59,4 +60,4 @@
     .faq-item p { margin:0; padding:0 0 1rem; color:#64748b; line-height:1.75; }
     .support-contact p { margin:0 0 1.25rem; color:#64748b; line-height:1.75; }
 </style>
-@endsection
+@endpush
