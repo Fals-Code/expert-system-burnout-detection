@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use RuntimeException;
+use Throwable;
 
 class ImportLicensedMbiGsItems extends Command
 {
@@ -56,6 +57,14 @@ class ImportLicensedMbiGsItems extends Command
             $this->assertCodesMatchConfiguredSlots($items);
 
             DB::transaction(function () use ($items): void {
+                MbiItem::query()
+                    ->where('is_active', true)
+                    ->orderBy('id')
+                    ->get()
+                    ->each(function (MbiItem $item, int $index): void {
+                        $item->update(['position' => 100 + $index]);
+                    });
+
                 foreach ($items as $itemData) {
                     $item = MbiItem::query()->where('code', $itemData['code'])->firstOrFail();
                     $item->update([
@@ -68,8 +77,11 @@ class ImportLicensedMbiGsItems extends Command
                     ]);
                 }
             });
-        } catch (RuntimeException $exception) {
-            $this->error($exception->getMessage());
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->error($exception instanceof RuntimeException
+                ? $exception->getMessage()
+                : 'Licensed item import failed and was rolled back.');
 
             return self::FAILURE;
         }
@@ -81,9 +93,9 @@ class ImportLicensedMbiGsItems extends Command
 
     private function resolvePath(string $path): string
     {
-        return str_starts_with($path, DIRECTORY_SEPARATOR)
-            ? $path
-            : base_path($path);
+        $isAbsolute = preg_match('/^(?:[A-Za-z]:[\\\\\/]|[\\\\\/]{2}|\/)/', $path) === 1;
+
+        return $isAbsolute ? $path : base_path($path);
     }
 
     private function assertDimensionCounts(array $items): void
