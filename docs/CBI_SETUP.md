@@ -1,55 +1,68 @@
-# Copenhagen Burnout Inventory (CBI)
+# CBI Backward Chaining
 
-## Struktur instrumen
+## Metodologi
 
-Implementasi menggunakan 19 item dalam tiga dimensi kontinu:
+Aplikasi memakai 19 indikator CBI sebagai fakta untuk rule base kustom. Aplikasi tidak menghitung rata-rata dimensi CBI resmi.
 
-- Personal Burnout (`PB`): 6 item
-- Work-related Burnout (`WB`): 7 item
-- Client-related Burnout (`CB`): 6 item
-
-Teks item Bahasa Indonesia disimpan langsung sebagai plain text di tabel `cbi_items`. Tidak ada encrypted cast, berkas lisensi privat, atau importer instrumen berbayar.
-
-Teks Bahasa Indonesia pada repositori ini merupakan terjemahan operasional dari versi bahasa Inggris Kristensen dkk. (2005). Jangan menyebutnya sebagai versi Indonesia yang tervalidasi secara formal sebelum dilakukan proses penerjemahan balik dan validasi lintas budaya pada populasi sasaran.
+Keluaran harus disebut **inferensi rule-based berbasis indikator CBI**, bukan skor CBI resmi atau diagnosis klinis.
 
 ## Instalasi
 
 ```bash
 php artisan migrate
 php artisan db:seed --class=CbiInstrumentSeeder
+php artisan db:seed --class=CbiBackwardChainingRuleSeeder
 php artisan optimize:clear
 ```
 
-## Skala dan perhitungan
+## Konversi jawaban
 
-| Pilihan | Nilai |
-|---|---:|
-| Selalu | 100 |
-| Sering | 75 |
-| Kadang-kadang | 50 |
-| Jarang | 25 |
-| Tidak pernah | 0 |
+| Jawaban | Nilai | Boolean |
+|---|---:|---|
+| Selalu | 100 | TRUE |
+| Sering | 75 | TRUE |
+| Kadang-kadang | 50 | FALSE |
+| Jarang | 25 | FALSE |
+| Tidak pernah | 0 | FALSE |
 
-Nilai setiap dimensi adalah rata-rata aritmetika seluruh item dalam dimensi tersebut.
-
-`CBI-WB-07` adalah item positif dan dihitung terbalik:
+## Rule utama
 
 ```text
-skor normalisasi = 100 - skor mentah
+BURNOUT_PERSONAL
+K_OF_N: minimal 4 dari 6 indikator PB = TRUE
+
+BURNOUT_KERJA
+K_OF_N: minimal 5 dari 7 premis WB terpenuhi
+
+BURNOUT_CLIENT
+K_OF_N: minimal 4 dari 6 indikator CB = TRUE
+
+BURNOUT_KERJA_KRONIS
+ALL: BURNOUT_PERSONAL dan BURNOUT_KERJA terbukti
+
+KONDISI_STABIL
+ALL: BURNOUT_PERSONAL, BURNOUT_KERJA, dan BURNOUT_CLIENT tidak terbukti
 ```
 
-Apabila satu item saja tidak terisi, dimensi terkait dan assessment keseluruhan berstatus `INSUFFICIENT_DATA`. Skor parsial tidak diterbitkan.
+`CBI-WB-07` merupakan item positif. Rule mengharapkan boolean FALSE pada item tersebut.
 
-## Client-related Burnout
+Semua ambang adalah keputusan knowledge engineering proyek, bukan cut-off resmi CBI.
 
-Istilah penerima layanan mencakup pelanggan, pasien, siswa, pengguna, warga, atau pihak internal yang menerima hasil pekerjaan. Jangan menggantinya secara otomatis menjadi rekan kerja tanpa validasi konstruk untuk konteks organisasi yang digunakan.
+## Alur engine
+
+1. Engine memulai dari goal aktif.
+2. Rule yang menghasilkan goal dicari berdasarkan prioritas.
+3. Premis goal diperiksa secara rekursif.
+4. Premis fakta dibaca dari `inference_answers`.
+5. Fakta yang belum tersedia dikembalikan sebagai satu pertanyaan.
+6. K-of-N berhenti jika ambang tercapai atau tidak mungkin lagi tercapai.
+7. `visitedGoals` mencegah recursive loop.
+8. Jejak proses disimpan pada `inference_traces`.
 
 ## Pengujian
 
 ```bash
-php artisan test --filter=CbiAssessmentTest
+php artisan test --filter=RecursiveBackwardChainingTest
 ```
 
-## Batas penggunaan
-
-Skor CBI merupakan keluaran skrining dan riset kontinu, bukan diagnosis klinis. Hasil tidak boleh menjadi satu-satunya dasar keputusan ketenagakerjaan.
+Teks Bahasa Indonesia merupakan terjemahan operasional. Untuk penelitian formal, tetap diperlukan validasi bahasa dan lintas budaya.
