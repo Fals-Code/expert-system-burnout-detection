@@ -2,325 +2,198 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreDeteksiRequest;
-use App\Models\Aturan;
-use App\Models\Gejala;
-use App\Models\Konsultasi;
-use App\Services\ExpertSystemService;
+use App\Http\Requests\StoreInferenceAnswerRequest;
+use App\Models\CbiItem;
+use App\Models\InferenceSession;
+use App\Services\AdaptiveInterviewService;
+use App\Services\InferenceExplanationService;
 use App\Services\NotificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\View\View;
+use Throwable;
 
 class DeteksiController extends Controller
 {
-    protected $expertSystem;
-
-    public function __construct(ExpertSystemService $expertSystem)
-    {
-        $this->expertSystem = $expertSystem;
+    public function __construct(
+        private readonly AdaptiveInterviewService $interviewService,
+        private readonly InferenceExplanationService $explanationService
+    ) {
     }
 
-    /**
-     * Halaman intro check-in kerja.
-     */
-    public function intro()
+    public function intro(): View
     {
-        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+        $savedSession = InferenceSession::query()
+            ->where('user_id', Auth::id())
+            ->where('status', InferenceSession::STATUS_IN_PROGRESS)
+            ->latest('id')
+            ->first();
 
         return view('karyawan.deteksi.index', compact('savedSession'));
     }
 
-    /**
-     * Tampilkan halaman check-in kerja (Wizard).
-     */
-    public function index()
+    public function index(): View|RedirectResponse
     {
-        if (! Session::has('deteksi_answers')) {
-            Session::put('deteksi_answers', []);
+        $user = Auth::user();
+        $session = $this->interviewService->getOrCreateSession($user);
+        $result = $this->interviewService->advance($session);
+        $session->refresh();
+
+        if ($session->status !== InferenceSession::STATUS_IN_PROGRESS) {
+            Session::put('last_inference_session_id', $session->id);
+            $this->notifyCompletion($session);
+
+            return redirect()->route('karyawan.hasil', [
+                'id' => $session->id,
+            ]);
         }
 
-        $answers = Session::get('deteksi_answers', []);
-        $answeredCodes = array_keys($answers);
-        $totalGejalaCount = Gejala::count();
+        $question = $result->question;
 
-        /**
-         * TRUE BACKWARD CHAINING:
-         * Sistem boleh berhenti prematur hanya jika:
-         * - Ada hasil rule yang valid.
-         * - CF melewati threshold dinamis rule.
-         * - Tetap melewati batas early stop aman.
-         * - Jumlah jawaban minimum sudah cukup.
-         */
-        if (! empty($answers)) {
-            $currentResult = $this->expertSystem->solve($answers);
-
-            if ($this->shouldStopEarly($currentResult, $answers)) {
-                return $this->processResult();
-            }
-        }
-
-        $nextCodes = $this->expertSystem->getNextSymptoms($answeredCodes);
-
-        if (empty($nextCodes) && ! empty($answeredCodes)) {
-            return $this->processResult();
-        }
-
-        $questions = Gejala::whereIn('kode', $nextCodes)->get();
-
-        if ($questions->isEmpty()) {
-            $questions = Gejala::take(4)->get();
-        }
-
-        foreach ($questions as $q) {
-            $q->nama = $this->expertSystem->getEmpatheticPhrasing($q->kode, $q->nama);
-        }
+        abort_if(! $question, 500, 'Inference engine did not return a required fact.');
 
         return view('karyawan.deteksi.form', [
-            'questions' => $questions,
-            'question_codes' => $questions->pluck('kode')->toArray(),
-            'progress' => count($answeredCodes),
-            'total_gejala' => $totalGejalaCount,
-            'progress_percent' => $totalGejalaCount > 0
-                ? round((count($answeredCodes) / $totalGejalaCount) * 100)
-                : 0,
-            'options' => [
-                'Ya' => 'Ya, Sering Merasakan',
-                'Tidak' => 'Tidak Pernah',
-            ],
+            'session' => $session,
+            'question' => $question,
+            'responseOptions' => config('cbi.response_options', []),
+            'answeredCount' => $session->answers()->count(),
+            'currentGoalLabel' => config(
+                "expert_system.goal_labels.{$session->current_goal}",
+                $session->current_goal
+            ),
+            'tracePreview' => $session->traces()
+                ->latest('sequence')
+                ->limit(4)
+                ->get()
+                ->sortBy('sequence')
+                ->values(),
         ]);
     }
 
-    /**
-     * Menentukan apakah proses deteksi boleh dihentikan lebih awal.
-     */
-    private function shouldStopEarly(array $result, array $answers): bool
-    {
-        $cf = (float) ($result['cf'] ?? 0.0);
-        $ruleCode = data_get($result, 'tracing.rule_kode');
-
-        if (! $ruleCode || $cf <= 0) {
-            return false;
-        }
-
-        $minThreshold = Aturan::query()
-            ->where('kode', $ruleCode)
-            ->where('is_active', true)
-            ->value('min_threshold');
-
-        $dynamicRuleThreshold = (float) ($minThreshold ?? 0.25);
-        $earlyStopThreshold = max($dynamicRuleThreshold, 0.85);
-        $minimumAnsweredSymptoms = 4;
-
-        return count($answers) >= $minimumAnsweredSymptoms
-            && $cf >= $earlyStopThreshold;
-    }
-
-    /**
-     * Menyimpan sesi check-in secara persisten ke database.
-     */
-    public function saveSession(Request $request)
-    {
-        $answers = Session::get('deteksi_answers', []);
-
-        if (empty($answers)) {
-            return redirect()->route('karyawan.dashboard')->with('info', 'Belum ada progres check-in yang perlu disimpan.');
-        }
-
-        \App\Models\DeteksiSession::updateOrCreate(
-            ['user_id' => Auth::id()],
-            [
-                'answers' => $answers,
-                'current_step_codes' => [],
-            ]
+    public function next(
+        StoreInferenceAnswerRequest $request
+    ): RedirectResponse {
+        $session = InferenceSession::query()->findOrFail(
+            $request->integer('session_id')
         );
+        $item = CbiItem::query()
+            ->where('code', $request->string('item_code')->toString())
+            ->where('is_active', true)
+            ->firstOrFail();
 
-        Session::forget('deteksi_answers');
-
-        return redirect()->route('karyawan.dashboard')->with('success', 'Progres check-in berhasil disimpan. Anda dapat melanjutkannya kapan saja.');
-    }
-
-    /**
-     * Memulihkan sesi check-in yang tersimpan secara persisten.
-     */
-    public function resumeSession(Request $request)
-    {
-        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
-
-        if ($savedSession) {
-            Session::put('deteksi_answers', $savedSession->answers);
-            $savedSession->delete();
-
-            return redirect()->route('karyawan.deteksi')->with('success', 'Progres check-in berhasil dipulihkan.');
-        }
-
-        return redirect()->route('karyawan.deteksi')->with('error', 'Tidak ada sesi check-in tersimpan.');
-    }
-
-    /**
-     * Simpan jawaban sementara dan lanjut ke langkah berikutnya.
-     */
-    public function next(StoreDeteksiRequest $request)
-    {
-        $request->validated();
-
-        $answers = Session::get('deteksi_answers', []);
-
-        foreach ($request->except('_token', 'gejala_id') as $kode => $value) {
-            if (str_starts_with($kode, 'G')) {
-                $answers[$kode] = $value;
-            }
-        }
-
-        /**
-         * Dukungan aman untuk payload alternatif berbasis gejala_id[].
-         * Field ini sudah divalidasi oleh StoreDeteksiRequest.
-         */
-        if ($request->filled('gejala_id')) {
-            $selectedCodes = Gejala::query()
-                ->whereIn('id', $request->input('gejala_id', []))
-                ->pluck('kode')
-                ->all();
-
-            foreach ($selectedCodes as $kode) {
-                $answers[$kode] = 'Ya';
-            }
-        }
-
-        Session::put('deteksi_answers', $answers);
+        $this->interviewService->recordAnswer(
+            $session,
+            $item,
+            $request->answerKey()
+        );
 
         return redirect()->route('karyawan.deteksi');
     }
 
-    /**
-     * Hitung hasil akhir deteksi.
-     */
-    protected function processResult()
+    public function showResult(Request $request): View|RedirectResponse
     {
-        $answers = Session::get('deteksi_answers', []);
-
-        if (empty($answers)) {
-            return redirect()
-                ->route('karyawan.deteksi')
-                ->with('error', 'Belum ada jawaban yang dapat dianalisis. Silakan isi check-in terlebih dahulu.');
-        }
-
-        $result = $this->expertSystem->solve($answers);
-
-        /**
-         * Seluruh proses penyimpanan konsultasi, tracing, dan pivot gejala
-         * dibungkus transaction agar tidak ada data setengah tersimpan.
-         */
-        $konsultasi = DB::transaction(function () use ($result, $answers) {
-            return $this->expertSystem->saveResult(Auth::id(), $result, $answers);
-        });
-
-        /**
-         * Tandai hasil sebagai selesai sebelum mengirim notifikasi.
-         * Dengan begitu, kegagalan layanan notifikasi tidak membuat browser
-         * mengulang penyimpanan konsultasi yang sama saat halaman direfresh.
-         */
-        Session::put('last_result_id', $konsultasi->id);
-        Session::forget('deteksi_answers');
-        Session::forget('bc_engine.current_hypothesis');
-
-        try {
-            NotificationService::dispatchAfterDeteksi(
-                $konsultasi,
-                Auth::user(),
-                $result['diagnosa']
-            );
-        } catch (\Throwable $exception) {
-            Log::error('Gagal mengirim notifikasi setelah check-in tersimpan.', [
-                'konsultasi_id' => $konsultasi->id,
-                'user_id' => Auth::id(),
-                'error' => $exception->getMessage(),
-            ]);
-        }
-
-        return redirect()->route('karyawan.hasil');
-    }
-
-    /**
-     * Tampilkan halaman hasil deteksi.
-     * Halaman ini hanya membaca record historis Konsultasi yang sudah fixed.
-     */
-    public function showResult(Request $request)
-    {
-        $id = $request->id ?? Session::get('last_result_id');
+        $id = $request->integer('id')
+            ?: Session::get('last_inference_session_id');
 
         if (! $id) {
             return redirect()->route('karyawan.dashboard');
         }
 
-        $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+        $session = InferenceSession::query()
+            ->with(['traces', 'answers.item', 'user'])
+            ->find($id);
 
-        if (! $konsultasi) {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Data hasil check-in tidak ditemukan.');
+        if (! $session) {
+            return redirect()
+                ->route('karyawan.dashboard')
+                ->with('error', 'Hasil inferensi tidak ditemukan.');
         }
 
-        abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
-
-        $tracing = $konsultasi->tracing ?? [];
-        $currentResult = [
-            'tracing' => is_array($tracing) ? $tracing : [],
-        ];
-
-        $explanation = $this->expertSystem->generateExplanation(
-            $currentResult['tracing'] ?? [],
-            $konsultasi->diagnosa,
-            $konsultasi->cf_final
-        );
+        abort_if((int) $session->user_id !== (int) Auth::id(), 403);
 
         return view('karyawan.deteksi.hasil', [
-            'konsultasi' => $konsultasi,
-            'confidence' => number_format($konsultasi->cf_final * 100, 1),
-            'tracing' => $currentResult['tracing'] ?? [],
-            'explanation' => $explanation,
+            'session' => $session,
+            'explanation' => $this->explanationService->build($session),
         ]);
     }
 
-    /**
-     * Reset sesi deteksi dan mulai ulang dengan form kosong.
-     */
-    public function reset()
+    public function downloadReport(int $id): View|RedirectResponse
     {
-        Session::forget('deteksi_answers');
-        Session::forget('last_result_id');
-        Session::forget('bc_engine.current_hypothesis');
+        $session = InferenceSession::query()
+            ->with(['traces', 'answers.item', 'user'])
+            ->find($id);
+
+        if (! $session) {
+            return redirect()
+                ->route('karyawan.dashboard')
+                ->with('error', 'Hasil inferensi tidak ditemukan.');
+        }
+
+        abort_if((int) $session->user_id !== (int) Auth::id(), 403);
+
+        return view('karyawan.deteksi.report', [
+            'session' => $session,
+            'explanation' => $this->explanationService->build($session),
+        ]);
+    }
+
+    public function reset(): RedirectResponse
+    {
+        InferenceSession::query()
+            ->where('user_id', Auth::id())
+            ->where('status', InferenceSession::STATUS_IN_PROGRESS)
+            ->update([
+                'status' => InferenceSession::STATUS_CANCELLED,
+                'current_question_code' => null,
+                'completed_at' => now(),
+            ]);
+
+        Session::forget('last_inference_session_id');
 
         return redirect()
             ->route('karyawan.deteksi')
-            ->with('info', 'Sesi lama sudah dibersihkan. Silakan mulai check-in baru dari awal.');
+            ->with('info', 'Sesi lama dibatalkan dan wawancara adaptif baru dimulai.');
     }
 
-    /**
-     * Download laporan deteksi (PDF Mock/Print View).
-     */
-    public function downloadReport($id)
+    public function saveSession(): RedirectResponse
     {
-        $konsultasi = Konsultasi::with(['diagnosa', 'gejala', 'user'])->find($id);
+        return redirect()
+            ->route('karyawan.dashboard')
+            ->with(
+                'success',
+                'Progres sudah tersimpan otomatis di database dan dapat dilanjutkan.'
+            );
+    }
 
-        if (! $konsultasi) {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Data tidak ditemukan.');
+    public function resumeSession(): RedirectResponse
+    {
+        return redirect()->route('karyawan.deteksi');
+    }
+
+    private function notifyCompletion(InferenceSession $session): void
+    {
+        try {
+            $label = config(
+                "expert_system.goal_labels.{$session->conclusion}",
+                $session->conclusion
+            );
+
+            NotificationService::send(
+                (int) Auth::id(),
+                'Inferensi Backward Chaining Selesai',
+                "Kesimpulan rule-based tersedia: **{$label}**.",
+                icon: 'git-branch',
+                color: '#2563eb'
+            );
+        } catch (Throwable $exception) {
+            Log::error('Gagal mengirim notifikasi hasil inferensi.', [
+                'inference_session_id' => $session->id,
+                'user_id' => Auth::id(),
+                'error' => $exception->getMessage(),
+            ]);
         }
-
-        abort_if((int) $konsultasi->user_id !== (int) Auth::id(), 403);
-
-        $tracing = $konsultasi->tracing ?? [];
-        $explanation = $this->expertSystem->generateExplanation(
-            is_array($tracing) ? $tracing : [],
-            $konsultasi->diagnosa,
-            $konsultasi->cf_final
-        );
-
-        return view('karyawan.deteksi.report', [
-            'konsultasi' => $konsultasi,
-            'confidence' => number_format($konsultasi->cf_final * 100, 1),
-            'tracing' => $tracing,
-            'explanation' => $explanation,
-        ]);
     }
 }
