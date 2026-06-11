@@ -29,8 +29,13 @@ class CbiItem extends Model
         'is_active' => 'boolean',
     ];
 
-    public function responses(): HasMany
+    public function answers(): HasMany
     {
-        return $this->hasMany(CbiResponse::class, 'item_id');
+        return $this->hasMany(InferenceAnswer::class, 'cbi_item_id');
+    }
+
+    public function premises(): HasMany
+    {
+        return $this->hasMany(ExpertPremise::class, 'cbi_item_id');
     }
 }
