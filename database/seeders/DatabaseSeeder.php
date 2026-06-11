@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BurnoutXpertSeeder::class,
-            BurnoutKnowledgeBaseSeeder::class,
+            CbiInstrumentSeeder::class,
         ]);
     }
 }
