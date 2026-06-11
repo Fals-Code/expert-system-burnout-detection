@@ -13,6 +13,7 @@ class MbiScoringService
     {
         $items ??= MbiItem::query()->where('is_active', true)->orderBy('position')->get();
         $expectedDimensions = config('mbi.instrument.dimensions', ['EX' => 5, 'CY' => 5, 'PE' => 6]);
+        $expectedResponses = (int) config('mbi.instrument.expected_item_count', 16);
         $normalizedResponses = $this->normalizeResponses($responses);
         $dimensions = [];
 
@@ -26,7 +27,8 @@ class MbiScoringService
             );
         }
 
-        $instrumentHasExpectedItems = $items->count() === (int) config('mbi.instrument.expected_item_count', 16)
+        $responsesCount = (int) collect($dimensions)->sum('answered_count');
+        $instrumentHasExpectedItems = $items->count() === $expectedResponses
             && collect($dimensions)->every(
                 fn (array $dimension): bool => $dimension['configured_count'] === $dimension['expected_count']
             );
@@ -46,8 +48,11 @@ class MbiScoringService
 
         return [
             'status' => $isComplete ? MbiAssessment::STATUS_COMPLETE : MbiAssessment::STATUS_INSUFFICIENT_DATA,
-            'responses_count' => collect($dimensions)->sum('answered_count'),
-            'expected_responses_count' => (int) config('mbi.instrument.expected_item_count', 16),
+            'responses_count' => $responsesCount,
+            'expected_responses_count' => $expectedResponses,
+            'coverage_percent' => $expectedResponses > 0
+                ? round(($responsesCount / $expectedResponses) * 100, 2)
+                : 0.0,
             'instrument_ready' => $instrumentHasExpectedItems,
             'dimensions' => $dimensions,
             'profile' => $profile,
@@ -91,8 +96,9 @@ class MbiScoringService
             $scores[] = $responses[$item->code];
         }
 
+        $answeredCount = count($scores);
         $isComplete = $items->count() === $expectedCount
-            && count($scores) === $expectedCount
+            && $answeredCount === $expectedCount
             && $missingCodes === [];
 
         return [
@@ -100,7 +106,10 @@ class MbiScoringService
             'status' => $isComplete ? MbiAssessment::STATUS_COMPLETE : MbiAssessment::STATUS_INSUFFICIENT_DATA,
             'expected_count' => $expectedCount,
             'configured_count' => $items->count(),
-            'answered_count' => count($scores),
+            'answered_count' => $answeredCount,
+            'coverage_percent' => $expectedCount > 0
+                ? round(($answeredCount / $expectedCount) * 100, 2)
+                : 0.0,
             'missing_codes' => $missingCodes,
             'total' => $isComplete ? array_sum($scores) : null,
             'mean' => $isComplete ? round(array_sum($scores) / $expectedCount, 2) : null,
