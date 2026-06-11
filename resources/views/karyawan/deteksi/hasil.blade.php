@@ -1,202 +1,63 @@
 @extends('layouts.app')
 
-@section('title', 'Ringkasan Check-in Kerja – BurnoutXpert')
+@section('title', 'Profil Risiko Burnout Berdasarkan MBI-GS')
 
 @section('content')
-@php
-    $diagnosis = $konsultasi->diagnosa;
-    $diagnosisId = (int) ($diagnosis->id ?? 0);
-    $ruleCode = data_get($tracing ?? [], 'rule_kode', '-');
+<div class="main-wrapper" style="margin-left:0;padding:0;">
+    <main class="mbi-result-shell">
+        <header>
+            <span>Hasil Skrining Dimensional</span>
+            <h1>{{ $explanation['title'] }}</h1>
+            <p>{{ $explanation['summary'] }}</p>
+        </header>
 
-    $themes = [
-        1 => [
-            'wrapper' => 'background:#f0fdf4; color:#166534; border-color:#bbf7d0;',
-            'badge' => 'background:#16a34a; color:#ffffff;',
-            'soft' => 'background:#dcfce7; color:#166534; border-color:#bbf7d0;',
-            'label' => 'Keseimbangan Stabil',
-            'title' => 'Kondisi Kerja Anda Tampak Stabil',
-            'icon' => '✓',
-        ],
-        2 => [
-            'wrapper' => 'background:#fff7ed; color:#9a3412; border-color:#fed7aa;',
-            'badge' => 'background:#f97316; color:#ffffff;',
-            'soft' => 'background:#ffedd5; color:#9a3412; border-color:#fed7aa;',
-            'label' => 'Butuh Dukungan Ekstra',
-            'title' => 'Kondisi Anda Membutuhkan Perhatian Ekstra',
-            'icon' => 'i',
-        ],
-        3 => [
-            'wrapper' => 'background:#fffbeb; color:#92400e; border-color:#fde68a;',
-            'badge' => 'background:#f59e0b; color:#ffffff;',
-            'soft' => 'background:#fef3c7; color:#92400e; border-color:#fde68a;',
-            'label' => 'Perlu Pemantauan',
-            'title' => 'Beberapa Area Perlu Dipantau',
-            'icon' => 'i',
-        ],
-        4 => [
-            'wrapper' => 'background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;',
-            'badge' => 'background:#2563eb; color:#ffffff;',
-            'soft' => 'background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;',
-            'label' => 'Perhatian Ringan',
-            'title' => 'Ada Area Ringan yang Perlu Perhatian',
-            'icon' => 'i',
-        ],
-    ];
-
-    $theme = $themes[$diagnosisId] ?? [
-        'wrapper' => 'background:#f8fafc; color:#334155; border-color:#e2e8f0;',
-        'badge' => 'background:#475569; color:#ffffff;',
-        'soft' => 'background:#f1f5f9; color:#334155; border-color:#e2e8f0;',
-        'label' => 'Ringkasan Evaluasi',
-        'title' => 'Ringkasan Check-in Kerja',
-        'icon' => 'i',
-    ];
-@endphp
-
-<div class="main-wrapper" style="margin-left:0; padding:0;">
-    <main class="result-container" style="max-width:1100px; margin:0 auto; padding:1rem 0 3rem;">
-        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.5rem;">
-            <div>
-                <h1 style="margin:0 0 0.5rem; color:var(--color-primary); font-size:2rem; font-weight:900; letter-spacing:-0.03em;">
-                    Ringkasan Check-in Kerja
-                </h1>
-                <p style="margin:0; color:var(--color-gray-500); line-height:1.7; max-width:760px;">
-                    Ringkasan ini membantu Anda memahami area kerja yang sudah stabil dan area yang mungkin membutuhkan dukungan. Hasil ini adalah indikasi awal berbasis jawaban check-in, bukan diagnosis medis atau penilaian performa.
-                </p>
-            </div>
-
-            <a href="{{ route('karyawan.deteksi.reset') }}" style="display:inline-flex; align-items:center; gap:0.5rem; background:#0f172a; color:white; padding:0.85rem 1.15rem; border-radius:999px; text-decoration:none; font-weight:900; box-shadow:0 10px 20px rgba(15,23,42,0.16);">
-                Isi Check-in Ulang
-            </a>
-        </div>
-
-        <section style="border:1px solid; {{ $theme['wrapper'] }} border-radius:28px; padding:2rem; box-shadow:0 20px 40px rgba(15,23,42,0.06); margin-bottom:1.5rem; position:relative; overflow:hidden;">
-            <div style="position:absolute; width:280px; height:280px; border-radius:999px; background:rgba(255,255,255,0.45); filter:blur(60px); top:-120px; right:-120px;"></div>
-
-            <div style="position:relative; z-index:1; display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:flex-start;">
-                <div style="width:64px; height:64px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:900; border:1px solid; {{ $theme['soft'] }}">
-                    {{ $theme['icon'] }}
-                </div>
-
-                <div>
-                    <div style="display:inline-flex; padding:0.4rem 0.85rem; border-radius:999px; font-size:0.75rem; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; {{ $theme['badge'] }}">
-                        {{ $theme['label'] }}
-                    </div>
-
-                    <h2 style="margin:0 0 0.75rem; font-size:2rem; font-weight:950; line-height:1.2;">
-                        {{ $theme['title'] }}
-                    </h2>
-
-                    <div style="font-size:3rem; font-weight:950; line-height:1; margin-bottom:0.65rem;">
-                        Skor Keseimbangan: {{ $confidence }}
-                    </div>
-                    <p style="margin:0 0 1rem; max-width:760px; line-height:1.7; font-weight:700; opacity:0.88;">
-                        Angka ini membantu membaca pola jawaban, bukan nilai diri atau performa kerja Anda.
-                    </p>
-
-                    <p style="margin:0; max-width:760px; line-height:1.8; font-weight:600;">
-                        {{ $diagnosis->deskripsi ?? 'Deskripsi evaluasi belum tersedia di database.' }}
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
-            <section class="content-card" style="padding:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Rekomendasi Dukungan</h3>
-                <div style="color:var(--color-gray-700); line-height:1.8; font-size:0.95rem;">
-                    {!! nl2br(e($diagnosis->saran ?? 'Rekomendasi belum tersedia di database.')) !!}
-                </div>
-            </section>
-
-            <section class="content-card" style="padding:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Kode Evaluasi</h3>
-                <div style="border:1px solid; {{ $theme['soft'] }} border-radius:16px; padding:1rem;">
-                    <div style="font-size:2rem; font-weight:950; margin-bottom:0.25rem;">{{ $ruleCode }}</div>
-                    <div style="font-size:0.85rem; font-weight:700; line-height:1.7;">
-                        Kode ini dipakai untuk penelusuran internal sistem, bukan label kondisi personal.
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem; background:#f8fafc; border-color:#e2e8f0;">
-            <h3 class="card-title" style="margin-bottom:0.75rem;">Pilihan Dukungan Ringan</h3>
-            <p style="margin:0 0 1rem; color:var(--color-gray-500); line-height:1.7; font-size:0.92rem;">
-                Anda tidak harus menindaklanjuti semuanya. Pilih satu langkah kecil yang paling realistis untuk kondisi minggu ini.
-            </p>
-            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem;">
-                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Atur prioritas kerja</div>
-                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Catat satu tugas yang paling menguras energi, lalu urutkan ulang prioritas harian.</p>
-                </div>
-                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Diskusikan beban kerja</div>
-                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Bicarakan hambatan atau deadline yang terasa berat jika kondisi ini berlanjut.</p>
-                </div>
-                <div style="background:white; border:1px solid #e2e8f0; border-radius:16px; padding:1rem;">
-                    <div style="font-weight:900; color:#1e293b; margin-bottom:0.4rem;">Pulihkan energi</div>
-                    <p style="margin:0; color:#64748b; font-size:0.84rem; line-height:1.6;">Ambil jeda singkat, tidur cukup, dan batasi tambahan pekerjaan yang belum mendesak.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
-            <h3 class="card-title" style="margin-bottom:1rem;">Area yang Perlu Dukungan</h3>
-
-            @if (!isset($tracing['gejala_details']) || count($tracing['gejala_details']) === 0)
-                <p style="color:var(--color-gray-400); margin:0;">Tidak ada rincian area yang tercatat.</p>
-            @else
-                <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                    @foreach ($tracing['gejala_details'] as $detail)
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; border:1px solid var(--color-gray-200); border-radius:14px; padding:1rem; background:white;">
-                            <div>
-                                <div style="font-weight:800; color:var(--color-gray-800);">{{ $detail['gejala'] ?? '-' }}</div>
-                                <div style="font-size:0.82rem; color:var(--color-gray-500); margin-top:0.25rem;">
-                                    Jawaban Anda membantu sistem membaca pola kerja harian dengan lebih akurat.
-                                </div>
-                            </div>
-                            <div style="text-align:right; white-space:nowrap;">
-                                <div style="font-weight:900; color:var(--color-primary);">{{ $detail['user_ans'] ?? '-' }}</div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </section>
-
-        @if(isset($explanation))
-            <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
-                <h3 class="card-title" style="margin-bottom:1rem;">Catatan Ringkas Sistem</h3>
-                @php
-                    $parsedSummary = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary'] ?? '');
-                    $parsedSummary = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummary);
-                @endphp
-                <div style="line-height:1.8; color:var(--color-gray-700); margin-bottom:1rem;">
-                    {!! $parsedSummary !!}
-                </div>
+        @if (! $explanation['is_complete'])
+            <section class="result-notice warning">
+                <strong>DATA TIDAK MENCUKUPI</strong>
+                <p>Satu atau lebih dimensi tidak memiliki seluruh item yang dibutuhkan. Skor parsial tidak ditafsirkan sebagai profil.</p>
             </section>
         @endif
 
-        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
-            <a href="{{ route('karyawan.deteksi.reset') }}" class="btn-action" style="background:#0f172a; color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Isi Check-in Ulang
-            </a>
-            <a href="{{ route('karyawan.laporan.download', ['id' => $konsultasi->id]) }}" class="btn-action" target="_blank" style="background:var(--color-primary); color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Unduh Ringkasan
-            </a>
-            <a href="{{ route('karyawan.history') }}" class="btn-action" style="background:#f1f5f9; color:#334155; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">
-                Lihat Riwayat Check-in
-            </a>
+        <section class="dimension-grid">
+            @foreach ($explanation['dimensions'] as $code => $dimension)
+                <article class="dimension-card">
+                    <div class="dimension-heading">
+                        <h2>{{ $dimension['name'] }}</h2>
+                        <span>{{ $code }}</span>
+                    </div>
+                    <div class="dimension-score">{{ $dimension['score'] === null ? '—' : number_format($dimension['score'], 2) }}</div>
+                    <small>Rata-rata skala 0–6</small>
+                    <p>{{ $dimension['direction'] }}</p>
+                </article>
+            @endforeach
+        </section>
+
+        <section class="result-notice profile">
+            <span>Profil Pola</span>
+            <h2>{{ $explanation['profile_label'] }}</h2>
+            <p>{{ $explanation['profile_basis'] }}</p>
+        </section>
+
+        @if ($explanation['red_flag']['active'])
+            <section class="result-notice danger">
+                <h2>Rekomendasi Dukungan Profesional</h2>
+                <p>{{ $explanation['red_flag']['recommendation'] }}</p>
+            </section>
+        @endif
+
+        <section class="result-notice disclaimer">
+            <strong>Disclaimer</strong>
+            <p>{{ $explanation['disclaimer'] }}</p>
+        </section>
+
+        <div class="result-actions">
+            <a href="{{ route('karyawan.deteksi.reset') }}">Isi Ulang</a>
+            <a class="primary" href="{{ route('karyawan.laporan.download', ['id' => $assessment->id]) }}" target="_blank">Unduh Ringkasan</a>
         </div>
     </main>
 </div>
 
 <style>
-    @media (max-width: 768px) {
-        [style*="grid-template-columns:2fr 1fr"],
-        [style*="grid-template-columns:repeat(3"] { grid-template-columns:1fr !important; }
-        .result-container { padding-left:1rem !important; padding-right:1rem !important; }
-    }
+.mbi-result-shell{max-width:1050px;margin:0 auto;padding:1rem 0 3rem}.mbi-result-shell header{margin-bottom:1.5rem}.mbi-result-shell header>span,.profile>span{color:#2563eb;font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}.mbi-result-shell h1{margin:.35rem 0 .65rem;font-size:2.15rem;color:#0f172a;font-weight:950;letter-spacing:-.04em}.mbi-result-shell header p{margin:0;max-width:850px;color:#64748b;line-height:1.75}.dimension-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:1.25rem}.dimension-card{padding:1.35rem;border:1px solid #e2e8f0;border-radius:20px;background:#fff}.dimension-heading{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.8rem}.dimension-heading h2{margin:0;font-size:1.05rem;color:#1e293b}.dimension-heading span{padding:.3rem .55rem;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:900;font-size:.75rem}.dimension-score{font-size:2.5rem;font-weight:950;color:#0f172a;line-height:1}.dimension-card small{color:#64748b}.dimension-card p{margin:.9rem 0 0;color:#475569;line-height:1.6;font-size:.86rem}.result-notice{padding:1.25rem;border-radius:18px;margin-bottom:1.25rem}.result-notice h2,.result-notice p{margin:.35rem 0}.warning{border:1px solid #fde68a;background:#fffbeb;color:#92400e}.profile{border:1px solid #dbeafe;background:#eff6ff;color:#1e40af}.danger{border:1px solid #fecaca;background:#fef2f2;color:#991b1b}.disclaimer{border:1px solid #e2e8f0;background:#f8fafc;color:#64748b}.result-actions{display:flex;gap:.75rem;flex-wrap:wrap}.result-actions a{padding:.8rem 1.15rem;border-radius:999px;background:#0f172a;color:#fff;text-decoration:none;font-weight:900}.result-actions a.primary{background:#2563eb}@media(max-width:800px){.dimension-grid{grid-template-columns:1fr}}
 </style>
 @endsection
