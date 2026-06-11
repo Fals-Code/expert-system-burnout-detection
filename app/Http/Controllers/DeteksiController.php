@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCbiAssessmentRequest;
-use App\Models\CbiAssessment;
+use App\Http\Requests\StoreInferenceAnswerRequest;
 use App\Models\CbiItem;
-use App\Services\CbiExplanationService;
-use App\Services\CbiScoringService;
+use App\Models\InferenceSession;
+use App\Services\AdaptiveInterviewService;
+use App\Services\InferenceExplanationService;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
@@ -20,159 +19,181 @@ use Throwable;
 class DeteksiController extends Controller
 {
     public function __construct(
-        private readonly CbiScoringService $scoringService,
-        private readonly CbiExplanationService $explanationService
+        private readonly AdaptiveInterviewService $interviewService,
+        private readonly InferenceExplanationService $explanationService
     ) {
     }
 
     public function intro(): View
     {
-        return view('karyawan.deteksi.index', ['savedSession' => null]);
+        $savedSession = InferenceSession::query()
+            ->where('user_id', Auth::id())
+            ->where('status', InferenceSession::STATUS_IN_PROGRESS)
+            ->latest('id')
+            ->first();
+
+        return view('karyawan.deteksi.index', compact('savedSession'));
     }
 
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
-        $items = CbiItem::query()
-            ->where('is_active', true)
-            ->orderBy('position')
-            ->get();
+        $user = Auth::user();
+        $session = $this->interviewService->getOrCreateSession($user);
+        $result = $this->interviewService->advance($session);
+        $session->refresh();
 
-        $expectedItemCount = (int) config('cbi.instrument.expected_item_count', 19);
+        if ($session->status !== InferenceSession::STATUS_IN_PROGRESS) {
+            Session::put('last_inference_session_id', $session->id);
+            $this->notifyCompletion($session);
 
-        return view('karyawan.deteksi.form', [
-            'items' => $items,
-            'instrumentReady' => $items->count() === $expectedItemCount,
-            'expectedItemCount' => $expectedItemCount,
-            'responseOptions' => config('cbi.response_options', []),
-            'translationNote' => config('cbi.translation_note'),
-        ]);
-    }
-
-    public function next(StoreCbiAssessmentRequest $request): RedirectResponse
-    {
-        $scoreResult = $this->scoringService->score(
-            $request->validatedResponses()
-        );
-
-        $assessment = DB::transaction(function () use ($scoreResult): CbiAssessment {
-            $dimensions = $scoreResult['dimensions'];
-
-            $assessment = CbiAssessment::query()->create([
-                'user_id' => Auth::id(),
-                'instrument_code' => config('cbi.instrument.code', 'CBI'),
-                'instrument_version' => config('cbi.instrument.version', '2005-ID-adapted'),
-                'status' => $scoreResult['status'],
-                'responses_count' => $scoreResult['responses_count'],
-                'personal_total' => $dimensions['PB']['total'],
-                'personal_score' => $dimensions['PB']['mean'],
-                'work_total' => $dimensions['WB']['total'],
-                'work_score' => $dimensions['WB']['mean'],
-                'client_total' => $dimensions['CB']['total'],
-                'client_score' => $dimensions['CB']['mean'],
-                'disclaimer_version' => config('cbi.disclaimer_version', 'cbi-screening-v1'),
-                'completed_at' => now(),
-            ]);
-
-            $assessment->responses()->createMany(
-                collect($scoreResult['normalized_responses'])
-                    ->map(fn (array $response): array => [
-                        'item_id' => $response['item_id'],
-                        'answer_key' => $response['answer_key'],
-                        'raw_score' => $response['raw_score'],
-                        'normalized_score' => $response['normalized_score'],
-                    ])
-                    ->values()
-                    ->all()
-            );
-
-            return $assessment;
-        });
-
-        Session::put('last_cbi_assessment_id', $assessment->id);
-
-        try {
-            NotificationService::send(
-                (int) Auth::id(),
-                'Profil CBI Tersimpan',
-                'Tiga skor dimensi Copenhagen Burnout Inventory Anda telah dihitung.',
-                icon: 'check-circle',
-                color: '#2563eb'
-            );
-        } catch (Throwable $exception) {
-            Log::error('Gagal mengirim notifikasi setelah hasil CBI tersimpan.', [
-                'assessment_id' => $assessment->id,
-                'user_id' => Auth::id(),
-                'error' => $exception->getMessage(),
+            return redirect()->route('karyawan.hasil', [
+                'id' => $session->id,
             ]);
         }
 
-        return redirect()->route('karyawan.hasil', ['id' => $assessment->id]);
+        $question = $result->question;
+
+        abort_if(! $question, 500, 'Inference engine did not return a required fact.');
+
+        return view('karyawan.deteksi.form', [
+            'session' => $session,
+            'question' => $question,
+            'responseOptions' => config('cbi.response_options', []),
+            'answeredCount' => $session->answers()->count(),
+            'currentGoalLabel' => config(
+                "expert_system.goal_labels.{$session->current_goal}",
+                $session->current_goal
+            ),
+            'tracePreview' => $session->traces()
+                ->latest('sequence')
+                ->limit(4)
+                ->get()
+                ->sortBy('sequence')
+                ->values(),
+        ]);
+    }
+
+    public function next(
+        StoreInferenceAnswerRequest $request
+    ): RedirectResponse {
+        $session = InferenceSession::query()->findOrFail(
+            $request->integer('session_id')
+        );
+        $item = CbiItem::query()
+            ->where('code', $request->string('item_code')->toString())
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $this->interviewService->recordAnswer(
+            $session,
+            $item,
+            $request->answerKey()
+        );
+
+        return redirect()->route('karyawan.deteksi');
     }
 
     public function showResult(Request $request): View|RedirectResponse
     {
-        $id = $request->integer('id') ?: Session::get('last_cbi_assessment_id');
+        $id = $request->integer('id')
+            ?: Session::get('last_inference_session_id');
 
         if (! $id) {
             return redirect()->route('karyawan.dashboard');
         }
 
-        $assessment = CbiAssessment::query()
-            ->with(['responses.item', 'user'])
+        $session = InferenceSession::query()
+            ->with(['traces', 'answers.item', 'user'])
             ->find($id);
 
-        if (! $assessment) {
+        if (! $session) {
             return redirect()
                 ->route('karyawan.dashboard')
-                ->with('error', 'Hasil skrining CBI tidak ditemukan.');
+                ->with('error', 'Hasil inferensi tidak ditemukan.');
         }
 
-        abort_if((int) $assessment->user_id !== (int) Auth::id(), 403);
+        abort_if((int) $session->user_id !== (int) Auth::id(), 403);
 
         return view('karyawan.deteksi.hasil', [
-            'assessment' => $assessment,
-            'explanation' => $this->explanationService->build($assessment),
+            'session' => $session,
+            'explanation' => $this->explanationService->build($session),
         ]);
     }
 
     public function downloadReport(int $id): View|RedirectResponse
     {
-        $assessment = CbiAssessment::query()
-            ->with(['responses.item', 'user'])
+        $session = InferenceSession::query()
+            ->with(['traces', 'answers.item', 'user'])
             ->find($id);
 
-        if (! $assessment) {
+        if (! $session) {
             return redirect()
                 ->route('karyawan.dashboard')
-                ->with('error', 'Hasil skrining CBI tidak ditemukan.');
+                ->with('error', 'Hasil inferensi tidak ditemukan.');
         }
 
-        abort_if((int) $assessment->user_id !== (int) Auth::id(), 403);
+        abort_if((int) $session->user_id !== (int) Auth::id(), 403);
 
         return view('karyawan.deteksi.report', [
-            'assessment' => $assessment,
-            'explanation' => $this->explanationService->build($assessment),
+            'session' => $session,
+            'explanation' => $this->explanationService->build($session),
         ]);
     }
 
     public function reset(): RedirectResponse
     {
-        Session::forget('last_cbi_assessment_id');
+        InferenceSession::query()
+            ->where('user_id', Auth::id())
+            ->where('status', InferenceSession::STATUS_IN_PROGRESS)
+            ->update([
+                'status' => InferenceSession::STATUS_CANCELLED,
+                'current_question_code' => null,
+                'completed_at' => now(),
+            ]);
+
+        Session::forget('last_inference_session_id');
 
         return redirect()
             ->route('karyawan.deteksi')
-            ->with('info', 'Form skrining CBI baru telah disiapkan.');
+            ->with('info', 'Sesi lama dibatalkan dan wawancara adaptif baru dimulai.');
     }
 
     public function saveSession(): RedirectResponse
     {
         return redirect()
-            ->route('karyawan.deteksi')
-            ->with('info', 'Seluruh 19 item CBI harus diselesaikan dalam satu sesi.');
+            ->route('karyawan.dashboard')
+            ->with(
+                'success',
+                'Progres sudah tersimpan otomatis di database dan dapat dilanjutkan.'
+            );
     }
 
     public function resumeSession(): RedirectResponse
     {
         return redirect()->route('karyawan.deteksi');
+    }
+
+    private function notifyCompletion(InferenceSession $session): void
+    {
+        try {
+            $label = config(
+                "expert_system.goal_labels.{$session->conclusion}",
+                $session->conclusion
+            );
+
+            NotificationService::send(
+                (int) Auth::id(),
+                'Inferensi Backward Chaining Selesai',
+                "Kesimpulan rule-based tersedia: **{$label}**.",
+                icon: 'git-branch',
+                color: '#2563eb'
+            );
+        } catch (Throwable $exception) {
+            Log::error('Gagal mengirim notifikasi hasil inferensi.', [
+                'inference_session_id' => $session->id,
+                'user_id' => Auth::id(),
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }
