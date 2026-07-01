@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Divisi;
 use App\Models\AuditLog;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Divisi;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $users = User::with('divisi')->orderBy('id', 'desc')->paginate(10);
         $divisions = Divisi::orderBy('nama')->get();
-        
+
         $stats = [
             'karyawan' => User::where('role', 'karyawan')->count(),
             'hrd' => User::where('role', 'hrd')->count(),
@@ -37,9 +37,9 @@ class UserController extends Controller
         ]);
 
         $validated['password'] = Hash::make($request->password);
-        
+
         $user = User::create($validated);
-        $this->log('CREATE_USER', $user->id, "Menambahkan pengguna baru: " . $user->nama);
+        $this->log('CREATE_USER', $user->id, 'Menambahkan pengguna baru: '.$user->nama);
 
         return redirect()->back()->with('success', 'Pengguna berhasil ditambahkan.');
     }
@@ -60,7 +60,7 @@ class UserController extends Controller
         }
 
         $user->update($validated);
-        $this->log('UPDATE_USER', $user->id, "Memperbarui data pengguna: " . $user->nama);
+        $this->log('UPDATE_USER', $user->id, 'Memperbarui data pengguna: '.$user->nama);
 
         return redirect()->back()->with('success', 'Data pengguna berhasil diperbarui.');
     }
@@ -74,7 +74,7 @@ class UserController extends Controller
         $id = $user->id;
         $nama = $user->nama;
         $user->delete();
-        $this->log('DELETE_USER', $id, "Menghapus pengguna: " . $nama);
+        $this->log('DELETE_USER', $id, 'Menghapus pengguna: '.$nama);
 
         return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }

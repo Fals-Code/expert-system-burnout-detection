@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk – Sanctuary Hub')
+@section('title', 'Masuk - SanctuaryHub')
 
 @section('content')
     <div class="bg-decoration">
@@ -12,7 +12,7 @@
         <div class="bg-circle bg-circle--3"></div>
     </div>
 
-    <a href="{{ url('/') }}" class="brand-logo" aria-label="Sanctuary Hub">
+    <a href="{{ url('/') }}" class="brand-logo" aria-label="SanctuaryHub">
         <div class="brand-logo__icon" aria-hidden="true" style="background:transparent;border:none;backdrop-filter:none;overflow:hidden;">
             <img src="{{ asset('assets/img/sanctuary-hub-mark.svg') }}" alt="" style="width:40px;height:40px;display:block;">
         </div>
@@ -133,7 +133,7 @@
         </div>
 
         <footer class="login-footer" role="contentinfo">
-            <p>&copy; {{ date('Y') }} Sanctuary Hub &mdash; Sistem pakar berbasis Backward Chaining</p>
+            <p>&copy; {{ date('Y') }} SanctuaryHub - Sistem pakar berbasis Backward Chaining</p>
         </footer>
     </main>
 @endsection

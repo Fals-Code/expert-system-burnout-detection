@@ -1,6 +1,6 @@
 {
-    "name": "Sanctuary Hub",
-    "short_name": "Sanctuary Hub",
+    "name": "SanctuaryHub",
+    "short_name": "SanctuaryHub",
     "description": "Sistem check-in kerja dan dukungan karyawan berbasis Backward Chaining dan Certainty Factor",
     "start_url": "/",
     "display": "standalone",

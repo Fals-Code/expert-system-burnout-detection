@@ -1,98 +1,69 @@
 @extends('layouts.app')
 
-@section('title', 'HRD Dashboard – BurnoutXpert')
+@section('title', 'HRD Dashboard - SanctuaryHub')
 
 @section('content')
-    <h1 class="page-title">Monitoring Kesehatan Mental Karyawan</h1>
+    <h1 class="page-title">Monitoring Agregat Burnout</h1>
 
-    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 1rem;">
-        <div class="content-card stat-card" style="border-bottom: 4px solid var(--color-primary);">
-            <div class="stat-icon" style="background: var(--color-primary-light); color: var(--color-primary);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    <div class="stats-grid" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:1rem; margin-top:1rem;">
+        @foreach ([
+            ['label' => 'Total Deteksi', 'value' => $total_konsultasi, 'color' => 'var(--color-primary)'],
+            ['label' => 'Burnout Tinggi', 'value' => $stats['tinggi'], 'color' => '#ef4444'],
+            ['label' => 'Burnout Sedang', 'value' => $stats['sedang'], 'color' => '#f59e0b'],
+            ['label' => 'Burnout Rendah', 'value' => $stats['rendah'], 'color' => '#eab308'],
+            ['label' => 'Tidak Terindikasi', 'value' => $stats['tidak'], 'color' => '#10b981'],
+        ] as $card)
+            <div class="content-card stat-card" style="border-bottom:4px solid {{ $card['color'] }};">
+                <div class="stat-value">{{ $card['value'] }}</div>
+                <div class="stat-label">{{ $card['label'] }}</div>
             </div>
-            <div class="stat-value">{{ $total_konsultasi }}</div>
-            <div class="stat-label">Total Deteksi</div>
-        </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #ef4444;">
-            <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            </div>
-            <div class="stat-value">{{ $stats['tinggi'] }}</div>
-            <div class="stat-label">Burnout Tinggi</div>
-        </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #f59e0b;">
-            <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            </div>
-            <div class="stat-value">{{ $stats['sedang'] }}</div>
-            <div class="stat-label">Burnout Sedang</div>
-        </div>
-        <div class="content-card stat-card" style="border-bottom: 4px solid #10b981;">
-            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <div class="stat-value">{{ $stats['rendah'] }}</div>
-            <div class="stat-label">Kondisi Normal</div>
-        </div>
+        @endforeach
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem;">
         <div class="content-card">
-            <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                Tren Deteksi Bulanan
-            </h2>
+            <h2 class="card-title">Tren Deteksi Bulanan</h2>
             <div id="trendChart"></div>
         </div>
         <div class="content-card">
-            <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                Distribusi Kondisi
-            </h2>
+            <h2 class="card-title">Distribusi Empat Kategori</h2>
             <div id="distributionChart"></div>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; margin-top:1.5rem;">
         <div class="content-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Aktivitas Deteksi Terbaru
-                </h2>
-                <a href="{{ route('hrd.reports') }}" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                    Lihat Laporan Lengkap
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 class="card-title" style="margin:0;">Aktivitas Deteksi Terbaru</h2>
+                <a href="{{ route('hrd.reports') }}" style="font-size:0.85rem; color:var(--color-primary); font-weight:800; text-decoration:none;">Lihat laporan</a>
             </div>
-            
             <div class="table-container">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Karyawan</th>
+                            <th>Unit</th>
                             <th>Waktu</th>
-                            <th>Hasil Diagnosa</th>
+                            <th>Kategori</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($history as $h)
-                        <tr>
-                            <td>
-                                <div style="font-weight: 700; color: var(--color-gray-800);">{{ $h->user->nama }}</div>
-                                <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ $h->user->divisi->nama ?? 'N/A' }}</div>
-                            </td>
-                            <td style="font-size: 0.85rem;">{{ $h->created_at->diffForHumans() }}</td>
-                            <td>
-                                <span class="badge" style="background: {{ $h->diagnosa->bg_light }}; color: {{ $h->diagnosa->color }}; font-weight: 700;">
-                                    {{ $h->diagnosa->nama }}
-                                </span>
-                            </td>
-                        </tr>
+                        @forelse ($history as $item)
+                            <tr>
+                                <td>
+                                    <div style="font-weight:800;">Check-in karyawan</div>
+                                    <div style="font-size:0.75rem; color:var(--color-gray-500);">{{ $item->user->divisi->nama ?? 'N/A' }}</div>
+                                </td>
+                                <td>{{ $item->created_at->diffForHumans() }}</td>
+                                <td>
+                                    <span class="badge" style="background:{{ $item->diagnosa->bg_light }}; color:{{ $item->diagnosa->color }}; font-weight:800;">
+                                        {{ $item->diagnosa->nama }}
+                                    </span>
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="3" style="text-align: center; padding: 2rem; color: var(--color-gray-400);">Belum ada aktivitas deteksi.</td>
-                        </tr>
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding:2rem; color:var(--color-gray-400);">Belum ada aktivitas deteksi.</td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -100,97 +71,56 @@
         </div>
 
         <div class="content-card">
-            <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15 13a5 5 0 0 0 3-4.5 4.5 4.5 0 0 0-9 0 4.5 4.5 0 0 0 3 4.5V15h3v-2z"></path></svg>
-                Info HRD
-            </h2>
-            <div style="padding: 1.25rem; background: #f8fafc; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid var(--color-primary);">
-                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem;">Total Karyawan</h4>
-                <div style="font-size: 1.5rem; font-weight: 900;">{{ $total_karyawan }} <span style="font-size: 0.8rem; color: var(--color-gray-500); font-weight: 500;">Orang</span></div>
+            <h2 class="card-title">Info HRD</h2>
+            <div style="padding:1.25rem; background:#f8fafc; border-radius:12px; margin-bottom:1rem; border-left:4px solid var(--color-primary);">
+                <h4 style="margin:0 0 0.5rem; font-size:0.9rem;">Total Karyawan</h4>
+                <div style="font-size:1.5rem; font-weight:900;">{{ $total_karyawan }} <span style="font-size:0.8rem; color:var(--color-gray-500); font-weight:500;">Orang</span></div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--color-gray-600); line-height: 1.5;">
-                Gunakan dashboard ini untuk memantau tren kesehatan mental secara real-time. Jika angka <strong>Burnout Tinggi</strong> meningkat, segera lakukan intervensi melalui kebijakan HRD.
+            <p style="font-size:0.85rem; color:var(--color-gray-600); line-height:1.6;">
+                Dashboard HRD hanya menampilkan data agregat dan kategori umum. Jawaban mentah serta hasil individual tidak ditampilkan untuk menjaga privasi karyawan.
             </p>
-            <div style="margin-top: 1.5rem;">
-                <a href="{{ route('hrd.employees') }}" class="btn-cta" style="width: 100%; text-align: center; display: block; padding: 0.75rem;">Monitoring Karyawan</a>
-            </div>
+            <a href="{{ route('hrd.employees') }}" class="btn-cta" style="width:100%; text-align:center; display:block; padding:0.75rem; margin-top:1rem;">Monitoring Agregat</a>
         </div>
     </div>
 @endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-        // Line Chart: Trend
-        const trendOptions = {
-            series: [{
-                name: "Total Deteksi",
-                data: {!! json_encode($chart_trends->pluck('total')) !!}
-            }],
-            chart: { height: 280, type: 'area', toolbar: { show: false } },
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 3 },
-            colors: ['#1E3A5F'],
-            xaxis: { categories: {!! json_encode($chart_trends->pluck('month')) !!} },
-            fill: { gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
-            theme: {
-                mode: isDark ? 'dark' : 'light'
-            }
-        };
-        const trendChart = new ApexCharts(document.querySelector("#trendChart"), trendOptions);
-        trendChart.render();
-        if (window.activeCharts) window.activeCharts.push(trendChart);
-
-        // Pie Chart: Distribution
-        const distOptions = {
-            series: [{{ $stats['tinggi'] }}, {{ $stats['sedang'] }}, {{ $stats['rendah'] }}],
-            labels: ['Burnout Tinggi', 'Burnout Sedang', 'Normal'],
-            chart: { type: 'donut', height: 280 },
-            colors: ['#ef4444', '#f59e0b', '#10b981'],
-            legend: { position: 'bottom' },
-            plotOptions: { pie: { donut: { size: '70%' } } },
-            theme: {
-                mode: isDark ? 'dark' : 'light'
-            }
-        };
-        const distChart = new ApexCharts(document.querySelector("#distributionChart"), distOptions);
-        distChart.render();
-        if (window.activeCharts) window.activeCharts.push(distChart);
+document.addEventListener('DOMContentLoaded', function() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const trendChart = new ApexCharts(document.querySelector("#trendChart"), {
+        series: [{ name: "Total Deteksi", data: {!! json_encode($chart_trends->pluck('total')) !!} }],
+        chart: { height: 280, type: 'area', toolbar: { show: false } },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 3 },
+        colors: ['#1E3A5F'],
+        xaxis: { categories: {!! json_encode($chart_trends->pluck('month')) !!} },
+        fill: { gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+        theme: { mode: isDark ? 'dark' : 'light' }
     });
+    trendChart.render();
+    if (window.activeCharts) window.activeCharts.push(trendChart);
+
+    const distributionChart = new ApexCharts(document.querySelector("#distributionChart"), {
+        series: [{{ $stats['tinggi'] }}, {{ $stats['sedang'] }}, {{ $stats['rendah'] }}, {{ $stats['tidak'] }}],
+        labels: ['Burnout Tinggi', 'Burnout Sedang', 'Burnout Rendah', 'Tidak Terindikasi'],
+        chart: { type: 'donut', height: 280 },
+        colors: ['#ef4444', '#f59e0b', '#eab308', '#10b981'],
+        legend: { position: 'bottom' },
+        plotOptions: { pie: { donut: { size: '70%' } } },
+        theme: { mode: isDark ? 'dark' : 'light' }
+    });
+    distributionChart.render();
+    if (window.activeCharts) window.activeCharts.push(distributionChart);
+});
 </script>
 @endpush
 
 <style>
-    .stat-card {
-        padding: 1.5rem;
-        transition: transform 0.3s ease;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-    .stat-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-    }
-    .stat-value {
-        font-size: 1.75rem;
-        font-weight: 900;
-        line-height: 1;
-        margin-bottom: 0.25rem;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        color: var(--color-gray-500);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .stat-card { padding:1.25rem; }
+    .stat-value { font-size:1.75rem; font-weight:900; line-height:1; margin-bottom:0.4rem; }
+    .stat-label { font-size:0.72rem; color:var(--color-gray-500); font-weight:800; text-transform:uppercase; letter-spacing:0.04em; }
+    @media (max-width: 1024px) {
+        .stats-grid, [style*="grid-template-columns:1fr 1fr"], [style*="grid-template-columns:2fr 1fr"] { grid-template-columns:1fr !important; }
     }
 </style>

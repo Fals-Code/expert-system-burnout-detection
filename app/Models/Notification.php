@@ -19,8 +19,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Notification extends Model
 {
     public const CATEGORY_INFORMATION = 'informasi';
+
     public const CATEGORY_WARNING = 'peringatan';
+
     public const CATEGORY_REMINDER = 'pengingat';
+
     public const CATEGORY_SUPPORT = 'dukungan';
 
     public const CATEGORIES = [

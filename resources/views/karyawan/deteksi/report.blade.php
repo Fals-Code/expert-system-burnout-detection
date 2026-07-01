@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Burnout – {{ $konsultasi->user->nama }}</title>
+    <title>Laporan SanctuaryHub - {{ $konsultasi->user->nama }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -67,7 +67,6 @@
                 btn.disabled = false;
                 element.style.boxShadow = originalShadow;
             }).catch(err => {
-                console.error(err);
                 btn.innerHTML = btnHTML;
                 btn.disabled = false;
                 element.style.boxShadow = originalShadow;
@@ -78,7 +77,7 @@
     <div class="report-paper">
         <!-- Kop Surat -->
         <header class="report-header">
-            <div class="brand-kop">Burnout<span>Xpert</span></div>
+            <div class="brand-kop">Sanctuary<span>Hub</span></div>
             <div class="report-type">
                 <h1>Laporan Analisis Burnout</h1>
                 <p>Dokumen Resmi Hasil Deteksi Sistem Pakar</p>
@@ -104,7 +103,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">ID Laporan</div>
-                <div class="info-value" style="font-family: monospace; font-size: 0.9em;">BX-{{ $konsultasi->created_at->format('Ymd') }}-{{ $konsultasi->id }}</div>
+                <div class="info-value" style="font-family: monospace; font-size: 0.9em;">SH-{{ $konsultasi->created_at->format('Ymd') }}-{{ $konsultasi->id }}</div>
             </div>
         </div>
 
@@ -121,30 +120,26 @@
 
         <!-- Penjelasan Pakar & MBI Analysis -->
         @if(isset($explanation))
-        <h2 class="section-title">Penjelasan Sistem Pakar & Analisis MBI</h2>
+        <h2 class="section-title">Penjelasan Sistem Pakar</h2>
         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 0.9em; line-height: 1.6; color: #334155;">
             <strong>Ringkasan Pakar:</strong> 
-            @php
-                $parsedSummaryReport = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary']);
-                $parsedSummaryReport = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummaryReport);
-            @endphp
-            {!! $parsedSummaryReport !!}
+            {{ $explanation['summary'] }}
         </div>
         
         @if(isset($explanation['mbi_analysis']))
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
             <div style="background: #fff8f8; border: 1px solid #fee2e2; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                <div style="font-size: 0.7rem; font-weight: 700; color: #b91c1c; letter-spacing: 0.5px;">KELELAHAN EMOSIONAL (EE)</div>
+                <div style="font-size: 0.7rem; font-weight: 700; color: #b91c1c; letter-spacing: 0.5px;">AREA EMOSIONAL</div>
                 <div style="font-size: 1.25rem; font-weight: 900; color: #b91c1c; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['ee_score'] }}%</div>
                 <span style="font-size: 0.7rem; background: #fee2e2; color: #991b1b; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['ee_label'] }}</span>
             </div>
             <div style="background: #fdfaf7; border: 1px solid #ffedd5; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                <div style="font-size: 0.7rem; font-weight: 700; color: #c2410c; letter-spacing: 0.5px;">DEPERSONALISASI (DP)</div>
+                <div style="font-size: 0.7rem; font-weight: 700; color: #c2410c; letter-spacing: 0.5px;">AREA PERILAKU</div>
                 <div style="font-size: 1.25rem; font-weight: 900; color: #c2410c; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['dp_score'] }}%</div>
                 <span style="font-size: 0.7rem; background: #ffedd5; color: #7c2d12; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['dp_label'] }}</span>
             </div>
             <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                <div style="font-size: 0.7rem; font-weight: 700; color: #6b21a8; letter-spacing: 0.5px;">PENCAPAIAN DIRI RENDAH (PA)</div>
+                <div style="font-size: 0.7rem; font-weight: 700; color: #6b21a8; letter-spacing: 0.5px;">AREA KOGNITIF</div>
                 <div style="font-size: 1.25rem; font-weight: 900; color: #6b21a8; margin: 0.25rem 0;">{{ $explanation['mbi_analysis']['pa_score'] }}%</div>
                 <span style="font-size: 0.7rem; background: #f3e8ff; color: #581c87; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ $explanation['mbi_analysis']['pa_label'] }}</span>
             </div>
@@ -218,13 +213,13 @@
         <!-- Penutup / Tanda Tangan -->
         <div class="report-footer">
             <div style="font-size: 0.7rem; color: var(--color-gray-400); max-width: 320px; line-height: 1.6;">
-                *Laporan ini dihasilkan secara otomatis oleh Sistem Pakar BurnoutXpert menggunakan metode
+                *Laporan ini dihasilkan secara otomatis oleh Sistem Pakar SanctuaryHub menggunakan metode
                 <em>Backward Chaining</em> dengan algoritma <em>Certainty Factor</em>.
                 Hasil ini bersifat indikatif dan tidak menggantikan diagnosis profesional.
             </div>
             <div class="signature">
                 <div style="font-size: 0.8rem; margin-bottom: 0.5rem;">Dicetak pada: {{ date('d M Y H:i') }}</div>
-                <div class="signature-line">Sistem Pakar BurnoutXpert v2.0</div>
+                <div class="signature-line">Sistem Pakar SanctuaryHub</div>
             </div>
         </div>
     </div>

@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,18 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
         ]);
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
-        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
+        $middleware->append(SecurityHeaders::class);
+        $middleware->appendToGroup('web', SetLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->report(function (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Comprehensive Log: Uncaught Exception - " . $e->getMessage(), [
+        $exceptions->report(function (Throwable $e) {
+            Log::error('Unhandled application exception.', [
                 'exception' => get_class($e),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => substr($e->getTraceAsString(), 0, 1500),
+                'code' => $e->getCode(),
             ]);
         });
     })->create();

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Konsultasi;
+use App\Services\HrisService;
+use App\Services\RecommendationService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class KaryawanController extends Controller
 {
-    public function index(\App\Services\HrisService $hrisService, \App\Services\RecommendationService $recommendationService)
+    public function index(HrisService $hrisService, RecommendationService $recommendationService)
     {
         $user = Auth::user();
         $history = Konsultasi::with('diagnosa')
@@ -44,17 +45,17 @@ class KaryawanController extends Controller
 
         if ($total_deteksi >= 1) {
             $latest_score = $trend_points[$total_deteksi - 1]->cf_final;
-            
+
             if ($total_deteksi >= 2) {
                 $prev_score = $trend_points[$total_deteksi - 2]->cf_final;
                 $score_change = $latest_score - $prev_score;
-                
+
                 if ($score_change > 0.05) {
                     $trend_direction = 'up';
                 } elseif ($score_change < -0.05) {
                     $trend_direction = 'down';
                 }
-                
+
                 // Early warning if score increases by >= 15% (0.15)
                 if ($score_change >= 0.15) {
                     $warning_flag = true;
@@ -110,8 +111,8 @@ class KaryawanController extends Controller
         $recommendations = $recommendationService->generate($user, $hrisMetrics, $last_result);
 
         return view('karyawan.dashboard', compact(
-            'greet', 
-            'total_deteksi', 
+            'greet',
+            'total_deteksi',
             'last_result',
             'trend_direction',
             'score_change',
@@ -138,12 +139,12 @@ class KaryawanController extends Controller
         $chartTrend = $history->reverse()->values()->map(function ($h) {
             return [
                 'date' => $h->created_at->translatedFormat('d M Y'),
-                'cf'   => round($h->cf_final, 4),
+                'cf' => round($h->cf_final, 4),
             ];
         });
 
         // ── Chart Data: Distribution (count per tingkat) ──
-        $grouped = $history->groupBy(fn($h) => $h->diagnosa->tingkat ?? 'UNKNOWN');
+        $grouped = $history->groupBy(fn ($h) => $h->diagnosa->tingkat ?? 'UNKNOWN');
         $chartDistribution = [
             'labels' => [],
             'counts' => [],
@@ -152,9 +153,9 @@ class KaryawanController extends Controller
 
         $colorMap = [
             'SANGAT TINGGI' => '#dc2626',
-            'TINGGI'        => '#ea580c',
-            'SEDANG'        => '#ca8a04',
-            'RENDAH'        => '#16a34a',
+            'TINGGI' => '#ea580c',
+            'SEDANG' => '#ca8a04',
+            'RENDAH' => '#16a34a',
         ];
 
         foreach (['SANGAT TINGGI', 'TINGGI', 'SEDANG', 'RENDAH'] as $tingkat) {

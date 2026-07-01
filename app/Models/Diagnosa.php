@@ -21,6 +21,7 @@ class Diagnosa extends Model
     use SoftDeletes;
 
     protected $table = 'diagnosa';
+
     protected $fillable = ['kode', 'nama', 'tingkat', 'deskripsi', 'saran', 'color', 'bg_light'];
 
     public function aturan(): HasMany

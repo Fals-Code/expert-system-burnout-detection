@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ringkasan Check-in Kerja – BurnoutXpert')
+@section('title', 'Ringkasan Check-in Kerja - SanctuaryHub')
 
 @section('content')
 @php
@@ -88,7 +88,7 @@
                     </h2>
 
                     <div style="font-size:3rem; font-weight:950; line-height:1; margin-bottom:0.65rem;">
-                        Skor Keseimbangan: {{ $confidence }}
+                        Skor CF: {{ number_format($konsultasi->cf_final, 4) }} ({{ $confidence }}%)
                     </div>
                     <p style="margin:0 0 1rem; max-width:760px; line-height:1.7; font-weight:700; opacity:0.88;">
                         Angka ini membantu membaca pola jawaban, bukan nilai diri atau performa kerja Anda.
@@ -168,15 +168,51 @@
         @if(isset($explanation))
             <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
                 <h3 class="card-title" style="margin-bottom:1rem;">Catatan Ringkas Sistem</h3>
-                @php
-                    $parsedSummary = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $explanation['summary'] ?? '');
-                    $parsedSummary = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedSummary);
-                @endphp
                 <div style="line-height:1.8; color:var(--color-gray-700); margin-bottom:1rem;">
-                    {!! $parsedSummary !!}
+                    {{ $explanation['summary'] ?? '' }}
                 </div>
             </section>
         @endif
+
+        <section class="content-card" style="padding:1.5rem; margin-bottom:1.5rem;">
+            <details>
+                <summary style="cursor:pointer; font-weight:900; color:var(--color-gray-800);">Bagaimana hasil dihitung</summary>
+                <div style="margin-top:1rem; overflow-x:auto;">
+                    <p style="margin:0 0 1rem; color:var(--color-gray-600); line-height:1.7;">
+                        Sistem menguji goal secara berurutan: Risiko Tinggi, Risiko Sedang, Risiko Rendah. Jika tidak ada rule melewati threshold, hasil menjadi Tidak Terindikasi Burnout.
+                    </p>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Jawaban</th>
+                                <th>CF User</th>
+                                <th>Bobot Gejala</th>
+                                <th>CF Premis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (($tracing['gejala_details'] ?? []) as $detail)
+                                <tr>
+                                    <td>{{ $detail['kode'] ?? '-' }}</td>
+                                    <td>{{ $detail['user_ans'] ?? '-' }}</td>
+                                    <td>{{ number_format((float) ($detail['cf_user'] ?? 0), 2) }}</td>
+                                    <td>{{ number_format((float) ($detail['bobot'] ?? 0), 2) }}</td>
+                                    <td>{{ number_format((float) ($detail['cf_sub'] ?? 0), 4) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <p style="margin:1rem 0 0; color:var(--color-gray-700); line-height:1.7;">
+                        Rule utama: <strong>{{ $tracing['rule_kode'] ?? '-' }}</strong>.
+                        Rata-rata CF premis {{ number_format((float) ($tracing['cf_average_premis'] ?? 0), 4) }}
+                        x CF pakar {{ number_format((float) ($tracing['cf_pakar_rule'] ?? 0), 2) }}
+                        = {{ number_format((float) ($tracing['cf_rule'] ?? $konsultasi->cf_final), 4) }}.
+                        Threshold: {{ number_format((float) ($tracing['min_threshold'] ?? 0.25), 2) }}.
+                    </p>
+                </div>
+            </details>
+        </section>
 
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
             <a href="{{ route('karyawan.deteksi.reset') }}" class="btn-action" style="background:#0f172a; color:white; text-decoration:none; padding:0.8rem 1.4rem; border-radius:999px; font-weight:900;">

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use App\Models\AuditLog;
 
 class LoginController extends Controller
 {
@@ -27,13 +27,14 @@ class LoginController extends Controller
         if (Auth::check()) {
             return $this->redirectUserByRole(Auth::user());
         }
+
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -42,13 +43,13 @@ class LoginController extends Controller
 
         if (RateLimiter::tooManyAttempts($throttleKey, $this->maxAttempts)) {
             $seconds = RateLimiter::availableIn($throttleKey);
-            
+
             // Log percobaan brute force
             AuditLog::create([
                 'user_id' => null,
-                'action'  => 'LOGIN_BLOCKED',
-                'entity'  => 'AUTH',
-                'desc'    => "Login diblokir untuk {$request->email} – terlalu banyak percobaan. Tunggu {$seconds} detik.",
+                'action' => 'LOGIN_BLOCKED',
+                'entity' => 'AUTH',
+                'desc' => "Login diblokir untuk {$request->email} – terlalu banyak percobaan. Tunggu {$seconds} detik.",
             ]);
 
             throw ValidationException::withMessages([
@@ -59,7 +60,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             // Reset rate limiter on success
             RateLimiter::clear($throttleKey);
-            
+
             $request->session()->regenerate();
 
             // Generate unique onboarding token per login session
@@ -70,9 +71,9 @@ class LoginController extends Controller
 
             AuditLog::create([
                 'user_id' => $user->id,
-                'action'  => 'LOGIN',
-                'entity'  => 'AUTH',
-                'desc'    => "Pengguna {$user->nama} berhasil login.",
+                'action' => 'LOGIN',
+                'entity' => 'AUTH',
+                'desc' => "Pengguna {$user->nama} berhasil login.",
             ]);
 
             return $this->redirectUserByRole($user);
@@ -98,9 +99,9 @@ class LoginController extends Controller
         if ($user) {
             AuditLog::create([
                 'user_id' => $user->id,
-                'action'  => 'LOGOUT',
-                'entity'  => 'AUTH',
-                'desc'    => "Pengguna {$user->nama} logout.",
+                'action' => 'LOGOUT',
+                'entity' => 'AUTH',
+                'desc' => "Pengguna {$user->nama} logout.",
             ]);
         }
 
@@ -113,11 +114,11 @@ class LoginController extends Controller
 
     protected function redirectUserByRole($user)
     {
-        return match($user->role) {
-            'admin'    => redirect()->intended('admin/dashboard'),
-            'hrd'      => redirect()->intended('hrd/dashboard'),
+        return match ($user->role) {
+            'admin' => redirect()->intended('admin/dashboard'),
+            'hrd' => redirect()->intended('hrd/dashboard'),
             'karyawan' => redirect()->intended('karyawan/dashboard'),
-            default    => redirect('/'),
+            default => redirect('/'),
         };
     }
 
@@ -127,7 +128,7 @@ class LoginController extends Controller
     protected function throttleKey(Request $request): string
     {
         return Str::transliterate(
-            Str::lower($request->input('email')) . '|' . $request->ip()
+            Str::lower($request->input('email')).'|'.$request->ip()
         );
     }
 }

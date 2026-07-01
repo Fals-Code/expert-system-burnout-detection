@@ -15,7 +15,7 @@ class StoreDiagnosaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kode' => 'required|string|max:10|unique:diagnosa,kode,' . ($this->diagnosa?->id ?? 'NULL'),
+            'kode' => 'required|string|max:10|unique:diagnosa,kode,'.($this->diagnosa?->id ?? 'NULL'),
             'nama' => 'required|string|max:255',
             'tingkat' => 'required|string|max:50',
             'deskripsi' => 'required|string',

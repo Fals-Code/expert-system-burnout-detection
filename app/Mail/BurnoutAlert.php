@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 class BurnoutAlert extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-    
+
     public $konsultasi;
 
     /**
@@ -30,7 +30,7 @@ class BurnoutAlert extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🚨 Alert: Deteksi Burnout Tingkat Berat',
+            subject: 'SanctuaryHub: Agregat Check-in Perlu Dipantau',
         );
     }
 

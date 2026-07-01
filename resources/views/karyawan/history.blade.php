@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Saya – Sanctuary Hub')
+@section('title', 'Riwayat Saya - SanctuaryHub')
 
 @section('content')
 @php

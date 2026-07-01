@@ -2,24 +2,26 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Divisi;
 use App\Models\Diagnosa;
+use App\Models\Divisi;
 use App\Models\Konsultasi;
+use App\Models\User;
 use App\Services\HrisService;
 use App\Services\RecommendationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
+use Tests\TestCase;
 
 class AdvancedFeaturesTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $adminUser;
+
     protected $employeeUser;
+
     protected $divisi;
+
     protected $diagnosa;
 
     protected function setUp(): void
@@ -46,7 +48,7 @@ class AdvancedFeaturesTest extends TestCase
             'nama' => 'Severe Burnout',
             'tingkat' => 'SANGAT TINGGI',
             'deskripsi' => 'Parah',
-            'saran' => 'Istirahat'
+            'saran' => 'Istirahat',
         ]);
     }
 
@@ -62,8 +64,8 @@ class AdvancedFeaturesTest extends TestCase
 
         // Middleware setLocale should set App locale
         $this->withSession(['locale' => 'en'])
-             ->get(route('login'))
-             ->assertStatus(200);
+            ->get(route('login'))
+            ->assertStatus(200);
         $this->assertEquals('en', App::getLocale());
 
         // Switch back to id
@@ -72,8 +74,8 @@ class AdvancedFeaturesTest extends TestCase
         $response->assertSessionHas('locale', 'id');
 
         $this->withSession(['locale' => 'id'])
-             ->get(route('login'))
-             ->assertStatus(200);
+            ->get(route('login'))
+            ->assertStatus(200);
         $this->assertEquals('id', App::getLocale());
     }
 
@@ -82,7 +84,7 @@ class AdvancedFeaturesTest extends TestCase
      */
     public function test_hris_service_generates_metrics()
     {
-        $service = new HrisService();
+        $service = new HrisService;
         $metrics = $service->getMetrics($this->employeeUser);
 
         $this->assertArrayHasKey('total_hours', $metrics);
@@ -97,20 +99,21 @@ class AdvancedFeaturesTest extends TestCase
      */
     public function test_recommendation_service_scales_by_burnout_level()
     {
-        $service = new RecommendationService();
+        $service = new RecommendationService;
         $hrisMetrics = [
             'overtime_hours' => 25,
             'remaining_leaves' => 10,
         ];
 
-        // 1. Sangat Tinggi Burnout Consultation
-        $cHigh = new Konsultasi();
+        // 1. Tinggi Burnout Consultation
+        $this->diagnosa->tingkat = 'TINGGI';
+        $cHigh = new Konsultasi;
         $cHigh->cf_final = 0.85;
-        $cHigh->setRelation('diagnosa', $this->diagnosa); // SANGAT TINGGI
+        $cHigh->setRelation('diagnosa', $this->diagnosa);
 
         $recsHigh = $service->generate($this->employeeUser, $hrisMetrics, $cHigh);
-        $this->assertStringContainsString('3 hari', $recsHigh['leave_recommendation']);
-        $this->assertStringContainsString('Box Breathing', $recsHigh['activity_recommendation']);
+        $this->assertStringContainsString('kebijakan organisasi', $recsHigh['leave_recommendation']);
+        $this->assertStringContainsString('profesional kesehatan', $recsHigh['activity_recommendation']);
 
         // 2. Normal / Rendah
         $diagnosaLow = Diagnosa::create([
@@ -118,14 +121,14 @@ class AdvancedFeaturesTest extends TestCase
             'nama' => 'Normal',
             'tingkat' => 'RENDAH',
             'deskripsi' => 'Aman',
-            'saran' => 'Pertahankan'
+            'saran' => 'Pertahankan',
         ]);
-        $cLow = new Konsultasi();
+        $cLow = new Konsultasi;
         $cLow->cf_final = 0.15;
         $cLow->setRelation('diagnosa', $diagnosaLow);
 
         $recsLow = $service->generate($this->employeeUser, $hrisMetrics, $cLow);
-        $this->assertStringContainsString('kardio ringan', $recsLow['activity_recommendation']);
+        $this->assertStringContainsString('pemulihan', $recsLow['activity_recommendation']);
     }
 
     /**

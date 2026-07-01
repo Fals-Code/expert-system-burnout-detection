@@ -11,7 +11,7 @@
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="sidebar-brand__icon">
-            <img src="{{ asset('assets/img/sanctuary-hub-mark.svg') }}" alt="Sanctuary Hub" loading="eager">
+            <img src="{{ asset('assets/img/sanctuary-hub-mark.svg') }}" alt="SanctuaryHub" loading="eager">
         </div>
         <span class="sidebar-brand__text">Sanctuary<span>Hub</span></span>
     </div>

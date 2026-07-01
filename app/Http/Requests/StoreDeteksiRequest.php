@@ -29,26 +29,12 @@ class StoreDeteksiRequest extends FormRequest
 
     /**
      * Validasi tambahan untuk form wizard produksi yang memakai kode gejala sebagai nama field.
-     * Contoh: G01 => Ya, G02 => Tidak.
+     * Contoh: G001 => Sering, G002 => Tidak Pernah.
      */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            $allowedAnswers = [
-                'Sangat Sering',
-                'Sering',
-                'Kadang',
-                'Jarang',
-                'Sangat Jarang',
-                'Tidak',
-                'Ya',
-                'Pasti Ya',
-                'Hampir Pasti',
-                'Mungkin',
-                'Ragu-ragu',
-                'Sedikit',
-                'Tidak Pernah',
-            ];
+            $allowedAnswers = ['Sering', 'Kadang', 'Tidak Pernah'];
 
             $answerInputs = collect($this->except(['_token', 'gejala_id']))
                 ->filter(fn ($value, $key) => str_starts_with((string) $key, 'G'));
@@ -63,13 +49,14 @@ class StoreDeteksiRequest extends FormRequest
                 ->all();
 
             foreach ($answerInputs as $kode => $value) {
-                if (!in_array($kode, $existingCodes, true)) {
+                if (! in_array($kode, $existingCodes, true)) {
                     $validator->errors()->add($kode, "Kode gejala {$kode} tidak ditemukan di basis pengetahuan.");
+
                     continue;
                 }
 
-                if (!in_array($value, $allowedAnswers, true)) {
-                    $validator->errors()->add($kode, "Jawaban untuk {$kode} tidak valid.");
+                if (! in_array($value, $allowedAnswers, true)) {
+                    $validator->errors()->add($kode, "Jawaban untuk {$kode} harus Sering, Kadang, atau Tidak Pernah.");
                 }
             }
         });

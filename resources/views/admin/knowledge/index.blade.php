@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Basis Pengetahuan – BurnoutXpert')
+@section('title', 'Basis Pengetahuan - SanctuaryHub')
 
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
