@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Wizard Deteksi Burnout – BurnoutXpert')
+@section('title', 'Wizard Deteksi Burnout - SanctuaryHub')
 
 @section('content')
 <div class="container-wizard" x-data="deteksiWizard()">

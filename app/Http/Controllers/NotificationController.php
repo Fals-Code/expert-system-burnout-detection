@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
@@ -20,10 +19,10 @@ class NotificationController extends Controller
 
     public function markAsRead(Notification $notification)
     {
-        if ($notification->user_id === Auth::id()) {
-            $notification->is_read = true;
-            $notification->save();
-        }
+        abort_unless((int) $notification->user_id === (int) Auth::id(), 403);
+
+        $notification->is_read = true;
+        $notification->save();
 
         if (request()->ajax()) {
             return response()->json(['success' => true]);
@@ -34,9 +33,9 @@ class NotificationController extends Controller
 
     public function destroy(Notification $notification)
     {
-        if ($notification->user_id === Auth::id()) {
-            $notification->delete();
-        }
+        abort_unless((int) $notification->user_id === (int) Auth::id(), 403);
+
+        $notification->delete();
 
         if (request()->ajax()) {
             return response()->json(['success' => true]);
@@ -48,7 +47,7 @@ class NotificationController extends Controller
     public function getUnread()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['unreadCount' => 0, 'notifications' => []]);
         }
 
@@ -58,14 +57,10 @@ class NotificationController extends Controller
             ->get();
 
         $notificationsData = $unreadNotifications->take(5)->map(function ($notif) {
-            // Parse Markdown bold and italics
-            $parsedMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $notif->message ?? 'Notifikasi Baru');
-            $parsedMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedMsg);
-
             return [
                 'id' => $notif->id,
                 'title' => $notif->title,
-                'message' => $parsedMsg,
+                'message' => $notif->message ?? 'Notifikasi Baru',
                 'time_ago' => $notif->created_at->diffForHumans(),
                 'redirect_url' => route('notifications.read_redirect', $notif->id),
             ];
@@ -73,16 +68,16 @@ class NotificationController extends Controller
 
         return response()->json([
             'unreadCount' => $unreadNotifications->count(),
-            'notifications' => $notificationsData
+            'notifications' => $notificationsData,
         ]);
     }
 
     public function readAndRedirect(Notification $notification)
     {
-        if ($notification->user_id === Auth::id()) {
-            $notification->is_read = true;
-            $notification->save();
-        }
+        abort_unless((int) $notification->user_id === (int) Auth::id(), 403);
+
+        $notification->is_read = true;
+        $notification->save();
 
         return redirect()->route('notifications');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDeteksiRequest;
 use App\Models\Aturan;
+use App\Models\DeteksiSession;
 use App\Models\Gejala;
 use App\Models\Konsultasi;
 use App\Services\ExpertSystemService;
@@ -28,7 +29,7 @@ class DeteksiController extends Controller
      */
     public function intro()
     {
-        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+        $savedSession = DeteksiSession::where('user_id', Auth::id())->first();
 
         return view('karyawan.deteksi.index', compact('savedSession'));
     }
@@ -71,7 +72,7 @@ class DeteksiController extends Controller
         $questions = Gejala::whereIn('kode', $nextCodes)->get();
 
         if ($questions->isEmpty()) {
-            $questions = Gejala::take(4)->get();
+            return $this->processResult();
         }
 
         foreach ($questions as $q) {
@@ -87,8 +88,9 @@ class DeteksiController extends Controller
                 ? round((count($answeredCodes) / $totalGejalaCount) * 100)
                 : 0,
             'options' => [
-                'Ya' => 'Ya, Sering Merasakan',
-                'Tidak' => 'Tidak Pernah',
+                'Sering' => 'Sering',
+                'Kadang' => 'Kadang',
+                'Tidak Pernah' => 'Tidak Pernah',
             ],
         ]);
     }
@@ -129,7 +131,7 @@ class DeteksiController extends Controller
             return redirect()->route('karyawan.dashboard')->with('info', 'Belum ada progres check-in yang perlu disimpan.');
         }
 
-        \App\Models\DeteksiSession::updateOrCreate(
+        DeteksiSession::updateOrCreate(
             ['user_id' => Auth::id()],
             [
                 'answers' => $answers,
@@ -147,7 +149,7 @@ class DeteksiController extends Controller
      */
     public function resumeSession(Request $request)
     {
-        $savedSession = \App\Models\DeteksiSession::where('user_id', Auth::id())->first();
+        $savedSession = DeteksiSession::where('user_id', Auth::id())->first();
 
         if ($savedSession) {
             Session::put('deteksi_answers', $savedSession->answers);
@@ -185,7 +187,7 @@ class DeteksiController extends Controller
                 ->all();
 
             foreach ($selectedCodes as $kode) {
-                $answers[$kode] = 'Ya';
+                $answers[$kode] = 'Sering';
             }
         }
 

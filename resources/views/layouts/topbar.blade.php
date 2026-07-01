@@ -28,7 +28,7 @@
         <div class="topbar__title-group">
             <h1 class="topbar__title" style="text-transform:none;">{{ $friendlyTitle }}</h1>
             <nav class="topbar__breadcrumb">
-                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">Sanctuary Hub</a>
+                <a href="{{ route($role . '.dashboard') }}" style="color: inherit; text-decoration: none;">SanctuaryHub</a>
                 @if($role === 'karyawan')
                     › <span style="color: var(--color-primary); font-weight: 600;">{{ $friendlyTitle }}</span>
                 @else
@@ -106,13 +106,7 @@
                         @foreach($user->unreadNotifications->take(5) as $notif)
                             <a href="{{ route('notifications.read_redirect', $notif->id) }}" class="dropdown-item" style="padding: 1rem;">
                                 <div class="dropdown-item__body">
-                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">
-                                        @php
-                                            $parsedTopbarMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $notif->message ?? 'Notifikasi Baru');
-                                            $parsedTopbarMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedTopbarMsg);
-                                        @endphp
-                                        {!! $parsedTopbarMsg !!}
-                                    </div>
+                                    <div class="dropdown-item__title" style="font-size: 0.9rem;">{{ $notif->message ?? 'Notifikasi Baru' }}</div>
                                     <div class="dropdown-item__text" style="font-size: 0.8rem; color: var(--color-gray-500);">{{ $notif->created_at->diffForHumans() }}</div>
                                 </div>
                             </a>

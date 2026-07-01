@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Analisis – BurnoutXpert')
+@section('title', 'Hasil Analisis - SanctuaryHub')
 
 @section('content')
 <div class="container-result" x-data="{ showTracing: false }">

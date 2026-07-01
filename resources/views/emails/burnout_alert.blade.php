@@ -1,19 +1,18 @@
 <x-mail::message>
-# Peringatan: Deteksi Burnout Berat
+# Agregat Check-in Perlu Dipantau
 
-Sistem kami mendeteksi adanya indikasi burnout tingkat **BERAT** pada karyawan berikut:
+Ada check-in terbaru pada kategori risiko yang perlu dipantau di dashboard HRD.
 
-- **Nama:** {{ $konsultasi->user->nama }}
-- **Divisi:** {{ $konsultasi->user->divisi->nama ?? 'N/A' }}
-- **Waktu Deteksi:** {{ $konsultasi->created_at->format('d M Y H:i') }}
-- **Skor CF:** {{ number_format($konsultasi->cf_hasil * 100, 2) }}%
+- **Kategori:** {{ $konsultasi->diagnosa->nama ?? 'Tidak tersedia' }}
+- **Skor CF:** {{ number_format($konsultasi->cf_final * 100, 2) }}%
+- **Waktu:** {{ $konsultasi->created_at->format('d M Y H:i') }}
 
-Mohon segera lakukan peninjauan dan intervensi sesuai dengan kebijakan kesehatan mental perusahaan.
+Identitas individu dan jawaban mentah tidak dikirim melalui email untuk menjaga privasi karyawan.
 
-<x-mail::button :url="route('hrd.employees.history', $konsultasi->user_id)">
-Lihat Detail Riwayat
+<x-mail::button :url="route('hrd.dashboard')">
+Buka Dashboard Agregat
 </x-mail::button>
 
 Terima kasih,<br>
-{{ config('app.name') }} System
+{{ config('app.name') }}
 </x-mail::message>

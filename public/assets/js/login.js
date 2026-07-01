@@ -1,5 +1,5 @@
 /**
- * BurnoutXpert – Login Page JavaScript
+ * SanctuaryHub Login Page JavaScript
  * Handles: client-side validation, password toggle,
  *          demo autofill, loading state, accordion panel
  */

@@ -5,22 +5,18 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
-class BurnoutXpertSeeder extends Seeder
+class SanctuaryHubSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function up(): void
+    public function run(): void
     {
-        // Disable foreign key checks to safely truncate
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         DB::table('users')->truncate();
         DB::table('divisi')->truncate();
         DB::table('settings')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
-        // 1. Divisi
         DB::table('divisi')->insert([
             ['id' => 1, 'nama' => 'Engineering'],
             ['id' => 2, 'nama' => 'Marketing'],
@@ -29,44 +25,37 @@ class BurnoutXpertSeeder extends Seeder
             ['id' => 5, 'nama' => 'Operations'],
         ]);
 
-        // 2. Users
         DB::table('users')->insert([
             [
                 'id' => 1,
-                'nama' => 'Ahmad Fauzi',
-                'email' => 'karyawan@burnoutxpert.com',
+                'nama' => 'Karyawan Demo',
+                'email' => 'karyawan@sanctuaryhub.test',
                 'password' => Hash::make('password'),
                 'role' => 'karyawan',
                 'divisi_id' => 1,
             ],
             [
                 'id' => 2,
-                'nama' => 'Siti Rahayu',
-                'email' => 'hrd@burnoutxpert.com',
+                'nama' => 'HRD Demo',
+                'email' => 'hrd@sanctuaryhub.test',
                 'password' => Hash::make('password'),
                 'role' => 'hrd',
                 'divisi_id' => 4,
             ],
             [
                 'id' => 3,
-                'nama' => 'Budi Santoso',
-                'email' => 'admin@burnoutxpert.com',
+                'nama' => 'Admin Demo',
+                'email' => 'admin@sanctuaryhub.test',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'divisi_id' => 1,
             ],
         ]);
 
-        // 3. Settings
         DB::table('settings')->insert([
-            ['kunci' => 'app_name', 'nilai' => 'BurnoutXpert'],
-            ['kunci' => 'threshold_high', 'nilai' => '0.8'],
+            ['kunci' => 'app_name', 'nilai' => 'SanctuaryHub'],
+            ['kunci' => 'default_threshold', 'nilai' => '0.25'],
             ['kunci' => 'maintenance_mode', 'nilai' => '0'],
         ]);
-    }
-
-    public function run(): void
-    {
-        $this->up();
     }
 }

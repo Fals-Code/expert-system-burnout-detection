@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
+use App\Models\Aturan;
 use App\Models\Diagnosa;
 use App\Models\Gejala;
-use App\Models\Aturan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
 class BackupRestoreTest extends TestCase
 {
@@ -33,7 +33,7 @@ class BackupRestoreTest extends TestCase
             'nama' => 'Severe Burnout',
             'tingkat' => 'SANGAT TINGGI',
             'deskripsi' => 'Parah',
-            'saran' => 'Istirahat'
+            'saran' => 'Istirahat',
         ]);
 
         Gejala::create([
@@ -41,7 +41,7 @@ class BackupRestoreTest extends TestCase
             'kode' => 'G01',
             'nama' => 'Lelah Fisik',
             'kategori' => 'emosional',
-            'bobot' => 0.8
+            'bobot' => 0.8,
         ]);
 
         Aturan::create([
@@ -50,7 +50,7 @@ class BackupRestoreTest extends TestCase
             'diagnosa_id' => 1,
             'cf_pakar' => 0.9,
             'prioritas' => 5,
-            'min_threshold' => 0.2
+            'min_threshold' => 0.2,
         ]);
     }
 
@@ -64,7 +64,7 @@ class BackupRestoreTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/json');
-        
+
         $data = json_decode($response->getContent(), true);
         $this->assertArrayHasKey('diagnosa', $data);
         $this->assertArrayHasKey('gejala', $data);
@@ -102,8 +102,8 @@ class BackupRestoreTest extends TestCase
                     'nama' => 'Mild Stress',
                     'tingkat' => 'RENDAH',
                     'deskripsi' => 'Ringan',
-                    'saran' => 'Jalan-jalan'
-                ]
+                    'saran' => 'Jalan-jalan',
+                ],
             ],
             'gejala' => [
                 [
@@ -111,8 +111,8 @@ class BackupRestoreTest extends TestCase
                     'kode' => 'G02',
                     'nama' => 'Kurang Konsentrasi',
                     'kategori' => 'kognitif',
-                    'bobot' => 0.5
-                ]
+                    'bobot' => 0.5,
+                ],
             ],
             'aturan' => [
                 [
@@ -122,26 +122,26 @@ class BackupRestoreTest extends TestCase
                     'cf_pakar' => 0.7,
                     'prioritas' => 3,
                     'min_threshold' => 0.1,
-                    'is_active' => true
-                ]
+                    'is_active' => true,
+                ],
             ],
             'aturan_gejala' => [
                 [
                     'aturan_id' => 2,
                     'gejala_id' => 2,
-                    'bobot_pakar' => 0.6
-                ]
-            ]
+                    'bobot_pakar' => 0.6,
+                ],
+            ],
         ];
 
         $jsonFile = UploadedFile::fake()->createWithContent(
-            'backup.json', 
+            'backup.json',
             json_encode($backupData)
         );
 
         $response = $this->actingAs($this->adminUser)
             ->post(route('admin.knowledge.restore'), [
-                'backup_file' => $jsonFile
+                'backup_file' => $jsonFile,
             ]);
 
         $response->assertRedirect();

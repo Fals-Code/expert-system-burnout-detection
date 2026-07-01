@@ -15,8 +15,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!$this->canApplyKnowledgeBaseUpdate()) {
+        if (! $this->canApplyKnowledgeBaseUpdate()) {
             $this->flushExpertSystemCache();
+
             return;
         }
 
@@ -37,8 +38,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('diagnosa') || !DB::table('diagnosa')->where('id', 1)->exists()) {
+        if (! Schema::hasTable('diagnosa') || ! DB::table('diagnosa')->where('id', 1)->exists()) {
             $this->flushExpertSystemCache();
+
             return;
         }
 
@@ -59,7 +61,7 @@ return new class extends Migration
 
     private function canApplyKnowledgeBaseUpdate(): bool
     {
-        if (!Schema::hasTable('diagnosa') || !Schema::hasTable('aturan') || !Schema::hasTable('gejala') || !Schema::hasTable('aturan_gejala')) {
+        if (! Schema::hasTable('diagnosa') || ! Schema::hasTable('aturan') || ! Schema::hasTable('gejala') || ! Schema::hasTable('aturan_gejala')) {
             return false;
         }
 
@@ -182,7 +184,7 @@ return new class extends Migration
         Cache::forget('diagnosa_default_rendah_base64');
         Cache::forget('diagnosa_default_tidak_burnout_base64');
 
-        if (!Schema::hasTable('diagnosa')) {
+        if (! Schema::hasTable('diagnosa')) {
             return;
         }
 

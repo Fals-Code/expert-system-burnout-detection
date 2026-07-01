@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Diagnosis – BurnoutXpert')
+@section('title', 'Hasil Diagnosis - SanctuaryHub')
 
 @section('content')
     <main class="result-container" id="report-content">
@@ -149,7 +149,7 @@
         const element = document.getElementById('report-content');
         const opt = {
             margin: 0.5,
-            filename: 'Laporan_BurnoutXpert_{{ now()->format("Ymd") }}.pdf',
+            filename: 'Laporan_SanctuaryHub_{{ now()->format("Ymd") }}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }

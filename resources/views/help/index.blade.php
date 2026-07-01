@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dukungan – Sanctuary Hub')
+@section('title', 'Dukungan - SanctuaryHub')
 
 @section('content')
 <div class="support-page">

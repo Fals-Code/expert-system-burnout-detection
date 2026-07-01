@@ -2,93 +2,41 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Konsultasi;
+use App\Models\User;
 
 class RecommendationService
 {
-    /**
-     * Generate context-aware, highly personalized recommendations.
-     */
     public function generate(User $user, array $hrisMetrics, ?Konsultasi $latestResult): array
     {
-        $overtime = $hrisMetrics['overtime_hours'] ?? 0;
-        $leaves = $hrisMetrics['remaining_leaves'] ?? 0;
-        $level = $latestResult ? strtoupper($latestResult->diagnosa?->tingkat ?? 'RENDAH') : 'RENDAH';
-        $cf = $latestResult ? $latestResult->cf_final : 0.0;
+        $level = strtoupper($latestResult->diagnosa?->tingkat ?? 'TIDAK_TERINDIKASI');
 
-        $recommendedLeaveDays = 0;
-        $scheduleAdvice = "";
-        $mentalActivity = "";
-        $riskNarrative = "";
-
-        // Core Recommendation Rules Matrix
-        if ($level === 'SANGAT TINGGI' || $level === 'TINGGI') {
-            $riskNarrative = "Tingkat stress kognitif Anda memerlukan intervensi segera guna membatasi dampak somatic klinis.";
-            
-            // Leave suggestions based on remaining leaves
-            if ($leaves >= 5) {
-                $recommendedLeaveDays = min(3, $leaves);
-                $leaveReason = "mengistirahatkan sistem saraf simpatik Anda sepenuhnya.";
-            } elseif ($leaves > 0) {
-                $recommendedLeaveDays = $leaves;
-                $leaveReason = "memberikan jeda relaksasi mental esensial.";
-            } else {
-                $recommendedLeaveDays = 0;
-                $leaveReason = "";
-            }
-
-            // Schedule suggestions based on overtime
-            if ($overtime > 15) {
-                $scheduleAdvice = "Kurangi jam lembur bulanan Anda secara radikal. Batasi waktu kerja ekstra maksimal 2 jam seminggu selama 14 hari ke depan.";
-            } else {
-                $scheduleAdvice = "Delegasikan tugas berprioritas tinggi dan batasi interaksi layar/komputer di luar jam kerja normal.";
-            }
-
-            // Mental/Therapeutic activity suggestion
-            $mentalActivity = "Lakukan latihan pernapasan 'Box Breathing' (tarik 4s, tahan 4s, hembus 4s, tahan 4s) selama 5-10 menit sebelum memulai pekerjaan.";
-        } elseif ($level === 'SEDANG') {
-            $riskNarrative = "Kondisi kelelahan mental Anda berada pada ambang batas sedang. Dibutuhkan tindakan pencegahan proaktif.";
-
-            if ($leaves >= 3) {
-                $recommendedLeaveDays = 1;
-                $leaveReason = "mengembalikan kesegaran fokus kognitif Anda.";
-            } else {
-                $recommendedLeaveDays = 0;
-                $leaveReason = "";
-            }
-
-            if ($overtime > 10) {
-                $scheduleAdvice = "Jadwalkan 'digital detox' di akhir pekan dan hindari memeriksa email/grup koordinasi kerja setelah pukul 19:00.";
-            } else {
-                $scheduleAdvice = "Tetapkan batasan kerja yang tegas antara ruang pribadi dan tanggung jawab profesional harian.";
-            }
-
-            $mentalActivity = "Terapkan teknik 'Pomodoro' (25 menit kerja fokus, 5 menit istirahat berjalan kaki/minum air) untuk membatasi kelelahan mental.";
-        } else {
-            // Rendah / Aman
-            $riskNarrative = "Indeks ketahanan psikologis Anda sangat solid. Fokus Anda saat ini adalah menjaga kestabilan energi.";
-            $recommendedLeaveDays = 0;
-            $leaveReason = "";
-            
-            $scheduleAdvice = "Pertahankan ritme kerja seimbang saat ini. Tetap sisihkan waktu untuk sosialisasi non-pekerjaan dengan rekan kantor.";
-            $mentalActivity = "Lakukan olahraga kardio ringan 3 kali seminggu (misalnya jalan cepat atau jogging 20 menit) guna memperkuat hormon endorfin.";
+        if ($level === 'TINGGI') {
+            return [
+                'risk_narrative' => 'Hasil skrining menunjukkan kategori tinggi. Gunakan informasi ini sebagai dasar percakapan dukungan, bukan diagnosis medis.',
+                'leave_days' => 0,
+                'leave_recommendation' => 'Diskusikan penyesuaian beban kerja atau kebutuhan istirahat dengan pihak yang berwenang sesuai kebijakan organisasi.',
+                'schedule_recommendation' => 'Prioritaskan tugas yang paling penting dan batasi tambahan pekerjaan yang belum mendesak.',
+                'activity_recommendation' => 'Pertimbangkan berbicara dengan profesional kesehatan bila kondisi terasa berat atau mengganggu fungsi harian.',
+            ];
         }
 
-        // Formatting leave suggestion text
-        $leaveText = "";
-        if ($recommendedLeaveDays > 0) {
-            $leaveText = "Disarankan mengambil cuti selama " . $recommendedLeaveDays . " hari dari sisa " . $leaves . " hari cuti Anda untuk " . $leaveReason;
-        } else {
-            $leaveText = "Pertahankan jatah cuti tahunan Anda (" . $leaves . " hari tersisa) sebagai cadangan pemulihan di kuartal berikutnya.";
+        if ($level === 'SEDANG') {
+            return [
+                'risk_narrative' => 'Hasil skrining menunjukkan kategori sedang dan perlu dipantau.',
+                'leave_days' => 0,
+                'leave_recommendation' => 'Rencanakan jeda pemulihan sesuai kebutuhan dan kebijakan kerja.',
+                'schedule_recommendation' => 'Tinjau prioritas kerja dan komunikasikan hambatan yang berulang.',
+                'activity_recommendation' => 'Lakukan langkah pemulihan ringan yang realistis, seperti jeda singkat dan tidur cukup.',
+            ];
         }
 
         return [
-            'risk_narrative' => $riskNarrative,
-            'leave_days' => $recommendedLeaveDays,
-            'leave_recommendation' => $leaveText,
-            'schedule_recommendation' => $scheduleAdvice,
-            'activity_recommendation' => $mentalActivity,
+            'risk_narrative' => 'Hasil skrining tidak menunjukkan indikasi kuat pada saat ini.',
+            'leave_days' => 0,
+            'leave_recommendation' => 'Pertahankan kebiasaan kerja sehat dan lakukan check-in ulang secara berkala.',
+            'schedule_recommendation' => 'Jaga batas kerja yang jelas dan evaluasi beban kerja jika kondisi berubah.',
+            'activity_recommendation' => 'Gunakan aktivitas pemulihan yang sesuai dengan preferensi pribadi dan kondisi masing-masing.',
         ];
     }
 }

@@ -2,68 +2,52 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Services\ExpertSystemService;
-use App\Models\Gejala;
-use App\Models\Diagnosa;
 use App\Models\Aturan;
+use App\Models\Diagnosa;
+use App\Models\Gejala;
+use App\Services\ExpertSystemService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ExpertSystemTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $service;
-
-    protected function setUp(): void
+    public function test_goal_priority_prefers_high_before_medium_even_when_medium_cf_is_higher(): void
     {
-        parent::setUp();
-        $this->service = new ExpertSystemService();
-    }
+        $high = Diagnosa::create(['kode' => 'D02', 'nama' => 'Risiko Burnout Tinggi', 'tingkat' => 'TINGGI', 'deskripsi' => 'x', 'saran' => 'x']);
+        $medium = Diagnosa::create(['kode' => 'D03', 'nama' => 'Risiko Burnout Sedang', 'tingkat' => 'SEDANG', 'deskripsi' => 'x', 'saran' => 'x']);
+        Diagnosa::create(['kode' => 'D01', 'nama' => 'Tidak Terindikasi Burnout', 'tingkat' => 'TIDAK_TERINDIKASI', 'deskripsi' => 'x', 'saran' => 'x']);
 
-    public function test_it_returns_correct_cf_user_mapping()
-    {
-        $this->assertEquals(1.0, $this->service->getCfUser('Sangat Sering'));
-        $this->assertEquals(0.8, $this->service->getCfUser('Sering'));
-        $this->assertEquals(0.6, $this->service->getCfUser('Kadang'));
-        $this->assertEquals(0.0, $this->service->getCfUser('Tidak'));
-    }
+        $gHigh = Gejala::create(['kode' => 'G001', 'nama' => 'High symptom', 'bobot' => 0.5, 'kategori' => 'emosional']);
+        $gMedium = Gejala::create(['kode' => 'G002', 'nama' => 'Medium symptom', 'bobot' => 1.0, 'kategori' => 'emosional']);
 
-    public function test_it_correctly_calculates_cf_combine()
-    {
-        // 1. Setup Diagnosa
-        $diagnosa = Diagnosa::create([
-            'kode' => 'D_TEST',
-            'nama' => 'Test Diagnosa',
-            'tingkat' => 'TINGGI',
-            'deskripsi' => 'Test',
-            'saran' => 'Test'
+        $rHigh = Aturan::create(['kode' => 'R001', 'diagnosa_id' => $high->id, 'cf_pakar' => 0.6, 'prioritas' => 10, 'is_active' => true, 'min_threshold' => 0.25]);
+        $rMedium = Aturan::create(['kode' => 'R003', 'diagnosa_id' => $medium->id, 'cf_pakar' => 1.0, 'prioritas' => 10, 'is_active' => true, 'min_threshold' => 0.25]);
+        $rHigh->gejala()->attach([$gHigh->id => ['bobot_pakar' => 0.0, 'evidence_direction' => 'PRESENT_SUPPORTS']]);
+        $rMedium->gejala()->attach([$gMedium->id => ['bobot_pakar' => 0.0, 'evidence_direction' => 'PRESENT_SUPPORTS']]);
+
+        $result = (new ExpertSystemService)->solve([
+            'G001' => 'Sering',
+            'G002' => 'Sering',
         ]);
 
-        // 2. Setup Gejala
-        $g1 = Gejala::create(['kode' => 'G1', 'nama' => 'Gejala 1', 'bobot' => 0.8, 'kategori' => 'fisik']);
-        $g2 = Gejala::create(['kode' => 'G2', 'nama' => 'Gejala 2', 'bobot' => 0.6, 'kategori' => 'fisik']);
+        $this->assertSame('D02', $result['diagnosa']->kode);
+        $this->assertEqualsWithDelta(0.3, $result['cf'], 0.0001);
+    }
 
-        // 3. Setup Aturan
-        $rule = Aturan::create(['kode' => 'R_TEST', 'diagnosa_id' => $diagnosa->id, 'cf_pakar' => 0.9]);
-        $rule->gejala()->attach([
-            $g1->id => ['bobot_pakar' => 0.8],
-            $g2->id => ['bobot_pakar' => 0.6]
-        ]);
+    public function test_fallback_is_returned_when_no_goal_passes_threshold(): void
+    {
+        $fallback = Diagnosa::create(['kode' => 'D01', 'nama' => 'Tidak Terindikasi Burnout', 'tingkat' => 'TIDAK_TERINDIKASI', 'deskripsi' => 'x', 'saran' => 'x']);
+        $high = Diagnosa::create(['kode' => 'D02', 'nama' => 'Risiko Burnout Tinggi', 'tingkat' => 'TINGGI', 'deskripsi' => 'x', 'saran' => 'x']);
+        $g = Gejala::create(['kode' => 'G001', 'nama' => 'Symptom', 'bobot' => 0.8, 'kategori' => 'emosional']);
+        $r = Aturan::create(['kode' => 'R001', 'diagnosa_id' => $high->id, 'cf_pakar' => 0.95, 'prioritas' => 10, 'is_active' => true, 'min_threshold' => 0.25]);
+        $r->gejala()->attach([$g->id => ['bobot_pakar' => 0.0, 'evidence_direction' => 'PRESENT_SUPPORTS']]);
 
-        $answers = [
-            'G1' => 'Sangat Sering', // cf_user = 1.0 -> CF_sub = 1.0 * 0.8 = 0.8
-            'G2' => 'Sering'         // cf_user = 0.8 -> CF_sub = 0.8 * 0.6 = 0.48
-        ];
+        $result = (new ExpertSystemService)->solve(['G001' => 'Tidak Pernah']);
 
-        // Calculation:
-        // CF_combine = 0.8 + 0.48 * (1 - 0.8) = 0.896
-        // CF_final = 0.896 * 0.9 = 0.8064
-
-        $result = $this->service->solve($answers);
-
-        $this->assertEquals('D_TEST', $result['diagnosa']->kode);
-        $this->assertEquals(0.8064, round($result['cf'], 4));
-        $this->assertCount(2, $result['tracing']['gejala_details']);
+        $this->assertSame($fallback->id, $result['diagnosa']->id);
+        $this->assertSame(0.0, $result['cf']);
+        $this->assertSame('TIDAK_TERINDIKASI', $result['tracing']['goal_terkonfirmasi']);
     }
 }

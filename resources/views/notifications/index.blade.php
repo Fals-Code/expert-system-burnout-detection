@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Notifikasi – Sanctuary Hub')
+@section('title', 'Notifikasi - SanctuaryHub')
 
 @section('content')
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
@@ -21,11 +21,6 @@
     @else
         <div style="display:grid; gap:0.75rem;">
             @foreach($notifications as $n)
-                @php
-                    $parsedMsg = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $n->message);
-                    $parsedMsg = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $parsedMsg);
-                @endphp
-
                 <div class="content-card" style="padding:1rem; border-left:4px solid {{ $n->is_read ? '#e2e8f0' : ($n->color ?? 'var(--color-primary)') }}; {{ $n->is_read ? 'opacity:.72;' : '' }}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
                         <div style="flex:1; min-width:0;">
@@ -37,7 +32,7 @@
                                 <span style="font-size:0.72rem; padding:0.2rem 0.55rem; border-radius:999px; background:{{ $n->color ?? 'var(--color-primary)' }}18; color:{{ $n->color ?? 'var(--color-primary)' }}; text-transform:capitalize; font-weight:800;">{{ $n->category ?? 'informasi' }}</span>
                             </div>
                             <p style="margin:0; font-size:0.88rem; color:var(--color-gray-600); line-height:1.55;">
-                                {!! $parsedMsg !!}
+                                {{ $n->message }}
                             </p>
                             <div style="margin-top:0.55rem; font-size:0.74rem; color:var(--color-gray-400);">
                                 {{ $n->created_at->diffForHumans() }}

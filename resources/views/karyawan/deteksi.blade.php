@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Deteksi Burnout – BurnoutXpert')
+@section('title', 'Deteksi Burnout - SanctuaryHub')
 
 @section('content')
     @if(session('info'))

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BurnoutXpert - Sistem Pakar Deteksi Burnout Karyawan menggunakan metode Backward Chaining dan Certainty Factor.">
+    <meta name="description" content="SanctuaryHub - Sistem Pakar Deteksi Risiko Burnout Karyawan menggunakan Backward Chaining dan Certainty Factor.">
     <meta name="keywords" content="burnout, deteksi burnout, kesehatan mental, sistem pakar, backward chaining, certainty factor">
-    <meta name="author" content="BurnoutXpert Team">
+    <meta name="author" content="SanctuaryHub Team">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>@yield('title', 'BurnoutXpert – Deteksi Kesehatan Mental Karyawan')</title>
+    <title>@yield('title', 'SanctuaryHub - Deteksi Risiko Burnout Karyawan')</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23F4845F%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3 1.07.56 2 1.25 2 3a2.5 2.5 0 0 1-2.5 2.5z%22></path><path d=%22M15 16.5c0-1-1-2-1-3 2 1.5 3 3 3 5a5 5 0 0 1-10 0c0-2 1-4 3-6a8 8 0 0 1 5 4z%22></path></svg>">
     <link rel="manifest" href="/manifest.json">
@@ -444,7 +444,7 @@
         });
 
         // Global Excel Export Function
-        function exportToExcel(tableId, filename = 'Data-BurnoutXpert.xlsx') {
+        function exportToExcel(tableId, filename = 'Data-SanctuaryHub.xlsx') {
             const table = document.getElementById(tableId);
             if (!table) {
                 Swal.fire('Error', 'Tabel tidak ditemukan!', 'error');
@@ -555,12 +555,10 @@
             const TOKEN_KEY = 'onboarding_login_token';
             const PREFIX = 'onboarding_visited_';
 
-            console.log("[Onboarding] Current session token:", CURRENT_TOKEN);
 
             // Check if login token changed (new login) → clear old onboarding flags
             const storedToken = localStorage.getItem(TOKEN_KEY);
             if (storedToken !== CURRENT_TOKEN) {
-                console.log("[Onboarding] New login detected! Clearing old tour data.");
                 // Clear all previous onboarding visited flags
                 const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
@@ -583,10 +581,8 @@
                 shouldShow: function(pageName) {
                     const key = PREFIX + pageName;
                     if (localStorage.getItem(key)) {
-                        console.log("[Onboarding] Page already visited this session:", pageName);
                         return false; // Already visited after this login
                     }
-                    console.log("[Onboarding] First visit this session, showing tour for:", pageName);
                     localStorage.setItem(key, 'true');
                     return true;
                 }

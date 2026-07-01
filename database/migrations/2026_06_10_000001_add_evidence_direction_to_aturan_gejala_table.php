@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('aturan_gejala', 'evidence_direction')) {
+        if (! Schema::hasColumn('aturan_gejala', 'evidence_direction')) {
             Schema::table('aturan_gejala', function (Blueprint $table) {
                 $table->enum('evidence_direction', [
                     'PRESENT_SUPPORTS',

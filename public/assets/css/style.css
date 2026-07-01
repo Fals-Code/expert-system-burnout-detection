@@ -1,5 +1,5 @@
 /* ============================================================
-   BurnoutXpert – Global Stylesheet
+   SanctuaryHub Global Stylesheet
    Color Palette:
      Primary  : #1E3A5F (Biru Tua)
      Background: #FFFFFF (Putih)
@@ -1424,4 +1424,3 @@ button:focus-visible, a:focus-visible {
 /* Topbar Refinements */
 .topbar { box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
 .topbar__breadcrumb { letter-spacing: 0.02em; opacity: 0.7; }
-

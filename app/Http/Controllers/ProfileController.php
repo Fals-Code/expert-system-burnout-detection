@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
+use App\Models\Divisi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\AuditLog;
-use App\Models\Divisi;
 
 class ProfileController extends Controller
 {
@@ -14,6 +14,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $divisions = Divisi::all();
+
         return view('profile.index', compact('user', 'divisions'));
     }
 
@@ -23,10 +24,10 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        
+
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
@@ -42,7 +43,7 @@ class ProfileController extends Controller
             'user_id' => $user->id,
             'action' => 'UPDATE_PROFILE',
             'entity' => 'User',
-            'desc' => "Memperbarui informasi profil (nama & email)"
+            'desc' => 'Memperbarui informasi profil (nama & email)',
         ]);
 
         return redirect()->back()->with('success', 'Informasi profil berhasil diperbarui.');
@@ -66,7 +67,7 @@ class ProfileController extends Controller
         ]);
 
         // Verify current password
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return redirect()->back()
                 ->withErrors(['current_password' => 'Kata sandi saat ini tidak sesuai.'])
                 ->with('error', 'Kata sandi lama yang Anda masukkan salah.');
@@ -86,7 +87,7 @@ class ProfileController extends Controller
             'user_id' => $user->id,
             'action' => 'CHANGE_PASSWORD',
             'entity' => 'User',
-            'desc' => "Mengubah kata sandi akun"
+            'desc' => 'Mengubah kata sandi akun',
         ]);
 
         return redirect()->back()->with('success', 'Kata sandi berhasil diubah! Gunakan kata sandi baru pada login berikutnya.');

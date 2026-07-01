@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Gejala;
 use App\Models\Aturan;
 use App\Models\AuditLog;
 use App\Models\Diagnosa;
+use App\Models\Divisi;
+use App\Models\Gejala;
+use App\Models\Konsultasi;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -34,20 +36,20 @@ class AdminController extends Controller
         $total_gejala = Gejala::count();
         $total_aturan = Aturan::count();
         $total_logs = AuditLog::count();
-        
+
         $logs = AuditLog::with('user')->orderBy('created_at', 'desc')->take(5)->get();
-        
+
         // Data Komposisi Divisi
-        $divisi_stats = \App\Models\Divisi::withCount('users')->get();
+        $divisi_stats = Divisi::withCount('users')->get();
 
         // ── Advanced Analytics Calculations ──
         $sixMonthsAgo = now()->subMonths(6);
-        $consultations = \App\Models\Konsultasi::with(['user.divisi', 'diagnosa'])
+        $consultations = Konsultasi::with(['user.divisi', 'diagnosa'])
             ->where('created_at', '>=', $sixMonthsAgo)
             ->get();
 
         // 1. Risk Distribution (Latest diagnosis for each employee)
-        $latestConsultations = \App\Models\Konsultasi::with(['user.divisi', 'diagnosa'])
+        $latestConsultations = Konsultasi::with(['user.divisi', 'diagnosa'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->unique('user_id');
@@ -86,38 +88,39 @@ class AdminController extends Controller
             $monthDate = now()->subMonths($i);
             $monthName = $monthDate->translatedFormat('F Y');
             $monthKey = $monthDate->format('Y-m');
-            
+
             $monthCons = $consultations->filter(function ($c) use ($monthKey) {
                 return $c->created_at->format('Y-m') === $monthKey;
             });
-            
+
             $avg = $monthCons->count() > 0 ? $monthCons->avg('cf_final') * 100 : 0;
             $trendMonths[] = $monthName;
             $trendAverages[] = round($avg, 1);
         }
 
-        // 4. Early Warning High-Risk Employees
+        // 4. Early Warning High-Risk Divisions (aggregate only)
         $earlyAlerts = [];
-        foreach ($latestConsultations as $c) {
-            $tingkat = strtoupper($c->diagnosa?->tingkat ?? 'TIDAK BURNOUT');
-            if ($tingkat === 'TINGGI' || $tingkat === 'SANGAT TINGGI') {
+        foreach ($latestConsultations->groupBy(fn ($c) => $c->user?->divisi?->nama ?? 'N/A') as $division => $items) {
+            $highCount = $items->filter(fn ($c) => in_array(strtoupper($c->diagnosa?->tingkat ?? ''), ['TINGGI', 'SANGAT TINGGI'], true))->count();
+
+            if ($highCount > 0) {
                 $earlyAlerts[] = [
-                    'nama' => $c->user?->nama ?? 'Karyawan',
-                    'divisi' => $c->user?->divisi?->nama ?? 'N/A',
-                    'tingkat' => $c->diagnosa?->tingkat ?? 'RENDAH',
-                    'score' => round($c->cf_final * 100, 1),
-                    'date' => $c->created_at->translatedFormat('d M Y'),
-                    'color' => $c->diagnosa?->color ?? '#dc2626'
+                    'divisi' => $division,
+                    'jumlah' => $highCount,
+                    'total' => $items->count(),
+                    'score' => $items->count() > 0 ? round(($highCount / $items->count()) * 100, 1) : 0,
+                    'date' => now()->translatedFormat('d M Y'),
+                    'color' => '#dc2626',
                 ];
             }
         }
 
         return view('admin.dashboard', compact(
-            'total_users', 
-            'total_gejala', 
-            'total_aturan', 
-            'total_logs', 
-            'logs', 
+            'total_users',
+            'total_gejala',
+            'total_aturan',
+            'total_logs',
+            'logs',
             'divisi_stats',
             'riskDistribution',
             'divisionLabels',
@@ -131,6 +134,7 @@ class AdminController extends Controller
     public function logs()
     {
         $logs = AuditLog::with('user')->orderBy('created_at', 'desc')->get();
+
         return view('admin.logs', compact('logs'));
     }
 

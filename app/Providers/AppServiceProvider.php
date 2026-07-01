@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Models\Aturan;
-use App\Models\Gejala;
 use App\Models\Diagnosa;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Models\Gejala;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,8 +34,6 @@ class AppServiceProvider extends ServiceProvider
             Cache::forget('diagnosa_ordered_base64');
             Cache::forget('diagnosa_default_rendah');
             Cache::forget('diagnosa_default_rendah_base64');
-            // Clear any parameter-specific caches
-            Cache::flush();
         };
 
         Aturan::saved($clearCache);

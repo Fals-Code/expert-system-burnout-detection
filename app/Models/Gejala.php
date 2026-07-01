@@ -18,6 +18,7 @@ class Gejala extends Model
     use SoftDeletes;
 
     protected $table = 'gejala';
+
     protected $fillable = ['kode', 'nama', 'bobot', 'kategori'];
 
     public function aturan(): BelongsToMany

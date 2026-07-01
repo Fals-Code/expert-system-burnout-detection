@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard – BurnoutXpert')
+@section('title', 'Admin Dashboard - SanctuaryHub')
 
 @section('content')
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
@@ -60,22 +60,20 @@
                     <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
                         <thead>
                             <tr style="border-bottom:2px solid #e2e8f0; text-align:left;">
-                                <th style="padding:0.5rem; color:var(--color-gray-500);">Nama</th>
                                 <th style="padding:0.5rem; color:var(--color-gray-500);">Divisi</th>
-                                <th style="padding:0.5rem; color:var(--color-gray-500);">Status</th>
-                                <th style="padding:0.5rem; color:var(--color-gray-500); text-align:right;">Stress Score</th>
+                                <th style="padding:0.5rem; color:var(--color-gray-500);">Jumlah Tinggi</th>
+                                <th style="padding:0.5rem; color:var(--color-gray-500); text-align:right;">Proporsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($earlyAlerts as $alert)
                                 <tr style="border-bottom:1px solid #f1f5f9;">
-                                    <td style="padding:0.6rem 0.5rem; font-weight:700;">{{ $alert['nama'] }}</td>
-                                    <td style="padding:0.6rem 0.5rem; color:var(--color-gray-600);">{{ $alert['divisi'] }}</td>
-                                    <td style="padding:0.6rem 0.5rem;">{{ $alert['tingkat'] }}</td>
+                                    <td style="padding:0.6rem 0.5rem; color:var(--color-gray-600); font-weight:700;">{{ $alert['divisi'] }}</td>
+                                    <td style="padding:0.6rem 0.5rem;">{{ $alert['jumlah'] }} dari {{ $alert['total'] }}</td>
                                     <td style="padding:0.6rem 0.5rem; text-align:right; font-weight:700; color:#dc2626;">{{ $alert['score'] }}%</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--color-gray-400);">Tidak ada karyawan berisiko tinggi saat ini.</td></tr>
+                                <tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--color-gray-400);">Tidak ada agregat risiko tinggi saat ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
